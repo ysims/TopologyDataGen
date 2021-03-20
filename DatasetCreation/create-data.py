@@ -11,14 +11,19 @@ import random
 def dist3d(coord1, coord2):
     return math.sqrt(math.pow((coord1[0] - coord2[0]), 2) + math.pow((coord1[1] - coord2[1]), 2) + math.pow((coord1[2] - coord2[2]), 2))
 
-# Create a cube with side length 'length' represented as a point cloud, with lengthxlengthxlenth points in it. 
+# Returns the distance between coord1 and coord2, removing the third dimension. Both coordinates are 3d cartesian coordinates. 
+def dist2d(coord1, coord2):
+    return math.sqrt(math.pow((coord1[1] - coord2[1]), 2) + math.pow((coord1[2] - coord2[2]), 2))
+
+
+# Create a cube with side length 'length' represented as a point cloud, with lengthxlengthxlength points in it. 
 # Each point is set at each integer point (e.g. (6,1,0)), with some noise. 
 # The maximum distance that each point can be displaced from its original integer position is 'noise'
 def create_cube(length, noise):
     data = []
-    for x in range(0,length+1):
-        for y in range(0,length+1):
-            for z in range(0,length+1):
+    for x in range(0,length):
+        for y in range(0,length):
+            for z in range(0,length):
                 random = [(np.random.random() - 0.5) * noise * 2, (np.random.random() - 0.5) * noise * 2, (np.random.random() - 0.5) * noise * 2] 
                 data.append([x + random[0], y + random[1], z + random[2]])
     return data
@@ -54,10 +59,25 @@ def remove_circle(data, point, radius):
             indices.append(index)
     return np.delete(data, indices, 0)
 
-square_size = 7
+# Ratio: (0,1). The higher, the greater the [filled] hole in the center.
+def remove_tori(data, point, radius_outer, radius_inner):
+    indices = []
+    for index,item in enumerate(data):
+        # Get the distance between this point and the center of the circle
+        distance = dist3d(item,point)
+        if distance <= radius:
+            distance_2d = dist2d(item, point)
+            if distance_2d > radius_inner:
+                indices.append(index)
+    return np.delete(data, indices, 0)
+
+
+square_size = 35
 noise = 0.1
-max_circles = 100
-max_radius = 3
+max_circles = 20
+max_radius = 10
+min_radius = 5
+radius_inner = 2
 
 # Create the cube as a numpy array
 data = np.array(create_cube(square_size, noise))
@@ -73,34 +93,51 @@ random.shuffle(shuffled_data)
 while i < n_circles:
     for item in shuffled_data:
         found_something = False
-        radius = np.random.random() * (max_radius - 1) + 1
+        radius = np.random.random() * (max_radius - min_radius) + min_radius
         point = item
         # print('check', radius, point)
         # Create a random circle
-        if not does_circle_intersect(point, radius, circles, square_size):
+        if not does_circle_intersect(point, radius, circles, square_size-1):
             # print('passed')
-            data = remove_circle(data, point, radius)
+            # data = remove_circle(data, point, radius)
+            data = remove_tori(data, point, radius, radius_inner)
             circle = [point, radius]
             circles.append(circle)
             i = i + 1
             found_something = True
             # print('after',radius)
-            print(i,'/',n_circles,'Removing circle with center point', circle, 'with radius', radius)
+            print(i,'/',n_circles,'Removing tori with center point', circle, 'with radius', radius)
             if i >= n_circles:
                 break
     if not found_something:
         print('Couldn\'t place that many holes!', i,'/',n_circles)
         break
 
+with open('data.txt', 'w') as f:
+    for item in data:
+        f.write("%s\n" % item)
+
+with open('data1.txt', 'w') as f:
+    for item in data[:,1]:
+        f.write("%s\n" % item)
+
 # Plot the data points
 ax = plt.axes(projection='3d')
-ax.scatter3D(data[:,0], data[:,1], data[:,2])
+
+slice = 15
+start = slice * (square_size * square_size)
+if start != 0:
+    start = start + 1
+end = (slice+1) * (square_size * square_size)
+
+ax.scatter3D(data[start:end,0], data[start:end,1], data[start:end,2])
+# ax.scatter3D(data[:,0], data[:,1], data[:,2])
 plt.show()
 
-print('Computing topology')
+# print('Computing topology')
 
 # Calculate the persistent homology
-diagrams = ripser(data, maxdim=3)['dgms']
+# diagrams = ripser(data, maxdim=3)['dgms']
 
-# Plot the persistent homology
-plot_diagrams(diagrams, show=True)
+# # Plot the persistent homology
+# plot_diagrams(diagrams, show=True)
