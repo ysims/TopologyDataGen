@@ -5,8 +5,8 @@ from Voxels3d import Voxels3d
 import math
 
 voxels = Voxels3d([30, 30, 30])
-voxels.addCircle([20,20,20], 5, [0,0,0])
-voxels.addTorus([10,10,10], 5, 2.5, [math.pi/4,-math.pi/4,0])
+voxels.addObjects(3)
+voxels.checkIntersectFull()
 
 output = voxels.getObjects()
 
