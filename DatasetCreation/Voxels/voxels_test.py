@@ -15,7 +15,7 @@ for i in range(100):
 
 
 for i,j in itertools.product(voxel_dataset,repeat=2):
-    if i == j:
+    if not (i ^ j).any():
         print("THE SAME!")
 
 # and plot everything
