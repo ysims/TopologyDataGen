@@ -2,13 +2,14 @@ import numpy as np
 import math
 import itertools
 import random
+import scipy.ndimage
 
 # General function for creating a homogeneous transformation matrix made up of X-Y-Z rotations
 # rotation is a 3d array of x rotation, y rotation, z rotation applied that order.
-def getRotation(rotation):
-    X = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, np.cos(rotation[0]), np.sin(rotation[0]), 0.0], [0.0, -np.sin(rotation[0]), np.cos(rotation[0]), 0.0], [0.0, 0.0, 0.0, 1.0]])
-    Y = np.array([[np.cos(rotation[1]), 0.0, -np.sin(rotation[1]), 0.0], [0.0, 1.0, 0.0, 0.0], [np.sin(rotation[1]), 0.0, np.cos(rotation[1]), 0.0], [0.0, 0.0, 0.0, 1.0]])
-    Z = np.array([[np.cos(rotation[2]), np.sin(rotation[2]), 0.0, 0.0], [-np.sin(rotation[2]), np.cos(rotation[2]), 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
+def get_rotation(rotation):
+    X = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, np.cos(rotation[0]), -np.sin(rotation[0]), 0.0], [0.0, np.sin(rotation[0]), np.cos(rotation[0]), 0.0], [0.0, 0.0, 0.0, 1.0]])
+    Y = np.array([[np.cos(rotation[1]), 0.0, np.sin(rotation[1]), 0.0], [0.0, 1.0, 0.0, 0.0], [-np.sin(rotation[1]), 0.0, np.cos(rotation[1]), 0.0], [0.0, 0.0, 0.0, 1.0]])
+    Z = np.array([[np.cos(rotation[2]), -np.sin(rotation[2]), 0.0, 0.0], [np.sin(rotation[2]), -np.cos(rotation[2]), 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
     return Z.dot(Y.dot(X))
 
 # rotation is a 3d array of x rotation, y rotation, z rotation applied that order.
