@@ -14,13 +14,14 @@ for i in range(100):
     voxels.check_intersect_full()
 
 
-for i,j in itertools.product(voxel_dataset,repeat=2):
+for i,j in itertools.combinations(voxel_dataset,2):
     if not (i ^ j).any():
         print("THE SAME!")
 
-# and plot everything
-for i in voxel_dataset:
-    ax = plt.figure().add_subplot(projection='3d')
-    ax.voxels(i, edgecolor='k')
+# plotting
+# for i in voxel_dataset:
+#     ax = plt.figure().add_subplot(projection='3d')
+#     ax.voxels(i, edgecolor='k')
 
-plt.show()
+
+# plt.show()

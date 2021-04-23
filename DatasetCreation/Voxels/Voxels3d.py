@@ -7,9 +7,9 @@ import scipy.ndimage
 # General function for creating a homogeneous transformation matrix made up of X-Y-Z rotations
 # rotation is a 3d array of x rotation, y rotation, z rotation applied that order.
 def get_rotation(rotation):
-    X = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, np.cos(rotation[0]), -np.sin(rotation[0]), 0.0], [0.0, np.sin(rotation[0]), np.cos(rotation[0]), 0.0], [0.0, 0.0, 0.0, 1.0]])
-    Y = np.array([[np.cos(rotation[1]), 0.0, np.sin(rotation[1]), 0.0], [0.0, 1.0, 0.0, 0.0], [-np.sin(rotation[1]), 0.0, np.cos(rotation[1]), 0.0], [0.0, 0.0, 0.0, 1.0]])
-    Z = np.array([[np.cos(rotation[2]), -np.sin(rotation[2]), 0.0, 0.0], [np.sin(rotation[2]), -np.cos(rotation[2]), 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
+    X = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, np.cos(rotation[0]), np.sin(rotation[0]), 0.0], [0.0, -np.sin(rotation[0]), np.cos(rotation[0]), 0.0], [0.0, 0.0, 0.0, 1.0]])
+    Y = np.array([[np.cos(rotation[1]), 0.0, -np.sin(rotation[1]), 0.0], [0.0, 1.0, 0.0, 0.0], [np.sin(rotation[1]), 0.0, np.cos(rotation[1]), 0.0], [0.0, 0.0, 0.0, 1.0]])
+    Z = np.array([[np.cos(rotation[2]), np.sin(rotation[2]), 0.0, 0.0], [-np.sin(rotation[2]), np.cos(rotation[2]), 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
     return Z.dot(Y.dot(X))
 
 # rotation is a 3d array of x rotation, y rotation, z rotation applied that order.
@@ -24,7 +24,8 @@ def rotate(rotation, C, P):
     # Turn the point into a form we can multiply with
     P_full = [P[0], P[1], P[2], 1.0]
     # Return C*R*-C*P - move the origin to the center, rotate the point, then move the origin back
-    return T_pos.dot(R.dot(T_neg.dot(P_full)))
+    return T_pos.dot(R.dot(T_neg.dot(P_full)))[:3]
+
 
 # Class that holds one object with cavities in it, of various shapes.
 class Voxels3d:
@@ -40,64 +41,60 @@ class Voxels3d:
     # This will create a wavy circle and return it
     def get_wavy_circle(self, center, radius, rotation):
         x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
-        for X,Y,Z in itertools.product(range(0, 30), repeat=3):
-            x[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[0]
-            y[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[1]
-            z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[2]
+        for X,Y,Z in itertools.product(range(0, self.size[0]), repeat=3):
+            x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])
+
         wavy_circle = (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= pow(radius+np.sin(x), 2)
         return wavy_circle
 
     def get_cube(self, center, length, rotation):
         x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
-        for X,Y,Z in itertools.product(range(0, 30), repeat=3):
-            x[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[0]
-            y[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[1]
-            z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[2]
-        cube = ((center[0] - length/2 <= x) & (x <= center[0] + length/2)) & ((center[1] - length/2 <= y) & (y <= center[1] + length/2)) & ((center[2] - length/2 <= z) & (z <= center[2] + length/2))
+        for X,Y,Z in itertools.product(range(0, self.size[0]), repeat=3):
+            x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])
+        if center[0] % 2 == 1:
+            center[0] -= 1
+            center[1] -= 1
+            center[2] -= 1
+        cube = ((center[0] - length/2 < x) & (x < center[0] + length/2)) & ((center[1] - length/2 < y) & (y < center[1] + length/2)) & ((center[2] - length/2 < z) & (z < center[2] + length/2))
         return cube
 
     # This will create a circle and return it
     def get_circle(self, center, radius, rotation):
         x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
-        for X,Y,Z in itertools.product(range(0, 30), repeat=3):
-            x[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[0]
-            y[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[1]
-            z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[2]
+        for X,Y,Z in itertools.product(range(0, self.size[0]), repeat=3):
+            x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])
+
         circle = (pow(x - center[0],2) + pow(y - center[1],2) + pow(z - center[2], 2)) <= pow(radius, 2)
         return circle
 
     # This will create a torus and return it
     def get_torus(self, center, major_radius, minor_radius, rotation):
         x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
-        for X,Y,Z in itertools.product(range(0, 30), repeat=3):
-            x[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[0]
-            y[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[1]
-            z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])[2]
+        for X,Y,Z in itertools.product(range(0, self.size[0]), repeat=3):
+            x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])
+
         torus = pow((np.sqrt(pow((x - center[0]),2) + pow(y - center[1],2)) - major_radius), 2) + pow(z - center[2], 2) <= pow(minor_radius,2)
         return torus
     # --------------------------------------------------------------------------------------------
     
     # Given an object, check if it intersects with existing objects
     def check_intersect(self, new_object):
-        intersect = new_object & self.border
-        if intersect.any():
-            return True
-        # Check boundary
-        # if (new_object & self.border).any():
-        #     return True
-        # Check each object for an intersection with this one
-        for object in self.objects:
-            intersect = intersect & object
-            if intersect.any():
+        objects_temp = self.objects.copy()
+        objects_temp.append(new_object)
+
+        for object in objects_temp:
+            if (object & self.border).any():
                 return True
-        # Didn't find any intersection
+        for object1, object2 in itertools.combinations(objects_temp, 2):
+            if (object1 & object2).any():
+                return True
         return False
 
     # --------------------------------------------------------------------------------------------
     # The following functions will add objects if there are no intersections with existing objects
     def add_torus(self, center, major_radius, minor_radius, rotation):
         torus = self.get_torus(center, major_radius, minor_radius, rotation)
-        torus_dilation = scipy.ndimage.binary_dilation(torus,iterations=4)
+        torus_dilation = scipy.ndimage.binary_dilation(torus,iterations=2)
         if self.check_intersect(torus_dilation):
             return False
         self.objects.append(torus)
@@ -105,7 +102,7 @@ class Voxels3d:
 
     def add_circle(self, center, radius, rotation):
         circle = self.get_circle(center, radius, rotation)
-        circle_dilation = scipy.ndimage.binary_dilation(circle,iterations=4)
+        circle_dilation = scipy.ndimage.binary_dilation(circle,iterations=2)
         if self.check_intersect(circle_dilation):
             return False
         self.objects.append(circle)
@@ -113,7 +110,7 @@ class Voxels3d:
 
     def add_wavy_circle(self, center, radius, rotation):
         wavy_circle = self.get_wavy_circle(center, radius, rotation)
-        wavy_circle_dilation = scipy.ndimage.binary_dilation(wavy_circle,iterations=4)
+        wavy_circle_dilation = scipy.ndimage.binary_dilation(wavy_circle,iterations=2)
         if self.check_intersect(wavy_circle_dilation):
             return False
         self.objects.append(wavy_circle)
@@ -125,9 +122,9 @@ class Voxels3d:
         while count < amount: 
             if(self.add_random()):
                 count += 1
-                print("Hit!!!!!!!!!!!!!!!!!!!!!!!!!")
-            else:
-                print("Miss...")
+                # print("Hit!!!!!!!!!!!!!!!!!!!!!!!!!")
+            # else:
+                # print("Miss...")
 
     def add_random(self):
         # Make a random rotation
@@ -135,19 +132,19 @@ class Voxels3d:
         # Make a random center (might as well not add in edges, they'll be boundary points)
         center = [random.randrange(1, self.size[0]-1, 1), random.randrange(1, self.size[1]-1, 1), random.randrange(1, self.size[2]-1, 1)]
         # Everything has some sort of outer radius, lets find it
-        outer_radius = random.randrange(2, int(min(self.size)/6), 1)
+        outer_radius = random.randrange(3, int(min(self.size)/6), 1)
         # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-2] randomly
         shape = random.randrange(0, 2, 1)
         # Circle
         if shape == 0:
-            print("Circle!")
+            # print("Circle!")
             return self.add_circle(center, outer_radius, rotation)
-        # elif shape == 1:
-        #     print("Wavy circle!")
-        #     return self.addWavyCircle(center, outer_radius, rotation)
+        elif shape == 1:
+            # print("Wavy circle!")
+            return self.add_wavy_circle(center, outer_radius, rotation)
         else:
-            print("Torus!")
-            return self.add_torus(center, outer_radius, random.randrange(1, outer_radius, 1), rotation)
+            # print("Torus!")
+            return self.add_torus(center, outer_radius, random.randrange(2, outer_radius, 1), rotation)
 
     def get_objects(self):
         # make a full false grid
@@ -164,10 +161,13 @@ class Voxels3d:
         return ~final
 
     def check_intersect_full(self):
+        flag = False
         for object in self.objects:
             if (object & self.border).any():
-                print("BORDER INTERSECT")
+                # print("BORDER INTERSECT")
+                flag = True
         for object1, object2 in itertools.product(self.objects, repeat=2):
             if (object1 & object2).any():
-                print("OBJECT INTERSECT")
-                
+                # print("OBJECT INTERSECT")
+                flag = True
+        return flag
