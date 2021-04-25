@@ -18,7 +18,7 @@ class Voxels3d(object):
     def add_objects(self, num_objects, num_lines):
         count = 0
         exit_count = 0
-        while (count < num_objects) or (exit_count > 20): 
+        while (count < num_objects) and (exit_count < 20): 
             if(self.add_random()):
                 print("Success!")
                 count += 1
