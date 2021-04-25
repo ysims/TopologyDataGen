@@ -79,14 +79,11 @@ class Voxels3d:
     
     # Given an object, check if it intersects with existing objects
     def check_intersect(self, new_object):
-        objects_temp = self.objects.copy()
-        objects_temp.append(new_object)
+        if (new_object & self.border).any():
+            return True
 
-        for object in objects_temp:
-            if (object & self.border).any():
-                return True
-        for object1, object2 in itertools.combinations(objects_temp, 2):
-            if (object1 & object2).any():
+        for object in self.objects:
+            if (object & new_object).any():
                 return True
         return False
 
