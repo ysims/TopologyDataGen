@@ -9,12 +9,10 @@ def get_rotation(rotation):
     Z = np.array([[np.cos(rotation[2]), np.sin(rotation[2]), 0.0, 0.0], [-np.sin(rotation[2]), np.cos(rotation[2]), 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
     return Z.dot(Y.dot(X))
 
-# rotation is a 3d array of x rotation, y rotation, z rotation applied that order.
+# R is a rotation matrix
 # C is the center about which we want to rotate - in most cases, the center of the shape we are rotating
 # P is a point x,y,z which we are rotating about the center by the angled defined in rotation
-def rotate(rotation, C, P):
-    # Homogeneous transformation with the rotational component
-    R = get_rotation(rotation)
+def rotate(R, C, P):
     # Homogeneous transformation matrices with the negative center and positive center
     T_neg = np.array([[1.0, 0.0, 0.0, -C[0]], [0.0, 1.0, 0.0, -C[1]], [0.0, 0.0, 1.0, -C[2]], [0.0, 0.0, 0.0, 1.0]])
     T_pos = np.array([[1.0, 0.0, 0.0, C[0]], [0.0, 1.0, 0.0, C[1]], [0.0, 0.0, 1.0, C[2]], [0.0, 0.0, 0.0, 1.0]])
@@ -25,6 +23,9 @@ def rotate(rotation, C, P):
 
 def rotate_grid(size, rotation, center):
     x,y,z = np.indices((size, size, size))
+    R = get_rotation(rotation)
+
     for X,Y,Z in itertools.product(range(0, size), repeat=3):
-        x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(rotation, center, [X,Y,Z])
+        x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(R, center, [X,Y,Z])
+
     return x,y,z
