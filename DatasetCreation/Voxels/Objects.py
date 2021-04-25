@@ -7,45 +7,56 @@ from operator import add
 from Geometry import rotate_grid
 
 
-class Circle: 
-    # center: center of the circle
-    # radius: radius of the circle
-    # amplitude: how much 'wiggle' to add to the circle
+class Sphere(object): 
+    # center: center of the sphere
+    # radius: radius of the sphere
+    # amplitude: how much 'wiggle' to add to the sphere
     # rotation: a list of three rotations that are x,y,z axis rotations and rotated in that order
     # size: how big the voxel grid is
     def __init__(self, center, radius, amplitude, rotation, size):
-        # Set circle information
+        # Set sphere information
         self.center = center
         self.radius = radius
         self.rotation = rotation
         self.amplitude = amplitude
 
-        # Make a rotated grid and use it to make a voxelised circle
-        x,y,z = rotate_grid(size, rotation, center)
-        self.grid = (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= radius ** 2 + (amplitude * np.sin(x)) ** 2 + (amplitude * np.sin(y)) ** 2
+        # Set Betti numbers - this is what the overall cube will get
+        self.betti_zero = 0
+        self.betti_one = 0
+        self.betti_two = 1
 
-    # Make a random circle
+        # Make a rotated grid and use it to make a voxelised sphere
+        x,y,z = rotate_grid(size, rotation, center)
+        self.grid = (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= radius ** 2 + amplitude * (np.sin(x) + np.sin(y))
+
+    # Make a random sphere
     @classmethod
     def random(cls, size):
         rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
         center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
-        radius = random.randrange(2, int(size/6), 1)
+        radius = random.randrange(3, int(size/6), 1)
         amplitude = random.randrange(0, int(radius/2), 1)
         return cls(center, radius, amplitude, rotation, size)
 
 
 class Torus(object):
     # Make a specific torus
-    def __init__(self, center, major_radius, minor_radius, rotation, size):
+    def __init__(self, center, major_radius, minor_radius, minor_amplitude, rotation, size):
         # Set torus information
         self.center = center
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.rotation = rotation
         
+        # Set Betti numbers - this is what the overall cube will get
+        self.betti_zero = 0
+        self.betti_one = 0
+        self.betti_two = 1  # the cavity
+
         # Make a rotated grid and use it to make a voxelised torus
         x,y,z = rotate_grid(size, rotation, center)
-        self.grid = pow((np.sqrt(pow((x - center[0]),2) + pow(y - center[1],2)) - major_radius), 2) + pow(z - center[2], 2) <= pow(minor_radius,2)
+        self.grid = pow(np.sqrt((x - center[0])**2 + (y - center[1])**2) - major_radius, 2) + (z - center[2])**2 <= \
+            minor_radius ** 2 + minor_amplitude * (np.sin(x) + np.sin(y))
 
     # Make a random torus
     @classmethod
@@ -53,10 +64,50 @@ class Torus(object):
         rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
         center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
         major_radius = random.randrange(3, int(size/6), 1)
-        minor_radius = random.randrange(2, major_radius, 1)
-        return cls(center, major_radius, minor_radius, rotation, size)
+        minor_radius = random.randrange(1, major_radius-1, 1)
+        minor_amplitude = random.randrange(0, max(1,int(minor_radius/2)), 1)
+        return cls(center, major_radius, minor_radius, minor_amplitude, rotation, size)
 
-class Line:
+# This object represents a sphere with a sphere-shaped hole inside it
+class Island(object):
+    # center: center of the island
+    # outer radius: radius of the outer sphere
+    # inner radius: radius of the inner sphere
+    # outer amplitude: how much 'wiggle' to add to the outer sphere
+    # inner amplitude: how much 'wiggle' to add to the inner sphere
+    # rotation: a list of three rotations that are x,y,z axis rotations and rotated in that order
+    # size: how big the voxel grid is
+    def __init__(self, center, outer_radius, inner_radius, outer_amplitude, inner_amplitude, rotation, size):
+        # Set sphere information
+        self.center = center
+        self.outer_radius = outer_radius
+        self.inner_radius = inner_radius
+        self.outer_amplitude = outer_amplitude
+        self.inner_amplitude = inner_amplitude
+        self.rotation = rotation
+
+        # Set Betti numbers - this is what the overall cube will get
+        self.betti_zero = 1 # the island in the middle
+        self.betti_one = 0
+        self.betti_two = 1  # the spherical cavity
+
+        # Make a rotated grid and use it to make a voxelised sphere with a hole in the middle (island)
+        x,y,z = rotate_grid(size, rotation, center)
+        self.grid = ((pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= outer_radius ** 2 + outer_amplitude * (np.sin(x) + np.sin(y))) \
+            & ((pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) >= inner_radius ** 2 + (inner_amplitude * np.sin(x) + np.sin(y)))
+
+    # Make a random island
+    @classmethod
+    def random(cls, size):
+        rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
+        center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
+        outer_radius = random.randrange(4, int(size/6), 1)
+        inner_radius = random.randrange(3, outer_radius, 1)
+        outer_amplitude = random.randrange(0, inner_radius - 1, 1)
+        inner_amplitude = random.randrange(0, int(inner_radius/2), 1)
+        return cls(center, outer_radius, inner_radius, outer_amplitude, inner_amplitude, rotation, size)
+
+class Line(object):
     # Parameters
     # start: coordinate where the line starts
     # size: size of the voxel grid
@@ -65,6 +116,11 @@ class Line:
     # Given a starting position on the border, make a line from this point to some other point on the border 
     # Any border point should not intersect with an object since object cannot be on the border
     def __init__(self, start, size, objects, border):
+        # Set Betti numbers - this is what the overall cube will get
+        self.betti_zero = 0
+        self.betti_one = 1
+        self.betti_two = 0
+
         # Make a grid with just this starting point
         x, y, z = np.indices((size, size, size))
         grid = (x==start[0]) & (y==start[1]) & (z==start[2])
