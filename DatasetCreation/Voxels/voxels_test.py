@@ -7,12 +7,13 @@ import itertools
 import random
 
 # voxel_dataset = []
-
+ 
 # for i in range(100):
-#     voxels = Voxels3d([30,30,30])
-#     voxels.add_objects(3)
-#     voxel_dataset.append(voxels.get_objects())
-#     voxels.check_intersect_full()
+#     for j in range(3,10):
+#         for k in range(2,10):
+#             voxels = Voxels3d(30)
+#             voxels.add_objects(j,k)
+#             voxel_dataset.append(voxels.get_objects())
 
 
 # for i,j in itertools.combinations(voxel_dataset,2):
@@ -23,12 +24,11 @@ import random
 # for i in voxel_dataset:
 #     ax = plt.figure().add_subplot(projection='3d')
 #     ax.voxels(i, edgecolor='k')
-
-
 # plt.show()
 
 voxels = Voxels3d(30)
-voxels.add_objects(3,2)
+voxels.add_objects(5,2)
+
 
 ax = plt.figure().add_subplot(projection='3d')
 ax.voxels(voxels.get_objects(), edgecolor='k')
