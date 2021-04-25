@@ -3,6 +3,7 @@ import math
 import itertools
 import random
 import scipy.ndimage
+from operator import add
 
 # General function for creating a homogeneous transformation matrix made up of X-Y-Z rotations
 # rotation is a 3d array of x rotation, y rotation, z rotation applied that order.
@@ -34,7 +35,8 @@ class Voxels3d:
         self.size = size # this should be a 3d array of lengths in the x,y,z directions of our space
         self.objects = [] # initialise our array of objects
         # Create the full shape everything is contained in. True areas are the border and false are the insides
-        self.border = ~self.get_cube([size[0]/2, size[1]/2, size[2]/2], min(size)-2, [0,0,0]) # lets use a cube
+        x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
+        self.border = (x == 0) | (x == self.size[0] - 1) | (y == 0) | (y == self.size[1] - 1) | (z == 0) | (z == self.size[2] - 1) # lets use a cube
 
     # --------------------------------------------------------------------------------------------
     # Create and return objects, to be used by the add<Object> functions
@@ -112,6 +114,90 @@ class Voxels3d:
             return False
         self.objects.append(wavy_circle)
         return True
+
+    # Given a starting position on the border, make a line from this point to some other point on the border 
+    # Any border point should not intersect with an object since object cannot be on the border
+    def add_line(self, start):
+        x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
+        grid = (x==start[0]) & (y==start[1]) & (z==start[2])
+
+        current_point = start
+        movement_direction = [] # array of value movements
+        first_direction = [0,0,0]
+
+        # If we don't start on a particular face, we can move towards it
+        if current_point[0] != 0:
+            movement_direction.append([-1,0,0])
+        else:
+            first_direction = [1,0,0]
+
+        if current_point[0] != 29:
+            movement_direction.append([1,0,0])
+        else:
+            first_direction = [-1,0,0]
+        
+        if current_point[1] != 0:
+            movement_direction.append([0,-1,0])
+        else:
+            first_direction = [0,1,0]
+        
+        if current_point[1] != 29:
+            movement_direction.append([0,1,0])
+        else:
+            first_direction = [0,-1,0]
+        
+        if current_point[2] != 0:
+            movement_direction.append([0,0,-1])
+        else:
+            first_direction = [0,0,1]
+        
+        if current_point[2] != 29:
+            movement_direction.append([0,0,1])
+        else:
+            first_direction = [0,0,-1]
+
+        current_point = list(map(add, first_direction, current_point))
+        grid[current_point[0]][current_point[1]][current_point[2]] = True
+        
+        if movement_direction[0] != first_direction:
+            movement_direction.remove(movement_direction[0])
+        else:
+            movement_direction.remove(movement_direction[1])
+
+        random.shuffle(movement_direction) # shuffle so we don't always go the same way
+
+        while ((not self.border[current_point[0]][current_point[1]][current_point[2]]) or current_point==start):
+            point_added = False
+            random.shuffle(movement_direction) # shuffle so we don't always go the same way
+            for direction in movement_direction:
+                if not self.line_intersect(grid, list(map(add, direction, current_point))):
+                    current_point = list(map(add, direction, current_point))
+                    grid[current_point[0]][current_point[1]][current_point[2]] = True
+                    point_added = True
+                    break
+            # We've reached a point where no where will work!
+            if not point_added:
+                print("stuck")
+                return                    
+        self.objects.append(grid)
+
+    def line_intersect(self, grid, point):
+        # Check if we can even move to this point
+        if grid[point[0]][point[1]][point[2]]:
+            return True
+
+        # Check if there are any objects around this point
+        objects = self.get_objects()
+        for x,y,z in itertools.product([-1,0,1],repeat=3):
+            try:    # skip if this is out of bounds
+                if objects[point[0] + x][point[1] + y][point[2] + z]:
+                    return True
+            except:
+                continue
+
+
+        return False
+
     # --------------------------------------------------------------------------------------------
     # Add amount number of objects randomly
     def add_objects(self, amount):
@@ -119,9 +205,6 @@ class Voxels3d:
         while count < amount: 
             if(self.add_random()):
                 count += 1
-                # print("Hit!!!!!!!!!!!!!!!!!!!!!!!!!")
-            # else:
-                # print("Miss...")
 
     def add_random(self):
         # Make a random rotation
@@ -134,13 +217,10 @@ class Voxels3d:
         shape = random.randrange(0, 2, 1)
         # Circle
         if shape == 0:
-            # print("Circle!")
             return self.add_circle(center, outer_radius, rotation)
         elif shape == 1:
-            # print("Wavy circle!")
             return self.add_wavy_circle(center, outer_radius, rotation)
         else:
-            # print("Torus!")
             return self.add_torus(center, outer_radius, random.randrange(2, outer_radius, 1), rotation)
 
     def get_objects(self):
