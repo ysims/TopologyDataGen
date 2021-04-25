@@ -177,9 +177,9 @@ class Voxels3d:
                     break
             # We've reached a point where no where will work!
             if not point_added:
-                print("stuck")
-                return                    
+                return False
         self.objects.append(grid)
+        return True
 
     def line_intersect(self, grid, point):
         # Check if we can even move to this point
@@ -194,16 +194,21 @@ class Voxels3d:
                     return True
             except:
                 continue
-
-
         return False
 
     # --------------------------------------------------------------------------------------------
-    # Add amount number of objects randomly
-    def add_objects(self, amount):
+    # Add num_object number of objects randomly
+    def add_objects(self, num_objects, num_lines):
         count = 0
-        while count < amount: 
+        while count < num_objects: 
             if(self.add_random()):
+                print("Success!")
+                count += 1
+        count = 0
+        while count < num_lines:
+            start = [random.randrange(2,self.size[0]-2,1) for i in range(0,3)]
+            start[random.randrange(0,3,1)] = 0 if random.randrange(0,2,1) == 0 else self.size[0]-1
+            if(self.add_line(start)):
                 count += 1
 
     def add_random(self):
@@ -214,37 +219,30 @@ class Voxels3d:
         # Everything has some sort of outer radius, lets find it
         outer_radius = random.randrange(3, int(min(self.size)/6), 1)
         # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-2] randomly
-        shape = random.randrange(0, 2, 1)
+        shape = random.randrange(0, 3, 1)
         # Circle
         if shape == 0:
+            print("Circle")
             return self.add_circle(center, outer_radius, rotation)
         elif shape == 1:
+            print("Wavy circle")
             return self.add_wavy_circle(center, outer_radius, rotation)
         else:
+            print("Torus")
             return self.add_torus(center, outer_radius, random.randrange(2, outer_radius, 1), rotation)
 
+    # Get all the 'holes' as solid objects
     def get_objects(self):
-        # make a full false grid
+        # Make a full false grid
         x, y, z = np.indices((self.size[0], self.size[1], self.size[2]))
-        first = x + y + z < 0
+        grid = x + y + z < 0
+        # Loop over all objects and add them to the voxel grid 
         for object in self.objects:
-            first = first | object
-        return first
+            grid = grid | object
+        return grid
 
     def get_full_objects(self):
         final = self.border
         for object in self.objects:
             final = final | object
         return ~final
-
-    def check_intersect_full(self):
-        flag = False
-        for object in self.objects:
-            if (object & self.border).any():
-                # print("BORDER INTERSECT")
-                flag = True
-        for object1, object2 in itertools.product(self.objects, repeat=2):
-            if (object1 & object2).any():
-                # print("OBJECT INTERSECT")
-                flag = True
-        return flag
