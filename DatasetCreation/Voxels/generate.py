@@ -20,7 +20,7 @@ for j in range(3,8):
             voxels.add_objects(j,k)
             
             # Get the objects
-            grid = voxels.get_objects()
+            grid = voxels.get_full_objects()
 
             # Create a numpy array from the voxel grid so we can turn it into an open3d geometry
             numpy_point_cloud = None
@@ -39,8 +39,8 @@ for j in range(3,8):
             # Write our data
             with open(os.path.join(path,'{i}{j}{k}_betti.yaml'.format(i=i,j=j,k=k)), 'w') as file:
                 documents = yaml.dump(voxels.get_betti(), file)
-            o3d.io.write_point_cloud(os.path.join(path,"{i}{j}{k}_grid.ply".format(i=i,j=j,k=k)), o3d_point_cloud)
-
+            o3d.io.write_voxel_grid(os.path.join(path,"{i}{j}{k}_grid.ply".format(i=i,j=j,k=k)), o3d_voxel_grid)
+            
             print("\r-> Data added: ", i, "/50")
         print("----> End k: ", k, "/8")
     print("-------------> End j:", j, "/8")

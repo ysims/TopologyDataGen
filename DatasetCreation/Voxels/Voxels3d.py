@@ -84,14 +84,7 @@ class Voxels3d(object):
 
     # Get the full cube with holes
     def get_full_objects(self):
-        # Make a full false grid
-        x, y, z = np.indices((self.size, self.size, self.size))
-        grid = x + y + z < 0
-        # Loop over all objects an
-        grid = self.border
-        for object in self.objects:
-            grid = grid | object.grid
-        return ~grid
+        return ~self.get_objects()
 
     # Return betti numbers of the full object
     def get_betti(self):
