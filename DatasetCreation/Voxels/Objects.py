@@ -162,6 +162,7 @@ class Line(object):
             # We've reached a point where nowhere will work!
             if not point_added:
                 self.valid = False
+                return
         self.valid = True
         self.grid = grid
 
