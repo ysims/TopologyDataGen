@@ -28,6 +28,7 @@ class Voxels3d(object):
         if (exit_count > 20):
             print("Exit count!!!")
         count = 0
+        exit_count = 0
         while (count < num_lines) and (exit_count < 20):
             new_line = Line.random(self.size, self.get_objects(), self.border)
             if(new_line.valid):
