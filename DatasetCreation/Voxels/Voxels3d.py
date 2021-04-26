@@ -20,7 +20,7 @@ class Voxels3d(object):
         exit_count = 0
         while (count < num_objects) and (exit_count < 20): 
             if(self.add_random()):
-                print("Success!")
+                # print("Success!")
                 count += 1
                 exit_count = 0
             else:
@@ -45,13 +45,13 @@ class Voxels3d(object):
         shape = random.randrange(0, 3, 1)
         # Sphere
         if shape == 0:
-            print("Sphere")
+            # print("Sphere")
             return self.add_object(Sphere.random(self.size))
         elif shape == 1:
-            print("Island")
+            # print("Island")
             return self.add_object(Island.random(self.size))
         else:
-            print("Torus")
+            # print("Torus")
             return self.add_object(Torus.random(self.size))
 
     # Check if this object intersects or touches any others, if not we can add it to the list
@@ -92,3 +92,18 @@ class Voxels3d(object):
         for object in self.objects:
             grid = grid | object.grid
         return ~grid
+
+    # Return betti numbers of the full object
+    def get_betti(self):
+        betti_zero = 1  # the cube is one connected component
+        betti_one = 0
+        betti_two = 0
+        # Loop over all objects and add their betti numbers
+        for object in self.objects:
+            betti_zero += object.betti_zero
+            betti_one += object.betti_one
+            betti_two += object.betti_two
+        # Return a dictionary of the numbers to go into a yaml file
+        return [{"betti_zero": betti_zero}, 
+            {"betti_one": betti_one}, 
+            {"betti_two": betti_two}]
