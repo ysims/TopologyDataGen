@@ -2,10 +2,10 @@ import numpy as np
 import random
 import scipy.ndimage
 
-from Objects import Sphere,Torus,Island,Line
+from Objects import Sphere,Torus,Island,Tunnel
 
 # Class that holds one object with cavities in it, of various shapes.
-class Voxels3d(object):
+class BettiCube(object):
     # Constructor
     def __init__(self, size):
         self.size = size # we are making a cube so this is the number of voxels across any edge
@@ -15,7 +15,7 @@ class Voxels3d(object):
         self.border = (x == 0) | (x == self.size - 1) | (y == 0) | (y == self.size - 1) | (z == 0) | (z == self.size - 1) # lets use a cube
 
     # Add num_object number of objects randomly
-    def add_objects(self, num_objects, num_lines):
+    def add_objects(self, num_objects, num_tunnels):
         count = 0
         exit_count = 0
         while (count < num_objects) and (exit_count < 20): 
@@ -29,10 +29,10 @@ class Voxels3d(object):
             print("Exit count!!!")
         count = 0
         exit_count = 0
-        while (count < num_lines) and (exit_count < 20):
-            new_line = Line.random(self.size, self.get_objects(), self.border)
-            if(new_line.valid):
-                self.objects.append(new_line)
+        while (count < num_tunnels) and (exit_count < 20):
+            new_tunnel = Tunnel.random(self.size, self.get_objects(), self.border)
+            if(new_tunnel.valid):
+                self.objects.append(new_tunnel)
                 count += 1
                 exit_count = 0
             else:
@@ -87,16 +87,23 @@ class Voxels3d(object):
         return ~self.get_objects()
 
     # Return betti numbers of the full object
-    def get_betti(self):
-        betti_zero = 1  # the cube is one connected component
-        betti_one = 0
-        betti_two = 0
+    def get_data(self):
+        sphere_count = 0
+        torus_count = 0
+        island_count = 0
+        tunnel_count = 0
         # Loop over all objects and add their betti numbers
         for object in self.objects:
-            betti_zero += object.betti_zero
-            betti_one += object.betti_one
-            betti_two += object.betti_two
+            if isinstance(object, Sphere):
+                sphere_count += 1
+            if isinstance(object, Torus):
+                torus_count += 1
+            if isinstance(object, Island):
+                island_count += 1
+            if isinstance(object, Tunnel):
+                tunnel_count += 1
         # Return a dictionary of the numbers to go into a yaml file
-        return [{"betti_zero": betti_zero}, 
-            {"betti_one": betti_one}, 
-            {"betti_two": betti_two}]
+        return [{"spheres": sphere_count}, 
+            {"tori": torus_count}, 
+            {"islands": island_count},
+            {"tunnels": tunnel_count}]

@@ -20,11 +20,6 @@ class Sphere(object):
         self.rotation = rotation
         self.amplitude = amplitude
 
-        # Set Betti numbers - this is what the overall cube will get
-        self.betti_zero = 0
-        self.betti_one = 0
-        self.betti_two = 1
-
         # Make a rotated grid and use it to make a voxelised sphere
         x,y,z = rotate_grid(size, rotation, center)
         self.grid = (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= radius ** 2 + amplitude * (np.sin(x) + np.sin(y))
@@ -47,11 +42,6 @@ class Torus(object):
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.rotation = rotation
-        
-        # Set Betti numbers - this is what the overall cube will get
-        self.betti_zero = 0
-        self.betti_one = 0
-        self.betti_two = 1  # the cavity
 
         # Make a rotated grid and use it to make a voxelised torus
         x,y,z = rotate_grid(size, rotation, center)
@@ -86,11 +76,6 @@ class Island(object):
         self.inner_amplitude = inner_amplitude
         self.rotation = rotation
 
-        # Set Betti numbers - this is what the overall cube will get
-        self.betti_zero = 1 # the island in the middle
-        self.betti_one = 0
-        self.betti_two = 1  # the spherical cavity
-
         # Make a rotated grid and use it to make a voxelised sphere with a hole in the middle (island)
         x,y,z = rotate_grid(size, rotation, center)
         self.grid = ((pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= outer_radius ** 2 + outer_amplitude * (np.sin(x) + np.sin(y))) \
@@ -107,20 +92,15 @@ class Island(object):
         inner_amplitude = random.randrange(0, int(inner_radius/2), 1)
         return cls(center, outer_radius, inner_radius, outer_amplitude, inner_amplitude, rotation, size)
 
-class Line(object):
+class Tunnel(object):
     # Parameters
-    # start: coordinate where the line starts
+    # start: coordinate where the tunnel starts
     # size: size of the voxel grid
-    # objects: list of objects for the line to avoid
+    # objects: list of objects for the tunnel to avoid
     # Description
-    # Given a starting position on the border, make a line from this point to some other point on the border 
+    # Given a starting position on the border, make a tunnel from this point to some other point on the border 
     # Any border point should not intersect with an object since object cannot be on the border
     def __init__(self, start, size, objects, border):
-        # Set Betti numbers - this is what the overall cube will get
-        self.betti_zero = 0
-        self.betti_one = 1
-        self.betti_two = 0
-
         # Make a grid with just this starting point
         x, y, z = np.indices((size, size, size))
         grid = (x==start[0]) & (y==start[1]) & (z==start[2])
@@ -154,7 +134,7 @@ class Line(object):
             point_added = False
             random.shuffle(movement_direction) # shuffle so we don't always go the same way
             for direction in movement_direction:
-                if not self.line_intersect(grid, list(map(add, direction, current_point)), objects):
+                if not self.tunnel_intersect(grid, list(map(add, direction, current_point)), objects):
                     current_point = list(map(add, direction, current_point))
                     grid[current_point[0]][current_point[1]][current_point[2]] = True
                     point_added = True
@@ -166,7 +146,7 @@ class Line(object):
         self.valid = True
         self.grid = grid
 
-    def line_intersect(self, grid, point, objects):
+    def tunnel_intersect(self, grid, point, objects):
         # Check if we can even move to this point
         if grid[point[0]][point[1]][point[2]]:
             return True
@@ -180,7 +160,7 @@ class Line(object):
                 continue
         return False
 
-    # Make a random line
+    # Make a random tunnel
     @classmethod
     def random(cls, size, objects, border):
         # Create a random start position on a face

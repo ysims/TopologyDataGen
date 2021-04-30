@@ -2,9 +2,11 @@ import os
 import yaml
 import itertools
 import numpy as np
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D # <--- This is important for 3d plotting 
 import open3d as o3d
 
-from Voxels3d import Voxels3d
+from BettiCube import BettiCube
 
 path = os.path.join(os.getcwd(), 'data')
 
@@ -16,7 +18,7 @@ except OSError:
 for j in range(3,8):
     for k in range(2,8):
         for i in range(50):
-            voxels = Voxels3d(30)
+            voxels = BettiCube(30)
             voxels.add_objects(j,k)
             
             # Get the objects
@@ -38,10 +40,13 @@ for j in range(3,8):
 
             # Write our data
             with open(os.path.join(path,'{i}{j}{k}_betti.yaml'.format(i=i,j=j,k=k)), 'w') as file:
-                documents = yaml.dump(voxels.get_betti(), file)
+                documents = yaml.dump(voxels.get_data(), file)
             o3d.io.write_voxel_grid(os.path.join(path,"{i}{j}{k}_grid.ply".format(i=i,j=j,k=k)), o3d_voxel_grid)
             
             print("\r-> Data added: ", i, "/50")
         print("----> End k: ", k, "/8")
     print("-------------> End j:", j, "/8")
 
+# ax = plt.figure().add_subplot(projection='3d')
+# ax.voxels(voxels.get_objects(), edgecolor='k')
+# plt.show()
