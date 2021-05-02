@@ -2,7 +2,7 @@ import numpy as np
 import random
 import scipy.ndimage
 
-from Objects import Sphere,Torus,Island,Tunnel
+from Objects import Sphere,Torus,Torus2,Island,Tunnel
 
 # Class that holds one object with cavities in it, of various shapes.
 class BettiCube(object):
@@ -20,38 +20,32 @@ class BettiCube(object):
         exit_count = 0
         while (count < num_objects) and (exit_count < 20): 
             if(self.add_random()):
-                # print("Success!")
                 count += 1
                 exit_count = 0
             else:
                 exit_count += 1
-        if (exit_count > 20):
-            print("Exit count!!!")
         count = 0
         exit_count = 0
         while (count < num_tunnels) and (exit_count < 20):
-            new_tunnel = Tunnel.random(self.size, self.get_objects(), self.border)
+            new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
             if(new_tunnel.valid):
                 self.objects.append(new_tunnel)
                 count += 1
                 exit_count = 0
             else:
                 exit_count += 1
-        if (exit_count > 20):
-            print("Exit count!!!")
 
     def add_random(self):
         # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-1] randomly
-        shape = random.randrange(0, 3, 1)
+        shape = random.randrange(0, 4, 1)
         # Sphere
         if shape == 0:
-            # print("Sphere")
             return self.add_object(Sphere.random(self.size))
         elif shape == 1:
-            # print("Island")
             return self.add_object(Island.random(self.size))
+        elif shape == 2:
+            return self.add_object(Torus2.random(self.size))
         else:
-            # print("Torus")
             return self.add_object(Torus.random(self.size))
 
     # Check if this object intersects or touches any others, if not we can add it to the list
@@ -73,23 +67,27 @@ class BettiCube(object):
         return False
 
     # Get all the 'holes' as solid objects
-    def get_objects(self):
+    def get_objects(self, draw):
         # Make a full false grid
         x, y, z = np.indices((self.size, self.size, self.size))
         grid = x + y + z < 0
         # Loop over all objects and add them to the voxel grid 
         for object in self.objects:
             grid = grid | object.grid
+            # Get the disc that 'plugs' up the torus so we don't link
+            if isinstance(object, Torus) & (not draw):
+                grid = grid | object.get_disc()
         return grid
 
     # Get the full cube with holes
     def get_full_objects(self):
-        return ~self.get_objects()
+        return ~self.get_objects(draw=True)
 
     # Return betti numbers of the full object
     def get_data(self):
         sphere_count = 0
         torus_count = 0
+        torus2_count = 0
         island_count = 0
         tunnel_count = 0
         # Loop over all objects and add their betti numbers
@@ -98,12 +96,15 @@ class BettiCube(object):
                 sphere_count += 1
             if isinstance(object, Torus):
                 torus_count += 1
+            if isinstance(object, Torus2):
+                torus2_count += 1
             if isinstance(object, Island):
                 island_count += 1
             if isinstance(object, Tunnel):
                 tunnel_count += 1
         # Return a dictionary of the numbers to go into a yaml file
-        return [{"spheres": sphere_count}, 
-            {"tori": torus_count}, 
-            {"islands": island_count},
-            {"tunnels": tunnel_count}]
+        return [{"sphere": sphere_count}, 
+            {"torus": torus_count},
+            {"2-torus": torus2_count}, 
+            {"island": island_count},
+            {"tunnel": tunnel_count}]
