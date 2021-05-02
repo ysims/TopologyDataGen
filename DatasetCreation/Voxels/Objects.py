@@ -42,6 +42,7 @@ class Torus(object):
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.rotation = rotation
+        self.size = size
 
         # Make a rotated grid and use it to make a voxelised torus
         x,y,z = rotate_grid(size, rotation, center)
@@ -53,10 +54,51 @@ class Torus(object):
     def random(cls, size):
         rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
         center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
-        major_radius = random.randrange(3, int(size/6), 1)
-        minor_radius = random.randrange(1, major_radius-1, 1)
-        minor_amplitude = random.randrange(0, max(1,int(minor_radius/2)), 1)
+        major_radius = random.randrange(4, int(size/6), 1)
+        minor_radius = random.randrange(2, major_radius-1, 1)
+        minor_amplitude = random.randrange(0, max(1,int(minor_radius/2)), 2)
         return cls(center, major_radius, minor_radius, minor_amplitude, rotation, size)
+
+    # This will get the circle that 'plugs' up the torus, to prevent tunnels going through
+    def get_disc(self):
+        x,y,z = rotate_grid(self.size, self.rotation, self.center)
+        return (z > self.center[2]-1) & (z < self.center[2] + 1) & ((x - self.center[0])**2 + (y - self.center[1])**2 <= self.major_radius ** 2)
+
+# A 2-torus
+class Torus2(object):
+    # Make a specific torus
+    def __init__(self, center, major_radius, minor_radius, minor_amplitude, rotation, size):
+        # Set torus information
+        self.center = center
+        self.major_radius = major_radius
+        self.minor_radius = minor_radius
+        self.rotation = rotation
+        self.size = size
+
+        # Make a rotated grid and use it to make a voxelised torus
+        x,y,z = rotate_grid(size, rotation, center)
+        torus1 = pow(np.sqrt((x - center[0])**2 + (y - center[1])**2) - major_radius, 2) + (z - center[2])**2 <= \
+            minor_radius ** 2 + minor_amplitude * (np.sin(x) + np.sin(y))
+        torus2 = pow(np.sqrt((x - center[0] + major_radius*2)**2 + (y - center[1])**2) - major_radius, 2) + (z - center[2])**2 <= \
+            minor_radius ** 2 + minor_amplitude * (np.sin(x) + np.sin(y))
+        self.grid = torus1 | torus2
+
+    # Make a random torus
+    @classmethod
+    def random(cls, size):
+        rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
+        center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
+        major_radius = random.randrange(4, int(size/6), 1)
+        minor_radius = random.randrange(2, major_radius-1, 1)
+        minor_amplitude = random.randrange(0, max(1,int(minor_radius/2)), 2)
+        return cls(center, major_radius, minor_radius, minor_amplitude, rotation, size)
+
+    # This will get the circle that 'plugs' up the torus, to prevent tunnels going through
+    def get_disc(self):
+        x,y,z = rotate_grid(self.size, self.rotation, self.center)
+        disc1 = (z > self.center[2]-1) & (z < self.center[2] + 1) & ((x - self.center[0])**2 + (y - self.center[1])**2 <= self.major_radius ** 2)
+        disc2 = (z > self.center[2]-1) & (z < self.center[2] + 1) & ((x - self.center[0] + self.major_radius * 2)**2 + (y - self.center[1])**2 <= self.major_radius ** 2)
+        return disc1 | disc2
 
 # This object represents a sphere with a sphere-shaped hole inside it
 class Island(object):
