@@ -87,7 +87,7 @@ class Island(object):
         rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
         center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
         outer_radius = random.randrange(4, int(size/6), 1)
-        inner_radius = random.randrange(3, outer_radius, 1)
+        inner_radius = random.randrange(2, outer_radius-1, 1)
         outer_amplitude = random.randrange(0, inner_radius - 1, 1)
         inner_amplitude = random.randrange(0, int(inner_radius/2), 1)
         return cls(center, outer_radius, inner_radius, outer_amplitude, inner_amplitude, rotation, size)
