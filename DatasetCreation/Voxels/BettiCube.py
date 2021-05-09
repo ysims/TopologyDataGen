@@ -14,26 +14,36 @@ class BettiCube(object):
         x, y, z = np.indices((self.size, self.size, self.size))
         self.border = (x == 0) | (x == self.size - 1) | (y == 0) | (y == self.size - 1) | (z == 0) | (z == self.size - 1) # lets use a cube
 
-    # Add num_object number of objects randomly
-    def add_objects(self, num_objects, num_tunnels):
-        count = 0
-        exit_count = 0
-        while (count < num_objects) and (exit_count < 20): 
-            if(self.add_random()):
-                count += 1
-                exit_count = 0
-            else:
-                exit_count += 1
-        count = 0
-        exit_count = 0
-        while (count < num_tunnels) and (exit_count < 20):
-            new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
-            if(new_tunnel.valid):
-                self.objects.append(new_tunnel)
-                count += 1
-                exit_count = 0
-            else:
-                exit_count += 1
+    # num_objects is a dictionary with numbers of each object
+    def add_objects(self, num_objects):
+        for key in num_objects:
+            if key is "tunnel":
+                for _ in range(num_objects[key]):
+                    new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
+                    while(not new_tunnel.valid):
+                        new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
+                    self.objects.append(new_tunnel)
+            
+            if key is "torus":
+                for _ in range(num_objects[key]):
+                    while(not self.add_object(Torus.random(self.size))):
+                        continue
+            
+            if key is "torus2":
+                for _ in range(num_objects[key]):
+                    while(not self.add_object(Torus2.random(self.size))):
+                        continue
+                
+            if key is "sphere":
+                for _ in range(num_objects[key]):
+                    while(not self.add_object(Sphere.random(self.size))):
+                        continue
+
+            if key is "island":
+                for _ in range(num_objects[key]):
+                    while(not self.add_object(Island.random(self.size))):
+                        continue
+        
 
     def add_random(self):
         # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-1] randomly
@@ -105,6 +115,6 @@ class BettiCube(object):
         # Return a dictionary of the numbers to go into a yaml file
         return [{"sphere": sphere_count}, 
             {"torus": torus_count},
-            {"2-torus": torus2_count}, 
+            {"2torus": torus2_count}, 
             {"island": island_count},
             {"tunnel": tunnel_count}]
