@@ -27,7 +27,7 @@ for torus2_num, island_num, torus_num, sphere_num, tunnel_num in itertools.produ
     if tunnel_num + torus2_num + torus_num + sphere_num + island_num > 10:
         continue
 
-    if random.randrange(0, 2) is 0:
+    if random.randrange(0, 2) == 0:
         continue
 
     # Create the dictionary to print and use when making objects

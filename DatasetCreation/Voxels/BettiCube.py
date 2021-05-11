@@ -17,29 +17,29 @@ class BettiCube(object):
     # num_objects is a dictionary with numbers of each object
     def add_objects(self, num_objects):
         for key in num_objects:
-            if key is "tunnel":
+            if key == "tunnel":
                 for _ in range(num_objects[key]):
                     new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
                     while(not new_tunnel.valid):
                         new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
                     self.objects.append(new_tunnel)
             
-            if key is "torus":
+            if key == "torus":
                 for _ in range(num_objects[key]):
                     while(not self.add_object(Torus.random(self.size))):
                         continue
             
-            if key is "torus2":
+            if key == "torus2":
                 for _ in range(num_objects[key]):
                     while(not self.add_object(Torus2.random(self.size))):
                         continue
                 
-            if key is "sphere":
+            if key == "sphere":
                 for _ in range(num_objects[key]):
                     while(not self.add_object(Sphere.random(self.size))):
                         continue
 
-            if key is "island":
+            if key == "island":
                 for _ in range(num_objects[key]):
                     while(not self.add_object(Island.random(self.size))):
                         continue
@@ -118,3 +118,4 @@ class BettiCube(object):
             {"2torus": torus2_count}, 
             {"island": island_count},
             {"tunnel": tunnel_count}]
+            
