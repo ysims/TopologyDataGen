@@ -1,17 +1,17 @@
 import os
+import sys
 import yaml
 import itertools
 import numpy as np
-# import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D # <--- This is important for 3d plotting 
-# import open3d as o3d
 import random
-
-from BettiCube import BettiCube
-
-import bpy  # import blender python
+import bpy      # import blender python
 import bmesh    # import blender mesh
 
+dir = os.path.dirname(bpy.data.filepath)
+if not dir in sys.path:
+    sys.path.append(dir)
+
+from BettiCube import BettiCube
 
 # Reset the scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -62,21 +62,22 @@ dict = {
 
 voxels = BettiCube(size)    # make the cube
 voxels.add_objects(dict)    # add the right number of objects
-grid = voxels.get_full_objects()    # get the objects
+grid = voxels.get_objects(draw=True)    # get the objects
 
 # Create a numpy array from the voxel grid so we can turn it into an open3d geometry
-numpy_point_cloud = None
-for X,Y,Z in itertools.product(range(0, 30), repeat=3):
+#numpy_point_cloud = None
+for X,Y,Z in itertools.product(range(0, size), repeat=3):
     if (grid[X][Y][Z]):
         # Create the Blender cubes
         new_cube = cube.copy()
+        new_cube.location = (X,Y,Z)
         scene.collection.objects.link(new_cube)
-        new_cube.location = (i,j,k)
+        
 
-        if type(numpy_point_cloud) is np.ndarray:
-            numpy_point_cloud = np.concatenate((numpy_point_cloud,[[X,Y,Z]]),axis=0)
-        else:
-            numpy_point_cloud = np.array([[X, Y, Z]])
+#        if type(numpy_point_cloud) is np.ndarray:
+#            numpy_point_cloud = np.concatenate((numpy_point_cloud,[[X,Y,Z]]),axis=0)
+#        else:
+#            numpy_point_cloud = np.array([[X, Y, Z]])
 
 
 
