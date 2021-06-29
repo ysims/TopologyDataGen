@@ -1,9 +1,7 @@
 import os
 import sys
-import yaml
 import itertools
 import numpy as np
-import random
 import bpy      # import blender python
 import bmesh    # import blender mesh
 
@@ -11,22 +9,14 @@ dir = os.path.dirname(bpy.data.filepath)
 if not dir in sys.path:
     sys.path.append(dir)
 
-from BettiCube import BettiCube
-
-# Reset the scene
-bpy.ops.wm.read_factory_settings(use_empty=True)
-
 # Get the scene
 scene = bpy.context.scene
 
 # Empty mesh
-mesh = bpy.data.meshes.new("My Cube")
+mesh = bpy.data.meshes.new("Voxel")
 
 # Make the cube object
-cube = bpy.data.objects.new("My Cube", mesh)
-
-# Add object to a collection in the scene
-# scene.collection.objects.link(cube)
+cube = bpy.data.objects.new("Voxel", mesh)
 
 # Build a cube mesh using bmesh, Blender's mesh editing system
 bm = bmesh.new()
@@ -37,65 +27,14 @@ bm.to_mesh(mesh)
 
 # cube.location = (0,0,0)
 
-size = 50           # size of the cube (cubed)
-num_objects = 10    # highest number of one object in any one image
+size = 50 # size of the cube (cubed)
 
-count = 426   # for file naming
-
-# loop over all configurations of # of object from 0 to 10 for all objects
-# for torus2_num, island_num, torus_num, sphere_num, tunnel_num in itertools.product(range(num_objects), repeat=5):
-    # if tunnel_num + torus2_num + torus_num + sphere_num + island_num > 10:
-    #     continue
-
-    # if random.randrange(0, 2) is 0:
-    #     continue
-
-# Create the dictionary to print and use when making objects
-dict = {
-    "tunnel": 4,
-    "torus": 1,
-    "torus2": 1,
-    "sphere": 0,
-    "island": 0,
-}
-# print("Adding: ", dict) # print for debugging purposes
-
-voxels = BettiCube(size)    # make the cube
-voxels.add_objects(dict)    # add the right number of objects
-grid = voxels.get_objects(draw=True)    # get the objects
+grid = np.load('objects.npy')
 
 # Create a numpy array from the voxel grid so we can turn it into an open3d geometry
 #numpy_point_cloud = None
-for X,Y,Z in itertools.product(range(0, size), repeat=3):
-    if (grid[X][Y][Z]):
-        # Create the Blender cubes
-        new_cube = cube.copy()
-        new_cube.location = (X,Y,Z)
-        scene.collection.objects.link(new_cube)
-        
-
-#        if type(numpy_point_cloud) is np.ndarray:
-#            numpy_point_cloud = np.concatenate((numpy_point_cloud,[[X,Y,Z]]),axis=0)
-#        else:
-#            numpy_point_cloud = np.array([[X, Y, Z]])
-
-
-
-# Create a PointCloud from the array and then convert it to a VoxelGrid
-# o3d_point_cloud = o3d.geometry.PointCloud()
-# o3d_point_cloud.points = o3d.utility.Vector3dVector(numpy_point_cloud)
-# o3d_voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(o3d_point_cloud, 1)
-
-# # Write our data
-# with open(os.path.join(path,'{count}_betti.yaml'.format(count=count)), 'w') as file:
-#     documents = yaml.dump(voxels.get_data(), file)
-# o3d.io.write_voxel_grid(os.path.join(path,"{count}_grid.ply".format(count=count)), o3d_voxel_grid)
-
-# count += 1  # increment our naming counter
-
-# print("Created data:", count)
-
-
-# ax = plt.figure().add_subplot(projection='3d')
-# ax.voxels(voxels.get_objects(), edgecolor='k')
-# plt.show()
+for point in grid:
+    # Create the Blender cubes
+    new_cube = cube.copy()
+    new_cube.location = (point[0],point[1],point[2])
+    scene.collection.objects.link(new_cube)
