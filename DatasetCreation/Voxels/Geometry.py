@@ -29,3 +29,26 @@ def rotate_grid(size, rotation, center):
         x[X][Y][Z],y[X][Y][Z],z[X][Y][Z] = rotate(R, center, [X,Y,Z])
 
     return x,y,z
+
+# Get the distance in 3d between these two points
+def distance3d(point1, point2):
+    x_sq = pow((point1[0] - point2[0]), 2)
+    y_sq = pow((point1[1] - point2[1]), 2)
+    z_sq = pow((point1[2] - point2[2]), 2)
+    return np.sqrt(x_sq + y_sq + z_sq)
+
+# Check if a given point intersects or touches something in the grid
+def intersect_or_touch(point, grid):
+    # Check if this point intersects
+    if grid[point[0]][point[1]][point[2]]:
+        return True
+    
+    # Check if the point touches anything in the grid
+    for x,y,z in itertools.product([-1,0,1],repeat=3):
+        try:    # skip if this is out of bounds
+            if grid[point[0] + x][point[1] + y][point[2] + z]:
+                return True
+        except:
+            continue
+    # Nothing is wrong, so return false
+    return False
