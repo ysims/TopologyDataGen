@@ -7,69 +7,87 @@ from operator import add
 from Geometry import rotate_grid, distance3d, intersect_or_touch
 
 class Sphere(object): 
+
     # center: center of the sphere
     # radius: radius of the sphere
     # size: how big the voxel grid is
     def __init__(self, full_grid, center, radius, size):
+        # Check we're not starting in an invalid location
+        if intersect_or_touch(center, full_grid):
+            self.valid = False
+            return
+
         # Set sphere information
         self.center = center
         self.radius = radius
         self.true_radius = 0
         self.full_grid = full_grid
+        self.valid = True
+        self.size = size
         
-        # Create a sphere as best we can with these parameters
-        x, y, z = np.indices((size, size, size))
-        self.grid = (x > size)   # False grid
-        self.grid[center[0], center[1], center[2]] = True   # Add the center to the grid
-        
-        # Add all possible movement directions
-        movement_direction = [] # list of value movements
-        for x,y,z in itertools.permutations([1,0,0],3):
-            movement_direction.append([x,y,z])
-            movement_direction.append([-x,-y,-z])       
-        movement_direction.sort()
-        movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
+        self.create_sphere()
 
-        self.recurse_sphere(movement_direction, center)
-        print("The true radius is ", self.true_radius, ", compared with requested ", self.radius)
+        # If the sphere wasn't possible to make without it being very small, don't use it
+        if self.true_radius < 3:
+            self.valid = False
 
     # Make a random sphere
     @classmethod
     def random(cls, grid, size):
-        center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
+        center = (random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1))
         radius = random.randrange(3, int(size/6), 1)
-        center = [15,15,15]
-        radius = 6
         return cls(grid, center, radius, size)
 
-    # Recursive function to add points to the sphere until it satisfies the conditions
-    def recurse_sphere(self, movement_direction, current):
-        # Update the true radius
-        if self.true_radius < distance3d(self.center, current):
-            self.true_radius = distance3d(self.center, current)
+    # Creates a sphere by starting at the center and spreading out to adjacent voxels and adding them to the grid if they pass certain checks.
+    # The checks involve not touching or intersecting another object and not exceeding the requested radius of the sphere.
+    def create_sphere(self):
+        # Create a sphere as best we can with these parameters
+        x, y, z = np.indices((self.size, self.size, self.size))
+        self.grid = (x > self.size)   # False grid
+        
+        # Add all possible movement directions
+        movement_direction = [] # list of value movements
+        for x,y,z in itertools.permutations([1,0,0],3):
+            movement_direction.append((x,y,z))
+            movement_direction.append((-x,-y,-z))       
+        movement_direction.sort()
+        movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
+
+        # Create the set that will store the points we need to check
+        point_set = {self.center}
+
+        while (len(point_set) > 0):
+            # print(len(point_set))
+            point = point_set.pop()
+            # print(point)
+            try:    # skip if this is out of bounds
+
+                # THROWOUTS
+                # We don't want to do anything with this point if we've already done it before
+                if self.grid[point[0]][point[1]][point[2]]:
+                    continue
                 
-        # Recurse and add all points around this point
-        for movement in movement_direction:
-            
-            point = [current[0] + movement[0], current[1] + movement[1], current[2] + movement[2]]
+                # Check that we've not exceeded the requested radius of the sphere
+                if distance3d(self.center, point) > self.radius:
+                    continue
 
-            # We don't want to recurse on this point if we've already done it before
-            if self.grid[point[0]][point[1]][point[2]]:
+                # Make sure this doesn't intersect or touch something
+                if intersect_or_touch(point, self.full_grid):
+                    continue
+                
+                # KEEP
+                # Add the point and add neighbours to the set if it passes the tests
+                self.grid[point[0]][point[1]][point[2]] = True
+                
+                # Update the distance if needed
+                if self.true_radius < distance3d(self.center, point):
+                    self.true_radius = distance3d(self.center, point)
+                
+                for movement in movement_direction:
+                    point_set.add((point[0] + movement[0], point[1] + movement[1], point[2] + movement[2]))
+
+            except:     # Continue to the next one
                 continue
-            
-            # Check that we've not exceeded the requested radius of the sphere
-            if distance3d(self.center, point) > self.radius:
-                continue  # we don't want to continue in this state
-
-            # Make sure this doesn't intersect or touch something
-            if intersect_or_touch(point, self.full_grid):
-                continue # don't want to continue in this state
-            
-            # Add the point and recurse on it if it passes the tests
-            self.grid[point[0]][point[1]][point[2]] = True
-            self.recurse_sphere(movement_direction, point)
-
-
 
 class Torus(object):
     # Make a specific torus
@@ -100,6 +118,9 @@ class Torus(object):
     def get_disc(self):
         x,y,z = rotate_grid(self.size, self.rotation, self.center)
         return (z > self.center[2]-1) & (z < self.center[2] + 1) & ((x - self.center[0])**2 + (y - self.center[1])**2 <= self.major_radius ** 2)
+
+    # def create_torus(self, ):
+
 
 # A 2-torus
 class Torus2(object):
@@ -219,9 +240,12 @@ class Tunnel(object):
 
     def tunnel_intersect(self, grid, point, objects):
         # Check if we can even move to this point
-        if grid[point[0]][point[1]][point[2]]:
+        try:
+            if grid[point[0]][point[1]][point[2]]:
+                return True
+        except:
             return True
-
+            
         # Check if there are any objects around this point
         for x,y,z in itertools.product([-1,0,1],repeat=3):
             try:    # skip if this is out of bounds

@@ -19,10 +19,8 @@ class BettiCube(object):
         for key in num_objects:
             if key == "tunnel":
                 for _ in range(num_objects[key]):
-                    new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
-                    while(not new_tunnel.valid):
-                        new_tunnel = Tunnel.random(self.size, self.get_objects(draw=False), self.border)
-                    self.objects.append(new_tunnel)
+                    while(not self.add_object(Tunnel.random(self.size, self.get_objects(draw=False), self.border))):
+                        continue
             
             if key == "torus":
                 for _ in range(num_objects[key]):
@@ -60,11 +58,10 @@ class BettiCube(object):
 
     # Check if this object intersects or touches any others, if not we can add it to the list
     def add_object(self, object):
-        object_dilation = scipy.ndimage.binary_dilation(object.grid,iterations=2)
-        if self.check_intersect(object_dilation):
-            return False
-        self.objects.append(object)
-        return True
+        if object.valid:
+            self.objects.append(object)
+            return True
+        return False
  
      # Given an object, check if it intersects with existing objects
     def check_intersect(self, new_object):
