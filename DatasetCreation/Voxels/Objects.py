@@ -3,6 +3,7 @@ import itertools
 import random
 import math
 from operator import add
+import copy
 
 from Geometry import rotate_grid, distance3d, intersect_or_touch
 
@@ -205,7 +206,6 @@ class Tunnel(object):
         x, y, z = np.indices((size, size, size))
         grid = (x > size)   # False grid
         current_point = start
-        
         # Find the forward direction
         forward = [0,0,0]
         for i in range(len(current_point)):
@@ -213,6 +213,11 @@ class Tunnel(object):
                 forward[i] = 1
             elif current_point[i] == size-1:
                 forward[i] = -1
+
+        # Add forward point
+        previous_point = current_point
+        current_point = list(map(add, forward, current_point))
+        grid[current_point[0]][current_point[1]][current_point[2]] = True
 
         # Add all possible movement directions
         movement_direction = [] # list of value movements
@@ -222,13 +227,16 @@ class Tunnel(object):
         movement_direction.sort()
         movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
 
-        while ((not border[current_point[0]][current_point[1]][current_point[2]]) or current_point==start):
+        # Loop while we've not hit the border
+        while (not border[current_point[0]][current_point[1]][current_point[2]]):
             point_added = False
             random.shuffle(movement_direction) # shuffle so we don't always go the same way
             for direction in movement_direction:
-                if not self.tunnel_intersect(grid, list(map(add, direction, current_point)), objects):
+                if not self.tunnel_intersect(copy.copy(grid), list(map(add, direction, current_point)), current_point, previous_point, objects):
+                    previous_point = current_point
                     current_point = list(map(add, direction, current_point))
                     grid[current_point[0]][current_point[1]][current_point[2]] = True
+                    print("added ", current_point)
                     point_added = True
                     break
             # We've reached a point where nowhere will work!
@@ -238,18 +246,28 @@ class Tunnel(object):
         self.valid = True
         self.grid = grid
 
-    def tunnel_intersect(self, grid, point, objects):
+    def tunnel_intersect(self, grid, new_point, old_point, old_old_point, objects):
         # Check if we can even move to this point
+        # old_point was already checked last time, so should be good
+        # This will stop us going back on ourselves as well, ie old == new
         try:
-            if grid[point[0]][point[1]][point[2]]:
+            if grid[new_point[0]][new_point[1]][new_point[2]]:
                 return True
         except:
             return True
-            
+
+        # We will always be accused of touching the grid if the previous point is there
+        grid[old_point[0]][old_point[1]][old_point[2]] = False
+        grid[old_old_point[0]][old_old_point[1]][old_old_point[2]] = False
+
         # Check if there are any objects around this point
         for x,y,z in itertools.product([-1,0,1],repeat=3):
             try:    # skip if this is out of bounds
-                if objects[point[0] + x][point[1] + y][point[2] + z]:
+                # Check if there are other objects around
+                if objects[new_point[0] + x][new_point[1] + y][new_point[2] + z]:
+                    return True
+                # Check if we're about to loop back on ourselves
+                if grid[new_point[0] + x][new_point[1] + y][new_point[2] + z]:
                     return True
             except:
                 continue
