@@ -18,16 +18,13 @@ size = 50           # size of the cube (cubed)
 num_objects = 100    # highest number of one object in any one image
 repeat_objects = 100    # number of times we repeat on a given number of objects
 
-object = 'tunnels'  # the type of object that will be generated
-
+object = 'sphere'  # the type of object that will be generated
 
 count = 0   # for file naming
 
 # loop over all configurations of # of object from 0 to 10 for all objects
 for i in range(num_objects):
     for j in range(repeat_objects):
-        if i == 0:
-            continue
         # Set all values to 0, the one we will generate will be changed after
         tunnel_num = 0
         torus_num = 0
@@ -36,15 +33,15 @@ for i in range(num_objects):
         island_num = 0
 
         if object == 'tunnels':
-            tunnel_num = i
+            tunnel_num = i + 1
         elif object == 'torus':
-            torus_num = i
+            torus_num = i + 1
         elif object == 'torus2':
-            torus2_num = i
+            torus2_num = i + 1
         elif object == 'sphere':
-            sphere_num = i
+            sphere_num = i + 1
         elif object == 'island':
-            island_num = i
+            island_num = i + 1
 
         # Create the dictionary to print and use when making objects
         dict = {

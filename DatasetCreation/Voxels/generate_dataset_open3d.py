@@ -4,7 +4,6 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D # <--- This is important for 3d plotting 
-import open3d as o3d
 import random
 
 from BettiCube import BettiCube
@@ -44,7 +43,7 @@ for torus2_num, island_num, torus_num, sphere_num, tunnel_num in itertools.produ
     voxels.add_objects(dict)    # add the right number of objects
     grid = voxels.get_full_objects()    # get the objects
 
-    # Create a numpy array from the voxel grid so we can turn it into an open3d geometry
+    # Create a numpy array from the voxel grid
     numpy_point_cloud = None
     for X,Y,Z in itertools.product(range(0, 30), repeat=3):
         if (grid[X][Y][Z]):
@@ -53,15 +52,12 @@ for torus2_num, island_num, torus_num, sphere_num, tunnel_num in itertools.produ
             else:
                 numpy_point_cloud = np.array([[X, Y, Z]])
 
-    # Create a PointCloud from the array and then convert it to a VoxelGrid
-    o3d_point_cloud = o3d.geometry.PointCloud()
-    o3d_point_cloud.points = o3d.utility.Vector3dVector(numpy_point_cloud)
-    o3d_voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(o3d_point_cloud, 1)
+
 
     # Write our data
     with open(os.path.join(path,'{count}_betti.yaml'.format(count=count)), 'w') as file:
         documents = yaml.dump(voxels.get_data(), file)
-    o3d.io.write_voxel_grid(os.path.join(path,"{count}_grid.ply".format(count=count)), o3d_voxel_grid)
+    numpy_point_cloud.save(os.path.join(path,"{count}_grid.ply".format(count=count)), numpy_point_cloud)
 
     count += 1  # increment our naming counter
 

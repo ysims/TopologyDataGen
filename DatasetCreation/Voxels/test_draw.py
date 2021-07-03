@@ -9,7 +9,7 @@ size = 50           # size of the cube (cubed)
 tunnel_num = 0
 torus_num = 0
 torus2_num = 0
-sphere_num = 0
+sphere_num = 10
 island_num = 0
 
 # Create the dictionary to print and use when making objects
