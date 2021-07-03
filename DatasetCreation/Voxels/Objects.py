@@ -3,36 +3,92 @@ import itertools
 import random
 import math
 from operator import add
+import copy
 
-from Geometry import rotate_grid
-
+from Geometry import rotate_grid, distance3d, intersect_or_touch
 
 class Sphere(object): 
+
     # center: center of the sphere
     # radius: radius of the sphere
-    # amplitude: how much 'wiggle' to add to the sphere
-    # rotation: a list of three rotations that are x,y,z axis rotations and rotated in that order
     # size: how big the voxel grid is
-    def __init__(self, center, radius, amplitude, rotation, size):
+    def __init__(self, full_grid, center, radius, size):
+        # Check we're not starting in an invalid location
+        if intersect_or_touch(center, full_grid):
+            self.valid = False
+            return
+
         # Set sphere information
         self.center = center
         self.radius = radius
-        self.rotation = rotation
-        self.amplitude = amplitude
+        self.true_radius = 0
+        self.full_grid = full_grid
+        self.valid = True
+        self.size = size
+        
+        self.create_sphere()
 
-        # Make a rotated grid and use it to make a voxelised sphere
-        x,y,z = rotate_grid(size, rotation, center)
-        self.grid = (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2)) <= radius ** 2 + amplitude * (np.sin(x) + np.sin(y))
+        # If the sphere wasn't possible to make without it being very small, don't use it
+        if self.true_radius < 3:
+            self.valid = False
 
     # Make a random sphere
     @classmethod
-    def random(cls, size):
-        rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
-        center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
+    def random(cls, grid, size):
+        center = (random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1))
         radius = random.randrange(3, int(size/6), 1)
-        amplitude = random.randrange(0, int(radius/2), 1)
-        return cls(center, radius, amplitude, rotation, size)
+        return cls(grid, center, radius, size)
 
+    # Creates a sphere by starting at the center and spreading out to adjacent voxels and adding them to the grid if they pass certain checks.
+    # The checks involve not touching or intersecting another object and not exceeding the requested radius of the sphere.
+    def create_sphere(self):
+        # Create a sphere as best we can with these parameters
+        x, y, z = np.indices((self.size, self.size, self.size))
+        self.grid = (x > self.size)   # False grid
+        
+        # Add all possible movement directions
+        movement_direction = [] # list of value movements
+        for x,y,z in itertools.permutations([1,0,0],3):
+            movement_direction.append((x,y,z))
+            movement_direction.append((-x,-y,-z))       
+        movement_direction.sort()
+        movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
+
+        # Create the set that will store the points we need to check
+        point_set = {self.center}
+
+        while (len(point_set) > 0):
+            # print(len(point_set))
+            point = point_set.pop()
+            # print(point)
+            try:    # skip if this is out of bounds
+
+                # THROWOUTS
+                # We don't want to do anything with this point if we've already done it before
+                if self.grid[point[0]][point[1]][point[2]]:
+                    continue
+                
+                # Check that we've not exceeded the requested radius of the sphere
+                if distance3d(self.center, point) > self.radius:
+                    continue
+
+                # Make sure this doesn't intersect or touch something
+                if intersect_or_touch(point, self.full_grid):
+                    continue
+                
+                # KEEP
+                # Add the point and add neighbours to the set if it passes the tests
+                self.grid[point[0]][point[1]][point[2]] = True
+                
+                # Update the distance if needed
+                if self.true_radius < distance3d(self.center, point):
+                    self.true_radius = distance3d(self.center, point)
+                
+                for movement in movement_direction:
+                    point_set.add((point[0] + movement[0], point[1] + movement[1], point[2] + movement[2]))
+
+            except:     # Continue to the next one
+                continue
 
 class Torus(object):
     # Make a specific torus
@@ -63,6 +119,9 @@ class Torus(object):
     def get_disc(self):
         x,y,z = rotate_grid(self.size, self.rotation, self.center)
         return (z > self.center[2]-1) & (z < self.center[2] + 1) & ((x - self.center[0])**2 + (y - self.center[1])**2 <= self.major_radius ** 2)
+
+    # def create_torus(self, ):
+
 
 # A 2-torus
 class Torus2(object):
@@ -145,9 +204,8 @@ class Tunnel(object):
     def __init__(self, start, size, objects, border):
         # Make a grid with just this starting point
         x, y, z = np.indices((size, size, size))
-        grid = (x==start[0]) & (y==start[1]) & (z==start[2])
+        grid = (x > size)   # False grid
         current_point = start
-        
         # Find the forward direction
         forward = [0,0,0]
         for i in range(len(current_point)):
@@ -156,29 +214,29 @@ class Tunnel(object):
             elif current_point[i] == size-1:
                 forward[i] = -1
 
-        # Add all possible movement directions
-        movement_direction = [] # list of value movements
-        for x,y,z in itertools.permutations([1,0,0],3):
-            if [x,y,z] != [ -a for a in forward]:   # we don't want to add if it's backwards
-                movement_direction.append([x,y,z])
-            if [-x,-y,-z] != [ -a for a in forward]:   # do the negation as well
-                movement_direction.append([-x,-y,-z])       
-        movement_direction.sort()
-        movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
-        # Remove one direction so that we don't risk making a loop without knowing - but don't remove the forward direction
-        movement_direction.remove(movement_direction[0] if movement_direction[0] != forward else movement_direction[1])
-
-        # Go forward before doing anything else
+        # Add forward point
+        previous_point = current_point
         current_point = list(map(add, forward, current_point))
         grid[current_point[0]][current_point[1]][current_point[2]] = True
 
-        while ((not border[current_point[0]][current_point[1]][current_point[2]]) or current_point==start):
+        # Add all possible movement directions
+        movement_direction = [] # list of value movements
+        for x,y,z in itertools.permutations([1,0,0],3):
+            movement_direction.append([x,y,z])
+            movement_direction.append([-x,-y,-z])       
+        movement_direction.sort()
+        movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
+
+        # Loop while we've not hit the border
+        while (not border[current_point[0]][current_point[1]][current_point[2]]):
             point_added = False
             random.shuffle(movement_direction) # shuffle so we don't always go the same way
             for direction in movement_direction:
-                if not self.tunnel_intersect(grid, list(map(add, direction, current_point)), objects):
+                if not self.tunnel_intersect(copy.copy(grid), list(map(add, direction, current_point)), current_point, previous_point, objects):
+                    previous_point = current_point
                     current_point = list(map(add, direction, current_point))
                     grid[current_point[0]][current_point[1]][current_point[2]] = True
+                    print("added ", current_point)
                     point_added = True
                     break
             # We've reached a point where nowhere will work!
@@ -188,15 +246,28 @@ class Tunnel(object):
         self.valid = True
         self.grid = grid
 
-    def tunnel_intersect(self, grid, point, objects):
+    def tunnel_intersect(self, grid, new_point, old_point, old_old_point, objects):
         # Check if we can even move to this point
-        if grid[point[0]][point[1]][point[2]]:
+        # old_point was already checked last time, so should be good
+        # This will stop us going back on ourselves as well, ie old == new
+        try:
+            if grid[new_point[0]][new_point[1]][new_point[2]]:
+                return True
+        except:
             return True
+
+        # We will always be accused of touching the grid if the previous point is there
+        grid[old_point[0]][old_point[1]][old_point[2]] = False
+        grid[old_old_point[0]][old_old_point[1]][old_old_point[2]] = False
 
         # Check if there are any objects around this point
         for x,y,z in itertools.product([-1,0,1],repeat=3):
             try:    # skip if this is out of bounds
-                if objects[point[0] + x][point[1] + y][point[2] + z]:
+                # Check if there are other objects around
+                if objects[new_point[0] + x][new_point[1] + y][new_point[2] + z]:
+                    return True
+                # Check if we're about to loop back on ourselves
+                if grid[new_point[0] + x][new_point[1] + y][new_point[2] + z]:
                     return True
             except:
                 continue

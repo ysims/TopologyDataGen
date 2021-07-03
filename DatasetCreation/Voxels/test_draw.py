@@ -38,5 +38,5 @@ for X,Y,Z in itertools.product(range(0, 30), repeat=3):
 
 # Plot the grid
 ax = plt.figure().add_subplot(projection='3d')
-ax.voxels(voxels.get_objects(), edgecolor='k')
+ax.voxels(voxels.get_objects(draw=True), edgecolor='k')
 plt.show()
