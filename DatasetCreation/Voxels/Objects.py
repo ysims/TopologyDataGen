@@ -4,6 +4,7 @@ import random
 import math
 from operator import add
 import copy
+import scipy.ndimage
 
 from Geometry import rotate_grid, distance3d, intersect_or_touch
 
@@ -21,74 +22,61 @@ class Sphere(object):
         # Set sphere information
         self.center = center
         self.radius = radius
-        self.true_radius = 0
         self.full_grid = full_grid
         self.valid = True
         self.size = size
         
         self.create_sphere()
-
-        # If the sphere wasn't possible to make without it being very small, don't use it
-        if self.true_radius < 3:
-            self.valid = False
+        print("Made a sphere")
 
     # Make a random sphere
     @classmethod
     def random(cls, grid, size):
-        center = (random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1))
-        radius = random.randrange(3, int(size/6), 1)
+        center = (random.randrange(5, size-5, 1), random.randrange(5, size-5, 1), random.randrange(5, size-5, 1))
+        radius = random.randrange(3, 6, 1)
         return cls(grid, center, radius, size)
 
-    # Creates a sphere by starting at the center and spreading out to adjacent voxels and adding them to the grid if they pass certain checks.
-    # The checks involve not touching or intersecting another object and not exceeding the requested radius of the sphere.
+    # Create a sphere and if it touches or intersects something, move it away
     def create_sphere(self):
-        # Create a sphere as best we can with these parameters
+        dilation_structure = scipy.ndimage.generate_binary_structure(3, 3)
+        # Create a sphere and move it if needed
         x, y, z = np.indices((self.size, self.size, self.size))
-        self.grid = (x > self.size)   # False grid
+        self.grid = (pow(x - self.center[0],2) + pow(y - self.center[1],2) + pow(z - self.center[2], 2)) < pow(self.radius, 2)
+
+        # Get the intersection of the sphere (dilated to take into account touching) and other objects to see if there's any intersection/touching
+        intersection = scipy.ndimage.binary_dilation(self.grid, dilation_structure, 1) & self.full_grid
+
+        # If there is a true point, find it
+        intersecting_vector = None
+        for X,Y,Z in itertools.product(range(0, self.size), repeat=3):
+            if (intersection[X][Y][Z]):
+                intersecting_vector = [self.center[0] - X, self.center[1] - Y, self.center[2] - Z]
+                break
         
-        # Add all possible movement directions
-        movement_direction = [] # list of value movements
-        for x,y,z in itertools.permutations([1,0,0],3):
-            movement_direction.append((x,y,z))
-            movement_direction.append((-x,-y,-z))       
-        movement_direction.sort()
-        movement_direction = list(movement_direction for movement_direction,_ in itertools.groupby(movement_direction)) # remove duplicates
+        # If it's not none, then we found something
+        # Keep looping until we don't intersect
+        count_max = 100   # maximum times we'll try moving
+        count = 0         # times we've tried
+        while intersecting_vector is not None:
+            # Check if we've tried too many times
+            count += 1
+            if count is count_max:
+                print("Too hard.")
+                self.valid = False
+                break
 
-        # Create the set that will store the points we need to check
-        point_set = {self.center}
+            self.center = [self.center[0] + intersecting_vector[0], self.center[1] + intersecting_vector[1], self.center[2] + intersecting_vector[2]]
+            self.grid = (pow(x - self.center[0],2) + pow(y - self.center[1],2) + pow(z - self.center[2], 2)) < pow(self.radius, 2)
 
-        while (len(point_set) > 0):
-            # print(len(point_set))
-            point = point_set.pop()
-            # print(point)
-            try:    # skip if this is out of bounds
+            # Get the intersection of the sphere (dilated to take into account touching) and other objects to see if there's any intersection/touching
+            intersection = scipy.ndimage.binary_dilation(self.grid, dilation_structure, 1) & self.full_grid
 
-                # THROWOUTS
-                # We don't want to do anything with this point if we've already done it before
-                if self.grid[point[0]][point[1]][point[2]]:
-                    continue
-                
-                # Check that we've not exceeded the requested radius of the sphere
-                if distance3d(self.center, point) > self.radius:
-                    continue
-
-                # Make sure this doesn't intersect or touch something
-                if intersect_or_touch(point, self.full_grid):
-                    continue
-                
-                # KEEP
-                # Add the point and add neighbours to the set if it passes the tests
-                self.grid[point[0]][point[1]][point[2]] = True
-                
-                # Update the distance if needed
-                if self.true_radius < distance3d(self.center, point):
-                    self.true_radius = distance3d(self.center, point)
-                
-                for movement in movement_direction:
-                    point_set.add((point[0] + movement[0], point[1] + movement[1], point[2] + movement[2]))
-
-            except:     # Continue to the next one
-                continue
+            # If there is a true point, find it
+            intersecting_vector = None
+            for X,Y,Z in itertools.product(range(0, self.size), repeat=3):
+                if (intersection[X][Y][Z]):
+                    intersecting_vector = [self.center[0] - X, self.center[1] - Y, self.center[2] - Z]
+                    break
 
 class Torus(object):
     # Make a specific torus
