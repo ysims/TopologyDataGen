@@ -8,6 +8,63 @@ import scipy.ndimage
 
 from Geometry import rotate_grid, distance3d, intersect_or_touch
 
+# ----------------- USED FOR MAKING SHAPES -----------------------
+
+# Given a shape and the full grid, find the vector that will move the shape away from intersection/touching
+# Used in place_and_move function
+def get_intersecting_vector(object):
+    dilation_structure = scipy.ndimage.generate_binary_structure(3, 3)
+
+    # Get the intersection of the sphere (dilated to take into account touching) and other objects to see if there's any intersection/touching
+    intersection = scipy.ndimage.binary_dilation(object.grid, dilation_structure, 1) & object.full_grid
+
+    # If there is a true point, find it
+    intersecting_vector = None
+    for X,Y,Z in itertools.product(range(0, object.size), repeat=3):
+        if (intersection[X][Y][Z]):
+            intersecting_vector = [object.center[0] - X, object.center[1] - Y, object.center[2] - Z]
+            break
+
+    return intersecting_vector
+
+# This function is a generic function for any shape, where we create the shape and then see if it intersects or touches anything
+# If it does, then we move it away from that other object. 
+# object: an instance of a shape that has a
+#   grid:           grid with the object in it
+#   full_grid:      grid of all the objects
+#   center:         center of the object
+#   size:           size of the grids along one axis
+#   greate_grid():  function that creates a grid with the object defined by its own class variable values, stored in 'grid'
+def place_and_move(object):
+    # Create the object
+    object.create_grid()
+    
+    # Get the vector that will move us away from intersecting or touching objects (or None if not intersecting/touching)
+    intersecting_vector = get_intersecting_vector(object)
+    
+    # If it's not none, then we found something
+    # Keep looping until we don't intersect
+    count_max = 100   # maximum times we'll try moving
+    count = 0         # times we've tried
+    while intersecting_vector is not None:
+        # Check if we've tried too many times
+        if count is count_max:
+            print("Too hard.")
+            object.valid = False
+            break
+
+        # Remake the object since we're intersecting
+        object.center = [object.center[0] + intersecting_vector[0], object.center[1] + intersecting_vector[1], object.center[2] + intersecting_vector[2]]
+        object.create_grid()
+
+        # Get the vector that will move us away from intersecting or touching objects (or None if not intersecting/touching)
+        intersecting_vector = get_intersecting_vector(object)
+        
+        count += 1
+
+# ------------------ SHAPES ----------------------
+
+# ------------ SPHERE -----------
 class Sphere(object): 
 
     # center: center of the sphere
@@ -26,8 +83,7 @@ class Sphere(object):
         self.valid = True
         self.size = size
         
-        self.create_sphere()
-        print("Made a sphere")
+        place_and_move(self)
 
     # Make a random sphere
     @classmethod
@@ -36,80 +92,57 @@ class Sphere(object):
         radius = random.randrange(3, 6, 1)
         return cls(grid, center, radius, size)
 
-    # Create a sphere and if it touches or intersects something, move it away
-    def create_sphere(self):
-        dilation_structure = scipy.ndimage.generate_binary_structure(3, 3)
-        # Create a sphere and move it if needed
+    def create_grid(self):
+        # Create a sphere
         x, y, z = np.indices((self.size, self.size, self.size))
-        self.grid = (pow(x - self.center[0],2) + pow(y - self.center[1],2) + pow(z - self.center[2], 2)) < pow(self.radius, 2)
+        self.grid = (pow(x - self.center[0],2) + pow(y - self.center[1],2) + pow(z - self.center[2], 2)) <= pow(self.radius, 2)
 
-        # Get the intersection of the sphere (dilated to take into account touching) and other objects to see if there's any intersection/touching
-        intersection = scipy.ndimage.binary_dilation(self.grid, dilation_structure, 1) & self.full_grid
-
-        # If there is a true point, find it
-        intersecting_vector = None
-        for X,Y,Z in itertools.product(range(0, self.size), repeat=3):
-            if (intersection[X][Y][Z]):
-                intersecting_vector = [self.center[0] - X, self.center[1] - Y, self.center[2] - Z]
-                break
-        
-        # If it's not none, then we found something
-        # Keep looping until we don't intersect
-        count_max = 100   # maximum times we'll try moving
-        count = 0         # times we've tried
-        while intersecting_vector is not None:
-            # Check if we've tried too many times
-            count += 1
-            if count is count_max:
-                print("Too hard.")
-                self.valid = False
-                break
-
-            self.center = [self.center[0] + intersecting_vector[0], self.center[1] + intersecting_vector[1], self.center[2] + intersecting_vector[2]]
-            self.grid = (pow(x - self.center[0],2) + pow(y - self.center[1],2) + pow(z - self.center[2], 2)) < pow(self.radius, 2)
-
-            # Get the intersection of the sphere (dilated to take into account touching) and other objects to see if there's any intersection/touching
-            intersection = scipy.ndimage.binary_dilation(self.grid, dilation_structure, 1) & self.full_grid
-
-            # If there is a true point, find it
-            intersecting_vector = None
-            for X,Y,Z in itertools.product(range(0, self.size), repeat=3):
-                if (intersection[X][Y][Z]):
-                    intersecting_vector = [self.center[0] - X, self.center[1] - Y, self.center[2] - Z]
-                    break
-
+# --------- TORUS ----------
 class Torus(object):
     # Make a specific torus
-    def __init__(self, center, major_radius, minor_radius, minor_amplitude, rotation, size):
+    def __init__(self, full_grid, center, major_radius, minor_radius, rotation, size):
+        # Check we can even go here in the first place
+        if intersect_or_touch(center, full_grid):
+            self.valid = False
+            return
+
         # Set torus information
+        self.full_grid = full_grid
         self.center = center
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.rotation = rotation
         self.size = size
+        self.valid = True
 
-        # Make a rotated grid and use it to make a voxelised torus
-        x,y,z = rotate_grid(size, rotation, center)
-        self.grid = pow(np.sqrt((x - center[0])**2 + (y - center[1])**2) - major_radius, 2) + (z - center[2])**2 <= \
-            minor_radius ** 2 + minor_amplitude * (np.sin(x) + np.sin(y))
+        place_and_move(self)
 
+        # place_and_move uses a grid that is plugged up for intersection checking - in the end, we don't want this so just make the torus normally
+        x,y,z = rotate_grid(self.size, self.rotation, self.center)
+        self.grid = pow(np.sqrt((x - self.center[0])**2 + (y - self.center[1])**2) - self.major_radius, 2) + (z - self.center[2])**2 <= self.minor_radius ** 2
+        
     # Make a random torus
     @classmethod
-    def random(cls, size):
+    def random(cls, full_grid, size):
         rotation = [random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi), random.uniform(0, 2*math.pi)]
         center = [random.randrange(1, size-1, 1), random.randrange(1, size-1, 1), random.randrange(1, size-1, 1)]
         major_radius = random.randrange(4, int(size/6), 1)
         minor_radius = random.randrange(2, major_radius-1, 1)
-        minor_amplitude = random.randrange(0, max(1,int(minor_radius/2)), 2)
-        return cls(center, major_radius, minor_radius, minor_amplitude, rotation, size)
+        return cls(full_grid, center, major_radius, minor_radius, rotation, size)
 
     # This will get the circle that 'plugs' up the torus, to prevent tunnels going through
     def get_disc(self):
         x,y,z = rotate_grid(self.size, self.rotation, self.center)
         return (z > self.center[2]-1) & (z < self.center[2] + 1) & ((x - self.center[0])**2 + (y - self.center[1])**2 <= self.major_radius ** 2)
 
-    # def create_torus(self, ):
-
+    # Function required for place_and_move function
+    def create_grid(self):
+        # Make a rotated grid and use it to make a voxelised torus
+        x,y,z = rotate_grid(self.size, self.rotation, self.center)
+        self.grid = pow(np.sqrt((x - self.center[0])**2 + (y - self.center[1])**2) - self.major_radius, 2) + (z - self.center[2])**2 <= self.minor_radius ** 2
+        
+        # Since this grid is used to check intersections, add in the disc so we don't get things going through the torus
+        self.grid = self.grid | self.get_disc()
 
 # A 2-torus
 class Torus2(object):

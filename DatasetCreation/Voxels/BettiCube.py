@@ -84,6 +84,9 @@ class BettiCube(object):
             # Get the disc that 'plugs' up the torus so we don't link
             if isinstance(object, Torus) & (not draw):
                 grid = grid | object.get_disc()
+        # Add the border to it if we're not drawing
+        if not draw:
+            grid = grid | self.border
         return grid
 
     # Get the full cube with holes
