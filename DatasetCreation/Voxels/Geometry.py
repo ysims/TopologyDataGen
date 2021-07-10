@@ -41,12 +41,12 @@ def distance3d(point1, point2):
 
 # Check if a given point intersects or touches something in the grid
 def intersect_or_touch(point, grid):
-    # Check if this point intersects
-    if grid[point[0]][point[1]][point[2]]:
+    # Check if it hits the boundary
+    if (max(point) > grid[0][0].size-1) or min(point) < 0:
         return True
 
-    # Check if it hits the boundary
-    if (max(point) > grid[0][0].size) or min(point) < 0:
+    # Check if this point intersects
+    if grid[point[0]][point[1]][point[2]]:
         return True
     
     # Check if the point touches anything in the grid
