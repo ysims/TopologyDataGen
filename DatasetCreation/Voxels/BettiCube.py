@@ -2,7 +2,7 @@ import numpy as np
 import random
 import scipy.ndimage
 
-from Objects import Sphere,Torus,Torus2,Island,Tunnel
+from Objects import Sphere,Torus,Torus2,Island,Tunnel,Tentacle
 
 # Class that holds one object with cavities in it, of various shapes.
 class BettiCube(object):
@@ -24,12 +24,12 @@ class BettiCube(object):
             
             if key == "torus":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Torus.random(self.size))):
+                    while(not self.add_object(Torus.random(self.get_objects(draw=False), self.size))):
                         continue
             
             if key == "torus2":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Torus2.random(self.size))):
+                    while(not self.add_object(Torus2.random(self.get_objects(draw=False), self.size))):
                         continue
                 
             if key == "sphere":
@@ -39,9 +39,13 @@ class BettiCube(object):
 
             if key == "island":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Island.random(self.size))):
+                    while(not self.add_object(Island.random(self.get_objects(draw=False), self.size))):
                         continue
-        
+                
+            if key == "tentacle":
+                for _ in range(num_objects[key]):
+                    while(not self.add_object(Tentacle.random(self.get_objects(draw=False), self.size))):
+                        continue
 
     def add_random(self):
         # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-1] randomly
@@ -50,11 +54,11 @@ class BettiCube(object):
         if shape == 0:
             return self.add_object(Sphere.random(self.get_objects(draw=False), self.size))
         elif shape == 1:
-            return self.add_object(Island.random(self.size))
+            return self.add_object(Island.random(self.get_objects(draw=False), self.size))
         elif shape == 2:
-            return self.add_object(Torus2.random(self.size))
+            return self.add_object(Torus2.random(self.get_objects(draw=False), self.size))
         else:
-            return self.add_object(Torus.random(self.size))
+            return self.add_object(Torus.random(self.get_objects(draw=False), self.size))
 
     # Check if this object intersects or touches any others, if not we can add it to the list
     def add_object(self, object):
@@ -84,6 +88,9 @@ class BettiCube(object):
             # Get the disc that 'plugs' up the torus so we don't link
             if isinstance(object, Torus) & (not draw):
                 grid = grid | object.get_disc()
+            # Add in the center of the island so nothing gets caught inside it
+            if isinstance(object, Island) & (not draw):
+                grid = grid | object.create_grid()
         # Add the border to it if we're not drawing
         if not draw:
             grid = grid | self.border
