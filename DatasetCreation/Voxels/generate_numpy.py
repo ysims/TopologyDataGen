@@ -15,15 +15,15 @@ except OSError:
     print ("Directory %s exists." % path)
 
 size = 50           # size of the cube (cubed)
-num_objects = 100    # highest number of one object in any one image
+num_objects = 30    # highest number of one object in any one image
 repeat_objects = 100    # number of times we repeat on a given number of objects
 
-object = 'sphere'  # the type of object that will be generated
+object = 'torus'  # the type of object that will be generated
 
-count = 0   # for file naming
+count = 400   # for file naming
 
 # loop over all configurations of # of object from 0 to 10 for all objects
-for i in range(num_objects):
+for i in range(4,num_objects):
     for j in range(repeat_objects):
         # Set all values to 0, the one we will generate will be changed after
         tunnel_num = 0

@@ -1,0 +1,56 @@
+import numpy as np
+import random
+import yaml
+
+from Geometry import intersect_or_touch
+from Shape import Shape
+
+
+class Spheroid(Shape):
+    # full_grid:    all other objects
+    # center:       center of the sphere
+    # radius:       radius of the sphere
+    def __init__(self, full_grid, center, radius):
+        # Check we're not starting in an invalid location
+        if intersect_or_touch(center, full_grid):
+            self._valid = False
+            return
+
+        # Set sphere information
+        self._center = center
+        self._radius = radius
+        self._full_grid = full_grid
+        self._valid = True
+
+        self._place_and_move()
+        
+    # Make a random spheroid
+    @classmethod
+    def random(cls, grid):
+        # Read values from config file
+        with open("Shape.yaml", 'r') as stream:
+            data_loaded = yaml.safe_load(stream)
+        center_place = data_loaded["Spheroid"]["center_placement_border"]
+        min_radius = data_loaded["Spheroid"]["min_radius"]
+        max_radius = data_loaded["Spheroid"]["max_radius"]
+        size = grid[0][0].size
+
+        # Create a spheroid randomly
+        center = (random.randrange(center_place, size-center_place, 1), 
+            random.randrange(center_place, size-center_place, 1), 
+            random.randrange(center_place, size-center_place, 1))
+        radius = [random.randrange(min_radius, max_radius, 1), 
+            random.randrange(min_radius, max_radius, 1), 
+            random.randrange(min_radius, max_radius, 1)]
+        return cls(grid, center, radius)
+
+    def _create_grid(self):
+        # Create a spheroid
+        x, y, z = np.indices((self.size, self.size, self.size))
+        self.grid = ((pow(x - self.center[0],2) / pow(self.radius[0],2))
+            + (pow(y - self.center[1],2) / pow(self.radius[1],2))
+            + (pow(z - self.center[2], 2) / pow(self.radius[2],2))) <= 1
+
+    # This only gets called if it's not surrounded - there's no other things to check for a ball
+    def _valid_edge(self, point):
+        return True
