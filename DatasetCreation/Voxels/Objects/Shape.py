@@ -17,7 +17,8 @@ class Shape(ABC):
         # ---------- OUTSIDE OF GRID CHECK --------------
         # Create a vector that will bring the object back into
         # the grid if it is out of bounds, otherwise set to 0
-        intersecting_vector = [(self.size-2 - x) if (x >= self.size-1) 
+        size = self.full_grid[0][0].size
+        intersecting_vector = [(size-2 - x) if (x >= size-1) 
             else (-x + 1) if (x <= 0) else 0 for x in self.center]
         
         # If not [0,0,0] then it was out of bounds
@@ -44,7 +45,7 @@ class Shape(ABC):
         intersecting = []
         
         # Go through the grid and add points to the lists
-        for X,Y,Z in itertools.product(range(0, self.size), repeat=3):
+        for X,Y,Z in itertools.product(range(0, size), repeat=3):
             if (intersection[X][Y][Z]):
                 intersecting.append([X,Y,Z])
             
@@ -141,7 +142,7 @@ class Shape(ABC):
             edge_vector = []
             for c_point in cluster_edge:
                 # Find the shortest for this particular point
-                shortest_distance = self.size
+                shortest_distance = size
                 local_vector = []
                 for e_point in cluster_shape_edge:
                     if distance3d(c_point, e_point) < shortest_distance:
@@ -187,7 +188,7 @@ class Shape(ABC):
     #                If it was not possible, then the shape is set at not valid.
     def _place_and_move(self):
         # Create the object
-        self.create_grid()
+        self._create_grid()
         
         # Get the vector that will move us away from intersecting or touching objects (or None if not intersecting/touching)
         intersecting_vector = self._get_intersecting_vector()
@@ -204,7 +205,7 @@ class Shape(ABC):
                 break
             # Remake the object since we're intersecting
             self.center = [self.center[0] + intersecting_vector[0], self.center[1] + intersecting_vector[1], self.center[2] + intersecting_vector[2]]
-            self.create_grid()
+            self._create_grid()
 
             # Get the vector that will move us away from intersecting or touching objects (or None if not intersecting/touching)
             intersecting_vector = self._get_intersecting_vector()

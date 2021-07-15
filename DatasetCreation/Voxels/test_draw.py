@@ -9,7 +9,7 @@ size = 50           # size of the cube (cubed)
 tunnel_num = 0
 torus_num = 0
 torus2_num = 0
-sphere_num = 0
+spheroid_num = 0
 island_num = 0
 tentacle_num = 1
 
@@ -18,7 +18,7 @@ dict = {
     "tunnel": tunnel_num,
     "torus": torus_num,
     "torus2": torus2_num,
-    "sphere": sphere_num,
+    "spheroid": spheroid_num,
     "island": island_num,
     "octopus": tentacle_num,
 }

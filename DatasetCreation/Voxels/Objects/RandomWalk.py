@@ -44,7 +44,7 @@ class RandomWalk(ABC):
         # If it didn't work then return false
         # The walk list contains the last two points but the grid does not,
         # Otherwise they would be flagged as intersections
-        while not self._random_walk_stop(all_points):
+        while not self._stop_walk_condition(all_points):
             point_added = False
             random.shuffle(movement_direction)
             for direction in movement_direction:

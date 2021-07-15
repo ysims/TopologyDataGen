@@ -5,7 +5,11 @@ import scipy.ndimage
 import sys
 sys.path.append('Objects')
 
+from Island import Island
 from Octopus import Octopus
+from Spheroid import Spheroid
+from Torus import Torus, Torus2
+from Tunnel import Tunnel
 
 # Class that holds one object with cavities in it, of various shapes.
 class BettiCube(object):
@@ -35,9 +39,9 @@ class BettiCube(object):
                     while(not self.add_object(Torus2.random(self.get_objects(draw=False)))):
                         continue
                 
-            if key == "sphere":
+            if key == "spheroid":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Sphere.random(self.get_objects(draw=False)))):
+                    while(not self.add_object(Spheroid.random(self.get_objects(draw=False)))):
                         continue
 
             if key == "island":
@@ -53,9 +57,9 @@ class BettiCube(object):
     def add_random(self):
         # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-1] randomly
         shape = random.randrange(0, 4, 1)
-        # Sphere
+        # Spheroid
         if shape == 0:
-            return self.add_object(Sphere.random(self.get_objects(draw=False), self.size))
+            return self.add_object(Spheroid.random(self.get_objects(draw=False), self.size))
         elif shape == 1:
             return self.add_object(Island.random(self.get_objects(draw=False), self.size))
         elif shape == 2:
@@ -105,15 +109,15 @@ class BettiCube(object):
 
     # Return betti numbers of the full object
     def get_data(self):
-        sphere_count = 0
+        spheroid_count = 0
         torus_count = 0
         torus2_count = 0
         island_count = 0
         tunnel_count = 0
         # Loop over all objects and add their betti numbers
         for object in self.objects:
-            if isinstance(object, Sphere):
-                sphere_count += 1
+            if isinstance(object, Spheroid):
+                spheroid_count += 1
             if isinstance(object, Torus):
                 torus_count += 1
             if isinstance(object, Torus2):
@@ -123,7 +127,7 @@ class BettiCube(object):
             if isinstance(object, Tunnel):
                 tunnel_count += 1
         # Return a dictionary of the numbers to go into a yaml file
-        return [{"sphere": sphere_count}, 
+        return [{"spheroid": spheroid_count}, 
             {"torus": torus_count},
             {"2torus": torus2_count}, 
             {"island": island_count},

@@ -13,14 +13,14 @@ class Spheroid(Shape):
     def __init__(self, full_grid, center, radius):
         # Check we're not starting in an invalid location
         if intersect_or_touch(center, full_grid):
-            self._valid = False
+            self.valid = False
             return
 
         # Set sphere information
-        self._center = center
-        self._radius = radius
-        self._full_grid = full_grid
-        self._valid = True
+        self.center = center
+        self.radius = radius
+        self.full_grid = full_grid
+        self.valid = True
 
         self._place_and_move()
         
@@ -28,7 +28,7 @@ class Spheroid(Shape):
     @classmethod
     def random(cls, grid):
         # Read values from config file
-        with open("Shape.yaml", 'r') as stream:
+        with open("./Objects/Shape.yaml", 'r') as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Spheroid"]["center_placement_border"]
         min_radius = data_loaded["Spheroid"]["min_radius"]
@@ -46,7 +46,8 @@ class Spheroid(Shape):
 
     def _create_grid(self):
         # Create a spheroid
-        x, y, z = np.indices((self.size, self.size, self.size))
+        size = self.full_grid[0][0].size
+        x,y,z = np.indices((size, size, size))
         self.grid = ((pow(x - self.center[0],2) / pow(self.radius[0],2))
             + (pow(y - self.center[1],2) / pow(self.radius[1],2))
             + (pow(z - self.center[2], 2) / pow(self.radius[2],2))) <= 1

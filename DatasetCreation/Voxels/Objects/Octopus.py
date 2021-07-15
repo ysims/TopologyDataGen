@@ -1,6 +1,5 @@
 import itertools
 import random
-from operator import add
 import yaml
 
 from Geometry import intersect_or_touch, hard_surrounded
@@ -35,12 +34,12 @@ class Octopus(RandomWalk):
     @classmethod
     def random(cls, full_grid):
         # Read values from config file
-        with open("RandomWalk.yaml", 'r') as stream:
+        with open("./Objects/RandomWalk.yaml", 'r') as stream:
             data_loaded = yaml.safe_load(stream)
-        min_num_tentacles = data_loaded["RandomWalk"]["min_num_tentacles"]
-        max_num_tentacles = data_loaded["RandomWalk"]["max_num_tentacles"]
-        min_tentacle_length = data_loaded["RandomWalk"]["min_tentacle_length"]
-        max_tentacle_length = data_loaded["RandomWalk"]["max_tentacle_length"]
+        min_num_tentacles = data_loaded["Octopus"]["min_num_tentacles"]
+        max_num_tentacles = data_loaded["Octopus"]["max_num_tentacles"]
+        min_tentacle_length = data_loaded["Octopus"]["min_tentacle_length"]
+        max_tentacle_length = data_loaded["Octopus"]["max_tentacle_length"]
 
         num_tentacles = random.randrange(min_num_tentacles,
             max_num_tentacles, 1)
@@ -56,15 +55,15 @@ class Octopus(RandomWalk):
     # and returns the first point in the walk
     def _get_start(self):
         # Determine length of the tentacle
-        self.tentacle_length = random.randrange(self.min_tenacle_length, 
-            self.max_tenacle_length, 1)
+        self.tentacle_length = random.randrange(self.min_tentacle_length, 
+            self.max_tentacle_length, 1)
         all_points = []
         
         # We will make a 'tentacle' going off from one of the edges
         edges = []
-        for X,Y,Z in itertools.product(range(0, self.size), repeat=3):
+        for X,Y,Z in itertools.product(range(0, self.full_grid[0][0].size), repeat=3):
             if (self.sphere.grid[X][Y][Z] 
-                    and hard_surrounded([X,Y,Z], self.grid)):
+                    and not hard_surrounded([X,Y,Z], self.grid)):
                 edges.append([X,Y,Z])
         
         if not edges:
@@ -75,7 +74,7 @@ class Octopus(RandomWalk):
         # Grab a random edge to use
         # Don't add it to the path because it's already on the circle
         # Find one open spot to add to the path
-        edge = random.choose(edges)
+        edge = random.choice(edges)
         directions = [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1]]
         for direction in directions:
             try:    # skip if this is out of bounds

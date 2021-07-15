@@ -1,4 +1,3 @@
-from sys import last_traceback
 import numpy as np
 from operator import add
 import random
