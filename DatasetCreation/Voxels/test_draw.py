@@ -20,7 +20,7 @@ dict = {
     "torus2": torus2_num,
     "sphere": sphere_num,
     "island": island_num,
-    "tentacle": tentacle_num,
+    "octopus": tentacle_num,
 }
 
 print("Adding: ", dict) # print for debugging purposes

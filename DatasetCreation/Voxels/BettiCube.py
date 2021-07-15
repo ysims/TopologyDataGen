@@ -2,7 +2,10 @@ import numpy as np
 import random
 import scipy.ndimage
 
-from Objects import Sphere,Torus,Torus2,Island,Tunnel,Tentacle
+import sys
+sys.path.append('Objects')
+
+from Octopus import Octopus
 
 # Class that holds one object with cavities in it, of various shapes.
 class BettiCube(object):
@@ -24,27 +27,27 @@ class BettiCube(object):
             
             if key == "torus":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Torus.random(self.get_objects(draw=False), self.size))):
+                    while(not self.add_object(Torus.random(self.get_objects(draw=False)))):
                         continue
             
             if key == "torus2":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Torus2.random(self.get_objects(draw=False), self.size))):
+                    while(not self.add_object(Torus2.random(self.get_objects(draw=False)))):
                         continue
                 
             if key == "sphere":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Sphere.random(self.get_objects(draw=False), self.size))):
+                    while(not self.add_object(Sphere.random(self.get_objects(draw=False)))):
                         continue
 
             if key == "island":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Island.random(self.get_objects(draw=False), self.size))):
+                    while(not self.add_object(Island.random(self.get_objects(draw=False)))):
                         continue
                 
-            if key == "tentacle":
+            if key == "octopus":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Tentacle.random(self.get_objects(draw=False), self.size))):
+                    while(not self.add_object(Octopus.random(self.get_objects(draw=False)))):
                         continue
 
     def add_random(self):

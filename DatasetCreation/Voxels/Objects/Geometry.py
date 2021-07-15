@@ -59,12 +59,49 @@ def intersect_or_touch(point, grid):
     # Nothing is wrong, so return false
     return False
 
+def obj_intersect_touch(point, grid):
+    # Check if this point intersects, 
+    # but only if it's not on the border
+    if grid[point[0]][point[1]][point[2]]:
+        if (max(point) != grid[0][0].size-1) and min(point) != 0:
+            return True
+    
+    # Check if the point touches anything in the grid,
+    # but ignore if it's on the border
+    for x,y,z in itertools.product([-1,0,1],repeat=3):
+        try:    # skip if this is out of bounds
+            touch_point = [point[0] + x, point[1] + y, point[2] + z]
+            if grid[touch_point[0]][touch_point[1]][touch_point[2]]:
+                if ((max(touch_point) != grid[0][0].size-1) 
+                        and min(touch_point) != 0):
+                    return True
+        except:
+            continue
+    # Nothing is wrong, so return false
+    return False
+
 # Check this point is surrounded by the grid or an edge point
 def surrounded(point, grid):  
     # Check all the surrounding points and see if they're filled
     for x,y,z in itertools.product([-1,0,1],repeat=3):
         try:    # skip if this is out of bounds
             if not grid[point[0] + x][point[1] + y][point[2] + z]:  # if it's empty, we're not surrounded
+                return False
+        except:
+            continue
+    # We got through without an empty point - we are surrounded!
+    return True
+
+# Check this point is surrounded by the grid or if it's an edge point
+# only consider non diagonal points
+def hard_surrounded(point, grid):  
+    directions = [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1]]
+    # Check all the surrounding points and see if they're filled
+    for direction in directions:
+        try:    # skip if this is out of bounds
+            if not (grid[point[0] + direction[0]]
+                    [point[1] + direction[1]]
+                    [point[2] + direction[2]]):  
                 return False
         except:
             continue
