@@ -43,7 +43,7 @@ class Island(Shape):
     @classmethod
     def random(cls, grid):
         # Read values from config file
-        with open("Shape.yaml", 'r') as stream:
+        with open("./Objects/Shape.yaml", 'r') as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Island"]["center_placement_border"]
         min_outer = data_loaded["Island"]["min_outer_radius"]
