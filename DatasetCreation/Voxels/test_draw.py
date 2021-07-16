@@ -11,7 +11,7 @@ torus_num = 0
 torus2_num = 0
 spheroid_num = 0
 island_num = 0
-tentacle_num = 1
+octopus_num = 4
 
 # Create the dictionary to print and use when making objects
 dict = {
@@ -20,7 +20,7 @@ dict = {
     "torus2": torus2_num,
     "spheroid": spheroid_num,
     "island": island_num,
-    "octopus": tentacle_num,
+    "octopus": octopus_num,
 }
 
 print("Adding: ", dict) # print for debugging purposes
