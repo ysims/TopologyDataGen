@@ -65,7 +65,7 @@ class RandomWalk(ABC):
             # see if this was a decent enough try
             # otherwise just return false
             if not point_added:
-                if (self._acceptable_walk(all_points)):
+                if (not self._acceptable_walk(all_points)):
                     # Remove anything we added because we don't want it anymore
                     for point in all_points:
                         self.grid[point[0], point[1], point[2]] = False
