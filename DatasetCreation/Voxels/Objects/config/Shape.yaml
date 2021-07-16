@@ -1,0 +1,16 @@
+Spheroid:
+  center_placement_border: 5
+  min_radius: 3
+  max_radius: 6
+
+Torus:
+  center_placement_border: 5
+  min_major_radius: 4
+  max_major_radius: 6
+  min_minor_radius: 2
+
+Island:
+  center_placement_border: 5
+  min_outer_radius: 4
+  max_outer_radius: 6
+  min_inner_radius: 2

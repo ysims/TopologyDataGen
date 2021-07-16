@@ -136,7 +136,7 @@ class Torus2(Shape):
     @classmethod
     def random(cls, grid):
         # Read values from config file
-        with open("./Objects/Shape.yaml", 'r') as stream:
+        with open("./Objects/config/Shape.yaml", 'r') as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Torus"]["center_placement_border"]
         min_major = data_loaded["Torus"]["min_major_radius"]

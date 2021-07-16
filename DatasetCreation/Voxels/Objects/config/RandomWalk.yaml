@@ -1,0 +1,5 @@
+Octopus:
+  min_num_tentacles: 3
+  max_num_tentacles: 10
+  min_tentacle_length: 20
+  max_tentacle_length: 50

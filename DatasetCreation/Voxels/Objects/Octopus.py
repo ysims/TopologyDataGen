@@ -34,7 +34,7 @@ class Octopus(RandomWalk):
     @classmethod
     def random(cls, full_grid):
         # Read values from config file
-        with open("./Objects/RandomWalk.yaml", 'r') as stream:
+        with open("./Objects/config/RandomWalk.yaml", 'r') as stream:
             data_loaded = yaml.safe_load(stream)
         min_num_tentacles = data_loaded["Octopus"]["min_num_tentacles"]
         max_num_tentacles = data_loaded["Octopus"]["max_num_tentacles"]
