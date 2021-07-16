@@ -54,7 +54,7 @@ class Shape(ABC):
             # and satifies shape-specific edge checker
             if ((self.grid[X][Y][Z]) 
                     and (not surrounded([X,Y,Z], self.grid)) 
-                    and (self.valid_edge([X,Y,Z]))):
+                    and (self._valid_edge([X,Y,Z]))):
                 edge_points.append([X,Y,Z])
         
         # Cluster the points
@@ -64,7 +64,7 @@ class Shape(ABC):
         while intersecting:
             # Pop off a point from intersecting and add to cluster
             cluster = []
-            first_p = random.choose(intersecting)
+            first_p = random.choice(intersecting)
             intersecting.remove(first_p)
             cluster.append(first_p)
 
@@ -121,9 +121,9 @@ class Shape(ABC):
             # Chose random shape edge and find the intersection edge
             # that is furthest away to move the intersection away
             if not cluster_shape_edge:
-                chosen_edge = random.choose(edge_points)
+                chosen_edge = random.choice(edge_points)
                 largest_distance = 0
-                move_vector = random.choose(cluster_edge)
+                move_vector = random.choice(cluster_edge)
                 for edge in cluster_edge:
                     if distance3d(chosen_edge, edge) > largest_distance:
                         largest_distance = distance3d(chosen_edge, edge)
@@ -173,7 +173,7 @@ class Shape(ABC):
                 final_magnitude = vector_mag
 
         magnitude = math.sqrt(final_vector[0]**2 + final_vector[1]**2 + final_vector[2]**2)
-        final_vector = (final_vector / magnitude) * final_magnitude
+        final_vector = [((x / magnitude) * final_magnitude) for x in final_vector]
 
         return final_vector
 
@@ -200,7 +200,6 @@ class Shape(ABC):
         while intersecting_vector is not None:
             # Check if we've tried too many times
             if count is count_max:
-                print("Failed to create object, retrying.")
                 self.valid = False
                 break
             # Remake the object since we're intersecting
