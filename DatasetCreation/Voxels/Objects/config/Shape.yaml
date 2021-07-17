@@ -1,7 +1,7 @@
 Spheroid:
   center_placement_border: 5
   min_radius: 3
-  max_radius: 6
+  max_radius: 4
 
 Torus:
   center_placement_border: 5

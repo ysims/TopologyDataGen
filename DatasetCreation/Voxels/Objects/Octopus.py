@@ -1,3 +1,4 @@
+import copy
 import itertools
 import random
 import yaml
@@ -17,7 +18,7 @@ class Octopus(RandomWalk):
         self.sphere = Spheroid.random(full_grid)
         while not self.sphere.valid:
             self.sphere = Spheroid.random(full_grid)
-        self.grid = self.sphere.grid
+        self.grid = copy.copy(self.sphere.grid)
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
         self.min_tentacle_length = min_tentacle_length
