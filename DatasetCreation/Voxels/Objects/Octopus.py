@@ -46,7 +46,11 @@ class Octopus(RandomWalk):
         return cls(full_grid, num_tentacles, 
             min_tentacle_length, max_tentacle_length)
 
-    def _allowed_point(self, new_point):
+    def _allowed_point(self, new_point, all_points):
+        # Don't repeat ourselves
+        if all_points.count(new_point) > 0:
+            return False
+
         if intersect_or_touch(new_point, (self.grid | self.full_grid)):
             return False
         return True

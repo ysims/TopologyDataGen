@@ -34,7 +34,15 @@ class Tunnel(RandomWalk):
         start[random.randrange(0,3,1)] = 0 if random.randrange(0,2,1) == 0 else size-1
         return cls(full_grid, start)
 
-    def _allowed_point(self, new_point):
+    def _allowed_point(self, new_point, all_points):
+        # Don't repeat ourselves
+        if all_points.count(new_point) > 0:
+            return False
+        
+        # We don't want to intersect or touch the rest of the tunnel
+        if intersect_or_touch(new_point, self.grid):
+            return False
+
         # It is ok if it's on the boundary
         # We need to allow this otherwise
         # the stop condition will never be satified
@@ -42,9 +50,10 @@ class Tunnel(RandomWalk):
             if (x == self.full_grid[0][0].size - 1 or x == 0):
                 return True
 
-        # If it intersects or touches itself or something else
-        # it's not valid
-        if intersect_or_touch(new_point, (self.grid | self.full_grid)):
+        # Cannot intersect or touch the rest of the grid
+        # But ignore the boundary when checking this since
+        # We want to hit the boundary
+        if obj_intersect_touch(new_point, self.full_grid):
             return False
         return True
 
@@ -77,4 +86,4 @@ class Tunnel(RandomWalk):
     # If the tunnel didn't stop on the boundary, it's not valid
     # Only want tunnels that go from one boundary to another
     def _acceptable_walk(self, all_points):
-        return False
+        return True

@@ -26,7 +26,7 @@ class BettiCube(object):
         for key in num_objects:
             if key == "tunnel":
                 for _ in range(num_objects[key]):
-                    while(not self.add_object(Tunnel.random(self.size, self.get_objects(draw=False), self.border))):
+                    while(not self.add_object(Tunnel.random(self.get_objects(draw=False)))):
                         continue
             
             if key == "torus":

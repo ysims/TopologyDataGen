@@ -52,7 +52,7 @@ class RandomWalk(ABC):
                 new_point = list(map(add, 
                                     direction, 
                                     all_points[len(all_points) - 1]))
-                if self._allowed_point(new_point):
+                if self._allowed_point(new_point, all_points):
                     all_points.append(new_point)
                     # Add onto the grid the point from two runs ago
                     if len(all_points) > 2:
