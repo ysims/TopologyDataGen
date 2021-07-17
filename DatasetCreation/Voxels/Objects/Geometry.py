@@ -137,7 +137,7 @@ def rotate_object(object, grid):
 
     # Loop for all indices but only do something 
     # if it's a voxel in the object
-    for X,Y,Z in itertools.product(range(0, object.size), repeat=3):
+    for X,Y,Z in itertools.product(range(0, grid[0][0].size), repeat=3):
         if grid[X][Y][Z]:
             x,y,z = rotate(R, object.center, [X,Y,Z])
             try:

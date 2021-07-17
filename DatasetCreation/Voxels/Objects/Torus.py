@@ -43,7 +43,7 @@ class Torus(Shape):
     @classmethod
     def random(cls, grid):
         # Read values from config file
-        with open("./Objects/Shape.yaml", 'r') as stream:
+        with open("./Objects/config/Shape.yaml", 'r') as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Torus"]["center_placement_border"]
         min_major = data_loaded["Torus"]["min_major_radius"]
@@ -62,7 +62,7 @@ class Torus(Shape):
         minor_radius = random.randrange(min_minor, major_radius-1, 1)
         return cls(grid, center,        
                    major_radius, minor_radius, 
-                   rotation, size)
+                   rotation)
 
     # This will get the circle that 'plugs' up the torus
     # to prevent tunnels going through
@@ -80,7 +80,8 @@ class Torus(Shape):
     # Function required for place_and_move function
     def _create_grid(self):
         # Make a voxelised torus and rotate it
-        x,y,z = np.indices((self.size, self.size, self.size))
+        size = self.full_grid[0][0].size
+        x,y,z = np.indices((size, size, size))
         self.grid = (pow(np.sqrt((x - self.center[0])**2 
             + (y - self.center[1])**2) - self.major_radius, 2) 
             + (z - self.center[2])**2 <= self.minor_radius ** 2)
