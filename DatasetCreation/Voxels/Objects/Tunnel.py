@@ -17,6 +17,9 @@ class Tunnel(RandomWalk):
         # Set tunnel information
         self.full_grid = full_grid
         self.start = start
+        # Don't worry about branching rn, we might not care about tunnels
+        # And branching might be too complex to count
+        self.branching = False
 
         # Make a grid with just this starting point
         size = self.full_grid[0][0].size

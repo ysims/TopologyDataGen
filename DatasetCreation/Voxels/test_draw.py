@@ -11,7 +11,7 @@ torus_num = 0
 torus2_num = 0
 spheroid_num = 0
 island_num = 0
-octopus_num = 4
+octopus_num = 1
 
 # Create the dictionary to print and use when making objects
 dict = {

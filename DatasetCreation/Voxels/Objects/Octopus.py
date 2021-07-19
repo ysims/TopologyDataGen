@@ -1,5 +1,7 @@
 import copy
 import itertools
+import math
+from operator import add
 import random
 import yaml
 
@@ -10,26 +12,34 @@ from Spheroid import Spheroid
 
 class Octopus(RandomWalk):
 
-    def __init__(self, 
-                full_grid, 
-                num_tentacles, 
-                min_tentacle_length, 
-                max_tentacle_length):
+    def __init__(self, full_grid, num_tentacles):
         self.sphere = Spheroid.random(full_grid)
         while not self.sphere.valid:
             self.sphere = Spheroid.random(full_grid)
         self.grid = copy.copy(self.sphere.grid)
+
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
-        self.min_tentacle_length = min_tentacle_length
-        self.max_tentacle_length = max_tentacle_length
         self.valid = True
+        
+        # Read values from config file
+        with open("./Objects/config/RandomWalk.yaml", 'r') as stream:
+            data_loaded = yaml.safe_load(stream)
+        self.min_tentacle_length = data_loaded["Octopus"]["min_tentacle_length"]
+        self.max_tentacle_length = data_loaded["Octopus"]["max_tentacle_length"]
+        self.branching = data_loaded["Octopus"]["branching"]
+        self.length_between_branches = \
+            data_loaded["Octopus"]["length_between_branches"]
 
         # Add the number of tentacles that we want
         # Retry if it fails
-        for _ in range(num_tentacles):
+        for i in range(num_tentacles):
+            print(i)
             while not self._random_walk():
+                print("not good")
                 continue
+
+        print("done")
 
     # Make a random tunnel
     @classmethod
@@ -39,13 +49,10 @@ class Octopus(RandomWalk):
             data_loaded = yaml.safe_load(stream)
         min_num_tentacles = data_loaded["Octopus"]["min_num_tentacles"]
         max_num_tentacles = data_loaded["Octopus"]["max_num_tentacles"]
-        min_tentacle_length = data_loaded["Octopus"]["min_tentacle_length"]
-        max_tentacle_length = data_loaded["Octopus"]["max_tentacle_length"]
 
         num_tentacles = random.randrange(min_num_tentacles,
             max_num_tentacles, 1)
-        return cls(full_grid, num_tentacles, 
-            min_tentacle_length, max_tentacle_length)
+        return cls(full_grid, num_tentacles)
 
     def _allowed_point(self, new_point, all_points):
         # Don't repeat ourselves
@@ -111,3 +118,66 @@ class Octopus(RandomWalk):
         if len(all_points) >= self.min_tentacle_length:
             return True
         return False
+
+    # Given the path, how many times will we branch from it?
+    def _num_branches(self, path):
+        if len(path) < self.length_between_branches:
+            return 0
+        return math.floor(len(path) / self.length_between_branches)
+
+    # Find a point to branch from on the path
+    # and return the beginning of the new path
+    def _branch_start(self, _path):
+        # This tentacle will be smaller than its parent
+        if int(len(_path)/2) <= self.min_tentacle_length/2:
+            return []
+        self.tentacle_length = random.randrange(self.min_tentacle_length/2, 
+            int(len(_path)/2), 1)
+
+        path = copy.copy(_path)
+        
+        # This is the path we choose a point from
+        # It has the first and last taken out
+        choice_path = copy.copy(_path)
+        choice_path.pop(0)
+        choice_path.pop(len(choice_path)-1)
+        
+        new_path = []
+        while not new_path:
+            path = copy.copy(_path)
+            start = random.choice(choice_path)
+            
+            # Remove this point and adjacent points so we can
+            # do intersect or touch properly
+            index = path.index(start)
+            before = path.pop(index-1)
+            # The index has changed because we just popped
+            # Go back one for all
+            after = path.pop(index)
+            self.grid[start[0]][start[1]][start[2]] = False
+            self.grid[before[0]][before[1]][before[2]] = False
+            self.grid[after[0]][after[1]][after[2]] = False
+            
+            directions = [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1]]
+            for direction in directions:
+                try:    # skip if this is out of bounds     
+                    start_path = list(map(add, 
+                                    direction, 
+                                    start))
+                    if start_path is before:
+                        continue
+                    if start_path is after:
+                        continue
+                    # start_path point is valid and by adding it to the list
+                    # we are breaking out of the while loop
+                    if not intersect_or_touch(start_path, (self.grid | self.full_grid)):
+                        new_path.append(start_path)
+                        break
+                except: 
+                    pass
+            
+            self.grid[start[0]][start[1]][start[2]] = True
+            self.grid[before[0]][before[1]][before[2]] = True
+            self.grid[after[0]][after[1]][after[2]] = True
+        
+        return new_path
