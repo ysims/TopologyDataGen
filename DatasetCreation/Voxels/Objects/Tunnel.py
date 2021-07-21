@@ -27,6 +27,8 @@ class Tunnel(RandomWalk):
         self.grid = (x > size)   # False grid
 
         self.valid = self._random_walk()
+        
+        self.draw_grid = self.grid
 
     # Make a random tunnel
     @classmethod
@@ -90,3 +92,15 @@ class Tunnel(RandomWalk):
     # Only want tunnels that go from one boundary to another
     def _acceptable_walk(self, all_points):
         return True
+
+    # Not implemented
+    # Branching tunnels not supported
+    def _branch_start(self, _path):
+        pass
+
+    # Not implemented
+    # Branching tunnels not supported
+    def _num_branches(self, path):
+        pass
+
+        

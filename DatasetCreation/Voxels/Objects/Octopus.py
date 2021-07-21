@@ -33,13 +33,11 @@ class Octopus(RandomWalk):
 
         # Add the number of tentacles that we want
         # Retry if it fails
-        for i in range(num_tentacles):
-            print(i)
+        for _ in range(num_tentacles):
             while not self._random_walk():
-                print("not good")
                 continue
 
-        print("done")
+        self.draw_grid = self.grid
 
     # Make a random tunnel
     @classmethod
@@ -121,7 +119,8 @@ class Octopus(RandomWalk):
 
     # Given the path, how many times will we branch from it?
     def _num_branches(self, path):
-        if len(path) < self.length_between_branches:
+        # -2 from endpoints (no branches on endpoints)
+        if len(path) < self.length_between_branches - 2:
             return 0
         return math.floor(len(path) / self.length_between_branches)
 

@@ -20,18 +20,64 @@ class RandomWalk(ABC):
             print("Something went wrong, " 
                 "couldn't find a start position.")
             return False
+        
+        # If it wasn't successful, just return
+        if not self._walk(all_points):
+            return False
 
-        # Add all possible movement directions
-        movement_direction = [] # list of value movements
-        for x,y,z in itertools.permutations([1,0,0],3):
-            movement_direction.append([x,y,z])
-            movement_direction.append([-x,-y,-z])       
-        movement_direction.sort()
-        # Remove duplicates
-        movement_direction = list(
-            movement_direction for movement_direction,
-            _ in itertools.groupby(movement_direction))
+        # The last two points won't be there, 
+        # add everything in the walk to the grid
+        for point in all_points:
+            self.grid[point[0], point[1], point[2]] = True
 
+        # Nothing seemed to go wrong and we 
+        # don't want to branch so return true
+        if not self.branching:
+            return True
+
+        # Loop until there are no more paths to 
+        # check for branching
+        paths = []
+        paths.append(copy.copy(all_points))
+        while paths:
+            # Find out how many branches should be made
+            num_branch = self._num_branches(paths[0])
+            if num_branch is 0: 
+                paths.remove(paths[0])
+                continue
+
+            # Loop while we have branches to create
+            while num_branch > 0:
+                # Get the start of our branch
+                # If we can't make any branch on this
+                # path, stop trying with this path
+                all_points = self._branch_start(paths[0])
+                # No need to remove the path because 
+                # we do it after breaking
+                if not all_points:
+                    break
+
+                # Do as before and create the path
+                # If it doesn't work, try again
+                if not self._walk(all_points):
+                    continue
+
+                # The last two points won't be there, 
+                # add everything in the walk to the grid
+                for point in all_points:
+                    self.grid[point[0], point[1], point[2]] = True
+
+                # Successfully made a branch
+                num_branch -= 1
+                paths.append(copy.copy(all_points))
+
+            # Finished adding all the branches to this path 
+            paths.remove(paths[0])
+        
+        return True
+
+
+    def _walk(self, all_points):
         # Loop until some given condition is satisfied
         # Shuffle so we don't always go the same way
         # Check if the point works
@@ -43,6 +89,17 @@ class RandomWalk(ABC):
         # The walk list contains the last two points but the grid does not,
         # Otherwise they would be flagged as intersections
         while not self._stop_walk_condition(all_points):
+            # Add all possible movement directions
+            movement_direction = [] # list of value movements
+            for x,y,z in itertools.permutations([1,0,0],3):
+                movement_direction.append([x,y,z])
+                movement_direction.append([-x,-y,-z])       
+            movement_direction.sort()
+            # Remove duplicates
+            movement_direction = list(
+                movement_direction for movement_direction,
+                _ in itertools.groupby(movement_direction))
+
             point_added = False
             random.shuffle(movement_direction)
             for direction in movement_direction:
@@ -70,87 +127,6 @@ class RandomWalk(ABC):
                     return False
                 else:
                     break
-        
-        # The last two points won't be there, 
-        # add everything in the walk to the grid
-        for point in all_points:
-            self.grid[point[0], point[1], point[2]] = True
-
-        if not self.branching:
-            # Nothing seemed to go wrong and we 
-            # don't want to branch so return true
-            return True
-
-        if not self.valid:
-            return False
-
-        print("valid?", self.valid)
-
-        # Loop until there are no more paths to 
-        # check for branching
-        paths = []
-        paths.append(copy.copy(all_points))
-        while paths:
-            num_branch = self._num_branches(paths[0])
-            if num_branch is 0: 
-                paths.remove(paths[0])
-                continue
-            # print("len paths:", len(paths), num_branch)
-
-            while num_branch > 0:
-                print(num_branch, len(paths))
-                # print("num branches", num_branch, len(paths[0]))
-                all_points = self._branch_start(paths[0])
-                if not all_points:
-                    break
-                # Do as before and create the path
-                while not self._stop_walk_condition(all_points):
-                    # print("walkin")
-                    # print(len(all_points))
-                    point_added = False
-                    random.shuffle(movement_direction)
-                    for direction in movement_direction:
-                        # Add the direction and the last point
-                        new_point = list(map(add, 
-                                            direction, 
-                                            all_points[len(all_points) - 1]))
-                        if self._allowed_point(new_point, all_points):
-                            all_points.append(new_point)
-                            # Add onto the grid the point from two runs ago
-                            if len(all_points) > 2:
-                                to_add = all_points[len(all_points) - 3]
-                                self.grid[to_add[0], to_add[1], to_add[2]] = True
-                            # print("added a point")
-                            point_added = True
-                            break   # Don't keep going with the for loop
-            
-                    # If a point wasn't added
-                    # see if this was a decent enough try
-                    # otherwise just return false
-                    if not point_added:
-                        # print("didn't add a point :(")
-                        if (not self._acceptable_walk(all_points)):
-                            # print("walk wasn't ok...")
-                            # print("not acceptable")
-                            # Remove anything we added because we don't want it anymore
-                            for point in all_points:
-                                self.grid[point[0], point[1], point[2]] = False
-                        break
-
-                # The last two points won't be there, 
-                # add everything in the walk to the grid
-                # print("everything was fine!")
-                for point in all_points:
-                    self.grid[point[0], point[1], point[2]] = True
-                # Successfully made a branch
-                num_branch -= 1
-                if len(all_points) >= self.min_tentacle_length:
-                    # print("long boi!", len(all_points))
-                    paths.append(copy.copy(all_points))
-            # print("done with this path")
-            paths.remove(paths[0])
-        # print("done with the tentacle")
-        self.valid = True
         return True
 
     # Determines a start location for the walk

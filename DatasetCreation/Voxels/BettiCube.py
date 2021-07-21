@@ -11,125 +11,104 @@ from Spheroid import Spheroid
 from Torus import Torus, Torus2
 from Tunnel import Tunnel
 
-# Class that holds one object with cavities in it, of various shapes.
+# Class that holds a cube with cavities in it, 
+# of various configurations
 class BettiCube(object):
-    # Constructor
-    def __init__(self, size):
-        self.size = size # we are making a cube so this is the number of voxels across any edge
-        self.objects = [] # initialise our list of objects
-        # Create the full shape everything is contained in. True areas are the border and false are the insides
-        x, y, z = np.indices((self.size, self.size, self.size))
-        self.border = (x == 0) | (x == self.size - 1) | (y == 0) | (y == self.size - 1) | (z == 0) | (z == self.size - 1) # lets use a cube
 
-    # num_objects is a dictionary with numbers of each object
+    def __init__(self, size):
+        # The number of voxels across any edge
+        self.size = size
+        self.objects = [] # initialise our list of objects
+        # Create the full shape everything is contained in. 
+        # True areas are the border and false are the insides
+        x, y, z = np.indices((self.size, self.size, self.size))
+        self.border = ((x == 0) | (x == self.size - 1) 
+            | (y == 0) | (y == self.size - 1) 
+            | (z == 0) | (z == self.size - 1))
+
+    # Add the specified objects from the dictionary
+    # to the cube as cavities
+    # num_objects is a dictionary
+    #   key is the name of an object class
+    #   value is the number of that object to generate
     def add_objects(self, num_objects):
         for key in num_objects:
-            if key == "tunnel":
-                for _ in range(num_objects[key]):
-                    while(not self.add_object(Tunnel.random(self.get_objects(draw=False)))):
-                        continue
-            
-            if key == "torus":
-                for _ in range(num_objects[key]):
-                    while(not self.add_object(Torus.random(self.get_objects(draw=False)))):
-                        continue
-            
-            if key == "torus2":
-                for _ in range(num_objects[key]):
-                    while(not self.add_object(Torus2.random(self.get_objects(draw=False)))):
-                        continue
-                
-            if key == "spheroid":
-                for _ in range(num_objects[key]):
-                    while(not self.add_object(Spheroid.random(self.get_objects(draw=False)))):
-                        continue
+            for _ in range(num_objects[key]):
+                while(not self.add_object(eval(key 
+                        + ".random(self.get_objects(draw=False))"))):
+                    continue
 
-            if key == "island":
-                for _ in range(num_objects[key]):
-                    while(not self.add_object(Island.random(self.get_objects(draw=False)))):
-                        continue
-                
-            if key == "octopus":
-                for _ in range(num_objects[key]):
-                    while(not self.add_object(Octopus.random(self.get_objects(draw=False)))):
-                        continue
-
+    # Adds a random object to the cube
+    # from a set of allowed objects
     def add_random(self):
-        # We're gonna choose a shape randomly. There are three at the moment, so lets get [0-1] randomly
-        shape = random.randrange(0, 4, 1)
-        # Spheroid
-        if shape == 0:
-            return self.add_object(Spheroid.random(self.get_objects(draw=False), self.size))
-        elif shape == 1:
-            return self.add_object(Island.random(self.get_objects(draw=False), self.size))
-        elif shape == 2:
-            return self.add_object(Torus2.random(self.get_objects(draw=False), self.size))
-        else:
-            return self.add_object(Torus.random(self.get_objects(draw=False), self.size))
+        objects = ["Tunnel", "Torus", "Torus2", 
+            "Spheroid", "Island", "Octopus"]
 
-    # Check if this object intersects or touches any others, if not we can add it to the list
+        # Loop until object is successfully added
+        while not self.add_object(eval(
+                        objects[random.randrange(0, len(objects), 1)]
+                        + ".random(self.get_objects(draw=False))")):
+            continue
+
+    # Check if this object was made correctly, 
+    # if so we can add it to the list
+    # Requires object to have a `valid` boolean value
     def add_object(self, object):
         if object.valid:
             self.objects.append(object)
             return True
         return False
- 
-     # Given an object, check if it intersects with existing objects
-    def check_intersect(self, new_object):
-        if (new_object & self.border).any():
-            return True
-        
-        for object in self.objects:
-            if (object.grid & new_object).any():
-                return True
-        return False
 
-    # Get all the 'holes' as solid objects
+    # Returns a grid with all the 'holes' as solid objects
     def get_objects(self, draw):
-        # Make a full false grid
-        x, y, z = np.indices((self.size, self.size, self.size))
-        grid = x + y + z < 0
+        x,_,_ = np.indices((self.size, self.size, self.size))
+        grid = x < 0
+        
         # Loop over all objects and add them to the voxel grid 
         for object in self.objects:
-            grid = grid | object.grid
-            # Get the disc that 'plugs' up the torus so we don't link
-            if isinstance(object, Torus) & (not draw):
-                grid = grid | object.get_disc()
-            # Add in the center of the island so nothing gets caught inside it
-            if isinstance(object, Island) & (not draw):
-                grid = grid | object.create_grid()
+            grid = grid | object.grid if not draw else grid | object.draw_grid
+
         # Add the border to it if we're not drawing
         if not draw:
             grid = grid | self.border
+        
         return grid
 
     # Get the full cube with holes
     def get_full_objects(self):
         return ~self.get_objects(draw=True)
 
-    # Return betti numbers of the full object
+    # Return count of all objects
     def get_data(self):
         spheroid_count = 0
         torus_count = 0
         torus2_count = 0
         island_count = 0
         tunnel_count = 0
+        octopus_count = 0
+
         # Loop over all objects and add their betti numbers
         for object in self.objects:
             if isinstance(object, Spheroid):
                 spheroid_count += 1
-            if isinstance(object, Torus):
+            elif isinstance(object, Torus):
                 torus_count += 1
-            if isinstance(object, Torus2):
+            elif isinstance(object, Torus2):
                 torus2_count += 1
-            if isinstance(object, Island):
+            elif isinstance(object, Island):
                 island_count += 1
-            if isinstance(object, Tunnel):
+            elif isinstance(object, Tunnel):
                 tunnel_count += 1
+            elif isinstance(object, Octopus):
+                octopus_count += 1
+
         # Return a dictionary of the numbers to go into a yaml file
-        return [{"spheroid": spheroid_count}, 
-            {"torus": torus_count},
-            {"2torus": torus2_count}, 
-            {"island": island_count},
-            {"tunnel": tunnel_count}]
+        return {
+            "Spheroid": spheroid_count,
+            "Torus": torus_count,
+            "Torus2": torus2_count,
+            "Island": island_count,
+            "Tunnel": tunnel_count,
+            "Octopus": octopus_count,
+}
             

@@ -38,6 +38,8 @@ class Torus(Shape):
             + (y - self.center[1])**2) - self.major_radius, 2) 
             + (z - self.center[2])**2 <= self.minor_radius ** 2)
         rotate_object(self, self.grid)
+
+        self.draw_grid = self._create_grid()
         
     # Make a random torus
     @classmethod
@@ -132,7 +134,8 @@ class Torus2(Shape):
             + (z - self.center[2])**2 <= self.minor_radius ** 2)
         self.grid = torus1 | torus2
         rotate_object(self, self.grid)
-        
+        self.draw_grid = self._create_grid()
+
     # Make a random torus
     @classmethod
     def random(cls, grid):

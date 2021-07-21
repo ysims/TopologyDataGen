@@ -23,6 +23,8 @@ class Spheroid(Shape):
         self.valid = True
 
         self._place_and_move()
+
+        self.draw_grid = self._create_grid()
         
     # Make a random spheroid
     @classmethod

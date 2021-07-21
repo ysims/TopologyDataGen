@@ -39,6 +39,8 @@ class Island(Shape):
             & ((pow(x - center[0], 2) + pow(y - center[1], 2) 
             + pow(z - center[2], 2)) >= inner_radius ** 2))
 
+        self.draw_grid = self._create_grid()
+
     # Make a random island 
     @classmethod
     def random(cls, grid):
