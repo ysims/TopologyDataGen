@@ -8,16 +8,12 @@ import yaml
 from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
+from Torus import Torus
 
 
 class Octopus(RandomWalk):
 
     def __init__(self, full_grid, num_tentacles):
-        self.sphere = Spheroid.random(full_grid)
-        while not self.sphere.valid:
-            self.sphere = Spheroid.random(full_grid)
-        self.grid = copy.copy(self.sphere.grid)
-
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
         self.valid = True
@@ -30,6 +26,19 @@ class Octopus(RandomWalk):
         self.branching = data_loaded["Octopus"]["branching"]
         self.length_between_branches = \
             data_loaded["Octopus"]["length_between_branches"]
+        self.shape_name = data_loaded["Octopus"]["shape"]
+
+        if self.shape_name is "Spheroid":
+            self.shape = Spheroid.random(full_grid)
+            while not self.shape.valid:
+                self.shape = Spheroid.random(full_grid)
+            self.grid = copy.copy(self.shape.grid)
+        else:
+            self.shape = Torus.random(full_grid)
+            while not self.shape.valid:
+                self.shape = Torus.random(full_grid)
+            self.grid = copy.copy(self.shape.grid)
+
 
         # Add the number of tentacles that we want
         # Retry if it fails
@@ -72,7 +81,7 @@ class Octopus(RandomWalk):
         # We will make a 'tentacle' going off from one of the edges
         edges = []
         for X,Y,Z in itertools.product(range(0, self.full_grid[0][0].size), repeat=3):
-            if (self.sphere.grid[X][Y][Z] 
+            if (self.shape.grid[X][Y][Z] 
                     and not hard_surrounded([X,Y,Z], self.grid)):
                 edges.append([X,Y,Z])
         
