@@ -11,6 +11,6 @@ Torus:
 
 Island:
   center_placement_border: 5
-  min_outer_radius: 4
-  max_outer_radius: 6
-  min_inner_radius: 2
+  min_outer_radius: 3
+  max_outer_radius: 5
+  min_inner_radius: 1

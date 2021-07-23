@@ -3,7 +3,7 @@ import numpy as np
 import random
 import yaml
 
-from Geometry import intersect_or_touch, rotate_object, distance3d
+from Geometry import intersect_or_touch, rotate_object, rotate_grid, distance3d
 from Shape import Shape
 
 
@@ -28,18 +28,16 @@ class Torus(Shape):
         self.rotation = rotation
         self.valid = True
 
+        size = full_grid[0][0].size
+        self.x,self.y,self.z = rotate_grid(size,self.rotation,self.center)
+        
         self._place_and_move()
 
         # place_and_move uses a grid that is plugged up for intersection checking
         # In the end, we don't want this so just make the torus normally
-        size = full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        self.grid = (pow(np.sqrt((x - self.center[0])**2 
-            + (y - self.center[1])**2) - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        rotate_object(self, self.grid)
-
-        self.draw_grid = self._create_grid()
+        self.draw_grid = (pow(np.sqrt((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2) - self.major_radius, 2) 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
         
     # Make a random torus
     @classmethod
@@ -69,25 +67,19 @@ class Torus(Shape):
     # This will get the circle that 'plugs' up the torus
     # to prevent tunnels going through
     def get_disc(self):
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        disc = ((z > self.center[2] - 1) 
-                & (z < self.center[2] + 1) 
-                & ((x - self.center[0])**2 
-                + (y - self.center[1])**2 
+        disc = ((self.z > self.center[2] - 1) 
+                & (self.z < self.center[2] + 1) 
+                & ((self.x - self.center[0])**2 
+                + (self.y - self.center[1])**2 
                 <= self.major_radius ** 2))
-        rotate_object(self, disc)
         return disc
 
     # Function required for place_and_move function
     def _create_grid(self):
         # Make a voxelised torus and rotate it
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        self.grid = (pow(np.sqrt((x - self.center[0])**2 
-            + (y - self.center[1])**2) - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        rotate_object(self, self.grid)
+        self.grid = (pow(np.sqrt((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2) - self.major_radius, 2) 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
 
         # Since this grid is used to check intersections, 
         # add in the disc so we don't get things 
@@ -112,18 +104,18 @@ class Torus2(Shape):
                 rotation):
         # Set torus information
         self.full_grid = full_grid
-        self.center = center
-        self.major_radius = major_radius
-        self.minor_radius = minor_radius
-        self.rotation = rotation
+        self.center = [5,5,5]
+        self.major_radius = 2
+        self.minor_radius = 1
+        self.rotation = [1.5,0,0]
         self.valid = True
 
         # Find a center that works
-        self._place_and_move()
+        # self._place_and_move()
 
         # Make the grid properly now that we've got a valid center
         size = full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
+        x,y,z = rotate_grid(size, self.rotation, self.center)
         torus1 = (pow(np.sqrt((x - self.center[0])**2 
             + (y - self.center[1])**2) 
             - self.major_radius, 2) 
@@ -133,7 +125,6 @@ class Torus2(Shape):
             + (y - self.center[1])**2) - self.major_radius, 2) 
             + (z - self.center[2])**2 <= self.minor_radius ** 2)
         self.grid = torus1 | torus2
-        rotate_object(self, self.grid)
         self.draw_grid = self._create_grid()
 
     # Make a random torus

@@ -189,6 +189,10 @@ class Shape(ABC):
     def _place_and_move(self):
         # Create the object
         self._create_grid()
+
+        if not self.grid.any():
+            self.valid = False
+            return
         
         # Get the vector that will move us away from intersecting or touching objects (or None if not intersecting/touching)
         intersecting_vector = self._get_intersecting_vector()
@@ -205,6 +209,10 @@ class Shape(ABC):
             # Remake the object since we're intersecting
             self.center = [self.center[0] + intersecting_vector[0], self.center[1] + intersecting_vector[1], self.center[2] + intersecting_vector[2]]
             self._create_grid()
+
+            if not self.grid.any():
+                self.valid = False
+                return
 
             # Get the vector that will move us away from intersecting or touching objects (or None if not intersecting/touching)
             intersecting_vector = self._get_intersecting_vector()
