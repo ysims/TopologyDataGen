@@ -3,7 +3,7 @@ import numpy as np
 import random
 import yaml
 
-from Geometry import intersect_or_touch, rotate_object, distance3d
+from Geometry import intersect_or_touch, rotate_object, rotate_grid, distance3d
 from Shape import Shape
 
 
@@ -28,18 +28,16 @@ class Torus(Shape):
         self.rotation = rotation
         self.valid = True
 
+        size = full_grid[0][0].size
+        self.x,self.y,self.z = rotate_grid(size,self.rotation,self.center)
+        
         self._place_and_move()
 
         # place_and_move uses a grid that is plugged up for intersection checking
         # In the end, we don't want this so just make the torus normally
-        size = full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        self.grid = (pow(np.sqrt((x - self.center[0])**2 
-            + (y - self.center[1])**2) - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        rotate_object(self, self.grid)
-
-        self.draw_grid = self._create_grid()
+        self.draw_grid = (pow(np.sqrt((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2) - self.major_radius, 2) 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
         
     # Make a random torus
     @classmethod
@@ -69,25 +67,19 @@ class Torus(Shape):
     # This will get the circle that 'plugs' up the torus
     # to prevent tunnels going through
     def get_disc(self):
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        disc = ((z > self.center[2] - 1) 
-                & (z < self.center[2] + 1) 
-                & ((x - self.center[0])**2 
-                + (y - self.center[1])**2 
+        disc = ((self.z > self.center[2] - 1) 
+                & (self.z < self.center[2] + 1) 
+                & ((self.x - self.center[0])**2 
+                + (self.y - self.center[1])**2 
                 <= self.major_radius ** 2))
-        rotate_object(self, disc)
         return disc
 
     # Function required for place_and_move function
     def _create_grid(self):
         # Make a voxelised torus and rotate it
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        self.grid = (pow(np.sqrt((x - self.center[0])**2 
-            + (y - self.center[1])**2) - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        rotate_object(self, self.grid)
+        self.grid = (pow(np.sqrt((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2) - self.major_radius, 2) 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
 
         # Since this grid is used to check intersections, 
         # add in the disc so we don't get things 
@@ -118,24 +110,23 @@ class Torus2(Shape):
         self.rotation = rotation
         self.valid = True
 
+        size = full_grid[0][0].size
+        self.x,self.y,self.z = rotate_grid(size,self.rotation,self.center)
+        
         # Find a center that works
         self._place_and_move()
 
         # Make the grid properly now that we've got a valid center
-        size = full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        torus1 = (pow(np.sqrt((x - self.center[0])**2 
-            + (y - self.center[1])**2) 
+        torus1 = (pow(np.sqrt((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2) 
             - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        torus2 = (pow(np.sqrt((x - self.center[0] 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
+        torus2 = (pow(np.sqrt((self.x - self.center[0] 
             + self.major_radius*2)**2 
-            + (y - self.center[1])**2) - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        self.grid = torus1 | torus2
-        rotate_object(self, self.grid)
-        self.draw_grid = self._create_grid()
-
+            + (self.y - self.center[1])**2) - self.major_radius, 2) 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
+        self.draw_grid = torus1 | torus2
+    
     # Make a random torus
     @classmethod
     def random(cls, grid):
@@ -162,32 +153,27 @@ class Torus2(Shape):
     # When creating the grid, plug up the torus so place and move 
     # can detect if there's anything going through the torus
     def _create_grid(self):
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        torus1 = (pow(np.sqrt((x - self.center[0])**2 
-            + (y - self.center[1])**2) 
+        torus1 = (pow(np.sqrt((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2) 
             - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
-        torus2 = (pow(np.sqrt((x - self.center[0] 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
+        torus2 = (pow(np.sqrt((self.x - self.center[0] 
             + self.major_radius*2)**2 
-            + (y - self.center[1])**2) - self.major_radius, 2) 
-            + (z - self.center[2])**2 <= self.minor_radius ** 2)
+            + (self.y - self.center[1])**2) - self.major_radius, 2) 
+            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
         self.grid = torus1 | torus2 | self.get_disc()
-        rotate_object(self, self.grid)
 
     # This will get the circle that 'plugs' up the torus, 
     # to prevent tunnels going through
     def get_disc(self):
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        disc1 = ((z > self.center[2]-1) 
-            & (z < self.center[2] + 1) 
-            & ((x - self.center[0])**2 
-            + (y - self.center[1])**2 <= self.major_radius ** 2))
-        disc2 = ((z > self.center[2]-1) 
-            & (z < self.center[2] + 1) 
-            & ((x - self.center[0] + self.major_radius * 2)**2 
-            + (y - self.center[1])**2 <= self.major_radius ** 2))
+        disc1 = ((self.z > self.center[2]-1) 
+            & (self.z < self.center[2] + 1) 
+            & ((self.x - self.center[0])**2 
+            + (self.y - self.center[1])**2 <= self.major_radius ** 2))
+        disc2 = ((self.z > self.center[2]-1) 
+            & (self.z < self.center[2] + 1) 
+            & ((self.x - self.center[0] + self.major_radius * 2)**2 
+            + (self.y - self.center[1])**2 <= self.major_radius ** 2))
         combined_disc = disc1 | disc2
         rotate_object(self, combined_disc)
         return combined_disc

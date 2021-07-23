@@ -1,8 +1,9 @@
+import math
 import numpy as np
 import random
 import yaml
 
-from Geometry import intersect_or_touch
+from Geometry import intersect_or_touch, rotate_grid
 from Shape import Shape
 
 
@@ -10,7 +11,7 @@ class Spheroid(Shape):
     # full_grid:    all other objects
     # center:       center of the sphere
     # radius:       radius of the sphere
-    def __init__(self, full_grid, center, radius):
+    def __init__(self, full_grid, center, radius, rotation):
         # Check we're not starting in an invalid location
         if intersect_or_touch(center, full_grid):
             self.valid = False
@@ -20,11 +21,15 @@ class Spheroid(Shape):
         self.center = center
         self.radius = radius
         self.full_grid = full_grid
+        self.rotation = rotation
         self.valid = True
+
+        size = full_grid[0][0].size
+        self.x,self.y,self.z = rotate_grid(size,self.rotation,self.center)
 
         self._place_and_move()
 
-        self.draw_grid = self._create_grid()
+        self.draw_grid = self.grid
         
     # Make a random spheroid
     @classmethod
@@ -44,15 +49,16 @@ class Spheroid(Shape):
         radius = [random.randrange(min_radius, max_radius, 1), 
             random.randrange(min_radius, max_radius, 1), 
             random.randrange(min_radius, max_radius, 1)]
-        return cls(grid, center, radius)
+        rotation = [random.uniform(0, 2*math.pi), 
+            random.uniform(0, 2*math.pi), 
+            random.uniform(0, 2*math.pi)]
+        return cls(grid, center, radius, rotation)
 
     def _create_grid(self):
         # Create a spheroid
-        size = self.full_grid[0][0].size
-        x,y,z = np.indices((size, size, size))
-        self.grid = ((pow(x - self.center[0],2) / pow(self.radius[0],2))
-            + (pow(y - self.center[1],2) / pow(self.radius[1],2))
-            + (pow(z - self.center[2], 2) / pow(self.radius[2],2))) <= 1
+        self.grid = ((pow(self.x - self.center[0],2) / pow(self.radius[0],2))
+            + (pow(self.y - self.center[1],2) / pow(self.radius[1],2))
+            + (pow(self.z - self.center[2], 2) / pow(self.radius[2],2))) <= 1
 
     # This only gets called if it's not surrounded - there's no other things to check for a ball
     def _valid_edge(self, point):

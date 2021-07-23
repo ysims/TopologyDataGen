@@ -42,18 +42,9 @@ start_time = time.time()    # begin time count
 
 voxels = BettiCube(args.cube_size)            # make the cube
 voxels.add_objects(dict)            # add the right number of objects
-grid = voxels.get_full_objects()    # get the objects
 
-print("Adding --------- %s seconds ---" % (time.time() - start_time)) # print how long it took
-
-# Create a numpy array from the voxel grid so we can print it
-numpy_point_cloud = None
-for X,Y,Z in itertools.product(range(0, 30), repeat=3):
-    if (grid[X][Y][Z]):
-        if type(numpy_point_cloud) is np.ndarray:
-            numpy_point_cloud = np.concatenate((numpy_point_cloud,[[X,Y,Z]]),axis=0)
-        else:
-            numpy_point_cloud = np.array([[X, Y, Z]])
+# Print how long it took
+print("Adding --------- %s seconds ---" % (time.time() - start_time))
 
 # Plot the grid
 ax = plt.figure().add_subplot(projection='3d')

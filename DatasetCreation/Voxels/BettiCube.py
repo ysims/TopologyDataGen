@@ -66,7 +66,7 @@ class BettiCube(object):
         
         # Loop over all objects and add them to the voxel grid 
         for object in self.objects:
-            grid = grid | object.grid if not draw else grid | object.draw_grid
+            grid = (grid | object.grid) if not draw else (grid | object.draw_grid)
 
         # Add the border to it if we're not drawing
         if not draw:
