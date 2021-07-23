@@ -32,12 +32,12 @@ class Octopus(RandomWalk):
             self.shape = Spheroid.random(full_grid)
             while not self.shape.valid:
                 self.shape = Spheroid.random(full_grid)
-            self.grid = copy.copy(self.shape.grid)
+            self.grid = copy.copy(self.shape.draw_grid)
         else:
             self.shape = Torus.random(full_grid)
             while not self.shape.valid:
                 self.shape = Torus.random(full_grid)
-            self.grid = copy.copy(self.shape.grid)
+            self.grid = copy.copy(self.shape.draw_grid)
 
 
         # Add the number of tentacles that we want
@@ -81,7 +81,7 @@ class Octopus(RandomWalk):
         # We will make a 'tentacle' going off from one of the edges
         edges = []
         for X,Y,Z in itertools.product(range(0, self.full_grid[0][0].size), repeat=3):
-            if (self.shape.grid[X][Y][Z] 
+            if (self.shape.draw_grid[X][Y][Z] 
                     and not hard_surrounded([X,Y,Z], self.grid)):
                 edges.append([X,Y,Z])
         
