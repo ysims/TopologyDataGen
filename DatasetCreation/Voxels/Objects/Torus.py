@@ -3,7 +3,7 @@ import numpy as np
 import random
 import yaml
 
-from Geometry import intersect_or_touch, rotate_object, rotate_grid, distance3d
+from Geometry import intersect_or_touch, rotate_grid, distance3d
 from Shape import Shape
 
 
@@ -175,7 +175,6 @@ class Torus2(Shape):
             & ((self.x - self.center[0] + self.major_radius * 2)**2 
             + (self.y - self.center[1])**2 <= self.major_radius ** 2))
         combined_disc = disc1 | disc2
-        rotate_object(self, combined_disc)
         return combined_disc
 
     # Only valid if it's not in the inner part of either torus
