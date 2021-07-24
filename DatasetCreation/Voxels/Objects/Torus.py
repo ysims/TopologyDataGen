@@ -94,20 +94,22 @@ class Torus(Shape):
         return True
 
 # A 2-torus
-class Torus2(Shape):
+class TorusN(Shape):
     # Make a specific torus
     def __init__(self, 
                 full_grid, 
                 center, 
                 major_radius, 
                 minor_radius, 
-                rotation):
+                rotation,
+                n_holes):
         # Set torus information
         self.full_grid = full_grid
         self.center = center
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.rotation = rotation
+        self.n_holes = n_holes
         self.valid = True
 
         size = full_grid[0][0].size

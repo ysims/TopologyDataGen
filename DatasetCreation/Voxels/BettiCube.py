@@ -8,7 +8,7 @@ sys.path.append('Objects')
 from Island import Island
 from Octopus import Octopus
 from Spheroid import Spheroid
-from Torus import Torus, Torus2
+from Torus import Torus, TorusN
 from Tunnel import Tunnel
 
 # Class that holds a cube with cavities in it, 
