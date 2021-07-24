@@ -27,8 +27,8 @@ class Octopus(RandomWalk):
         self.length_between_branches = \
             data_loaded["Octopus"]["length_between_branches"]
         self.shape_name = data_loaded["Octopus"]["shape"]
-
-        if self.shape_name is "Spheroid":
+        
+        if self.shape_name == "Spheroid":
             self.shape = Spheroid.random(full_grid)
             while not self.shape.valid:
                 self.shape = Spheroid.random(full_grid)
