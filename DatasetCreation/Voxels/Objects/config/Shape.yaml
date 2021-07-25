@@ -8,6 +8,8 @@ Torus:
   min_major_radius: 4
   max_major_radius: 6
   min_minor_radius: 2
+  min_holes: 1
+  max_holes: 3
 
 Island:
   center_placement_border: 5
