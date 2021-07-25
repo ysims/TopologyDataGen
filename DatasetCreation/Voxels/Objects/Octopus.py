@@ -39,11 +39,16 @@ class Octopus(RandomWalk):
                 self.shape = Torus.random(full_grid)
             self.grid = copy.copy(self.shape.draw_grid)
 
-
+        max_tries = 100
+        count = 0
         # Add the number of tentacles that we want
         # Retry if it fails
-        for _ in range(num_tentacles):
+        for i in range(num_tentacles):
+            count = 1
             while not self._random_walk():
+                count += 1
+                if count == max_tries:
+                    break
                 continue
 
         self.draw_grid = self.grid
@@ -66,8 +71,14 @@ class Octopus(RandomWalk):
         if all_points.count(new_point) > 0:
             return False
 
-        if intersect_or_touch(new_point, (self.grid | self.full_grid)):
-            return False
+        # If we're still close to the body, 
+        # don't worry about touching the body
+        if len(all_points) < 2:
+            if intersect_or_touch(new_point, self.full_grid):
+                return False
+        else:
+            if intersect_or_touch(new_point, (self.grid | self.full_grid)):
+                return False
         return True
 
     # Determines a start location for the walk
@@ -93,21 +104,25 @@ class Octopus(RandomWalk):
         # Grab a random edge to use
         # Don't add it to the path because it's already on the circle
         # Find one open spot to add to the path
-        edge = random.choice(edges)
-        directions = [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1]]
-        for direction in directions:
-            try:    # skip if this is out of bounds
-                test_point = [edge[0] + direction[0],
-                              edge[1] + direction[1],
-                              edge[2] + direction[2]]
-                if not (self.grid[test_point[0]]
-                                 [test_point[1]]
-                                 [test_point[2]]):  
-                    if not intersect_or_touch(test_point, self.full_grid):
-                        all_points.append(test_point)
-                        break
-            except: 
-                pass
+        found_point = False
+        while not found_point:
+            edge = random.choice(edges)
+            edges.remove(edge)
+            directions = [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1]]
+            for direction in directions:
+                try:    # skip if this is out of bounds
+                    test_point = [edge[0] + direction[0],
+                                edge[1] + direction[1],
+                                edge[2] + direction[2]]
+                    if not (self.grid[test_point[0]]
+                                    [test_point[1]]
+                                    [test_point[2]]):  
+                        if not intersect_or_touch(test_point, self.full_grid):
+                            found_point = True
+                            all_points.append(test_point)
+                            break
+                except: 
+                    pass
 
         # At this point, either we found a good point off the edge
         # so we're returning that point and will make a tentacle with it
