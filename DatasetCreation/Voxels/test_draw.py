@@ -16,8 +16,8 @@ parser.add_argument("--spheroid_num", type=int, default=0,
                     help="Number of spheroid cavities to add to the cube.")
 parser.add_argument("--torus_num", type=int, default=0,
                     help="Number of torus cavities to add to the cube.")
-parser.add_argument("--torus2_num", type=int, default=0,
-                    help="Number of two-holed torus cavities to add to the cube.")
+parser.add_argument("--torusN_num", type=int, default=0,
+                    help="Number of n-holed torus cavities to add to the cube.")
 parser.add_argument("--island_num", type=int, default=0,
                     help="Number of island cavities to add to the cube.")
 parser.add_argument("--tunnel_num", type=int, default=0,
@@ -30,7 +30,7 @@ args = parser.parse_args()
 dict = {
     "Spheroid": args.spheroid_num,
     "Torus": args.torus_num,
-    "Torus2": args.torus2_num,
+    "TorusN": args.torusN_num,
     "Island": args.island_num,
     "Tunnel": args.tunnel_num,
     "Octopus": args.octopus_num,

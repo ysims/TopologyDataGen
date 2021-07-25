@@ -41,7 +41,7 @@ class BettiCube(object):
     # Adds a random object to the cube
     # from a set of allowed objects
     def add_random(self):
-        objects = ["Tunnel", "Torus", "Torus2", 
+        objects = ["Tunnel", "Torus", "TorusN", 
             "Spheroid", "Island", "Octopus"]
 
         # Loop until object is successfully added
@@ -82,7 +82,7 @@ class BettiCube(object):
     def get_data(self):
         spheroid_count = 0
         torus_count = 0
-        torus2_count = 0
+        torusN_count = 0
         island_count = 0
         tunnel_count = 0
         octopus_count = 0
@@ -93,8 +93,8 @@ class BettiCube(object):
                 spheroid_count += 1
             elif isinstance(object, Torus):
                 torus_count += 1
-            elif isinstance(object, Torus2):
-                torus2_count += 1
+            elif isinstance(object, TorusN):
+                torusN_count += 1
             elif isinstance(object, Island):
                 island_count += 1
             elif isinstance(object, Tunnel):
@@ -106,7 +106,7 @@ class BettiCube(object):
         return {
             "Spheroid": spheroid_count,
             "Torus": torus_count,
-            "Torus2": torus2_count,
+            "TorusN": torusN_count,
             "Island": island_count,
             "Tunnel": tunnel_count,
             "Octopus": octopus_count,

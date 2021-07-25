@@ -111,7 +111,6 @@ class TorusN(Shape):
         self.rotation = rotation
         self.n_holes = n_holes
         self.valid = True
-
         size = full_grid[0][0].size
         self.x,self.y,self.z = rotate_grid(size,self.rotation,self.center)
         
@@ -119,16 +118,14 @@ class TorusN(Shape):
         self._place_and_move()
 
         # Make the grid properly now that we've got a valid center
-        torus1 = (pow(np.sqrt((self.x - self.center[0])**2 
-            + (self.y - self.center[1])**2) 
-            - self.major_radius, 2) 
-            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
-        torus2 = (pow(np.sqrt((self.x - self.center[0] 
-            + self.major_radius*2)**2 
-            + (self.y - self.center[1])**2) - self.major_radius, 2) 
-            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
-        self.draw_grid = torus1 | torus2
-    
+        self.draw_grid = (self.x == 0) & (self.x == 1)
+        for i in range(self.n_holes):
+            torus = (pow(np.sqrt((self.x - self.center[0] + i *self.major_radius*2)**2 
+                + (self.y - self.center[1])**2) 
+                - self.major_radius, 2) 
+                + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
+            self.draw_grid = self.draw_grid | torus
+        
     # Make a random torus
     @classmethod
     def random(cls, grid):
@@ -139,6 +136,8 @@ class TorusN(Shape):
         min_major = data_loaded["Torus"]["min_major_radius"]
         max_major = data_loaded["Torus"]["max_major_radius"]
         min_minor = data_loaded["Torus"]["min_minor_radius"]
+        max_holes = data_loaded["Torus"]["max_holes"]
+        min_holes = data_loaded["Torus"]["min_holes"]
         size = grid[0][0].size
 
         # Make random torus
@@ -148,35 +147,40 @@ class TorusN(Shape):
         center = [random.randrange(center_place, size-center_place, 1),
             random.randrange(center_place, size-center_place, 1), 
             random.randrange(center_place, size-center_place, 1)]
-        major_radius = random.randrange(min_major, max_major, 1)
-        minor_radius = random.randrange(min_minor, major_radius-1, 1)
-        return cls(grid, center, major_radius, minor_radius, rotation)
+        major_radius = random.randrange(min_major, max_major+1, 1)
+        minor_radius = random.randrange(min_minor, major_radius, 1)
+
+        # If they're the same, just use that number
+        # otherwise do it randomly
+        if max_holes == min_holes:
+            n_holes = min_holes
+        else:
+            n_holes = random.randrange(min_holes, max_holes+1, 1)
+
+        return cls(grid, center, major_radius, minor_radius, rotation, n_holes)
 
     # When creating the grid, plug up the torus so place and move 
     # can detect if there's anything going through the torus
     def _create_grid(self):
-        torus1 = (pow(np.sqrt((self.x - self.center[0])**2 
-            + (self.y - self.center[1])**2) 
-            - self.major_radius, 2) 
-            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
-        torus2 = (pow(np.sqrt((self.x - self.center[0] 
-            + self.major_radius*2)**2 
-            + (self.y - self.center[1])**2) - self.major_radius, 2) 
-            + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
-        self.grid = torus1 | torus2 | self.get_disc()
+        self.grid = (self.x == 0) & (self.x == 1)
+        for i in range(self.n_holes):
+            torus = (pow(np.sqrt((self.x - self.center[0] + i *self.major_radius*2)**2 
+                + (self.y - self.center[1])**2) 
+                - self.major_radius, 2) 
+                + (self.z - self.center[2])**2 <= self.minor_radius ** 2)
+            self.grid = self.grid | torus
+        self.grid = self.grid | self.get_disc()
 
     # This will get the circle that 'plugs' up the torus, 
     # to prevent tunnels going through
     def get_disc(self):
-        disc1 = ((self.z > self.center[2]-1) 
-            & (self.z < self.center[2] + 1) 
-            & ((self.x - self.center[0])**2 
-            + (self.y - self.center[1])**2 <= self.major_radius ** 2))
-        disc2 = ((self.z > self.center[2]-1) 
-            & (self.z < self.center[2] + 1) 
-            & ((self.x - self.center[0] + self.major_radius * 2)**2 
-            + (self.y - self.center[1])**2 <= self.major_radius ** 2))
-        combined_disc = disc1 | disc2
+        combined_disc = (self.x == 0) & (self.x == 1)
+        for i in range(self.n_holes):
+            disc = ((self.z > self.center[2]-1) 
+                & (self.z < self.center[2] + 1) 
+                & ((self.x - self.center[0] + i*self.major_radius*2)**2 
+                + (self.y - self.center[1])**2 <= self.major_radius ** 2))
+            combined_disc = combined_disc | disc
         return combined_disc
 
     # Only valid if it's not in the inner part of either torus
