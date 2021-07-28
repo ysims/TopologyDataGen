@@ -219,6 +219,15 @@ class Shape(ABC):
             
             count += 1
 
+    def _place(self):
+        # Create the object
+        self._create_grid()
+
+        # Check intersect
+        if (self.grid & self.full_grid).any():
+            self.valid = False
+        return
+
     @abstractmethod
     def _create_grid(self):
         pass
