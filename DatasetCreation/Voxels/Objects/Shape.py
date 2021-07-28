@@ -118,7 +118,7 @@ class Shape(ABC):
                 cluster_edge.remove(point)
 
             # There is a chance the intersection is completely inside
-            # Chose random shape edge and find the intersection edge
+            # Choose random shape edge and find the intersection edge
             # that is furthest away to move the intersection away
             if not cluster_shape_edge:
                 chosen_edge = random.choice(edge_points)
