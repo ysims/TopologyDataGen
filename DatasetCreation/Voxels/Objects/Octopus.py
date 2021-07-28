@@ -32,26 +32,13 @@ class Octopus(RandomWalk):
             self.shape = Spheroid.random(full_grid)
             while not self.shape.valid:
                 self.shape = Spheroid.random(full_grid)
-            self.grid = copy.copy(self.shape.draw_grid)
         else:
             self.shape = Torus.random(full_grid)
             while not self.shape.valid:
                 self.shape = Torus.random(full_grid)
-            self.grid = copy.copy(self.shape.draw_grid)
+    
+        self.grid = copy.copy(self.shape.draw_grid)
 
-        max_tries = 100
-        count = 0
-        # Add the number of tentacles that we want
-        # Retry if it fails
-        for i in range(num_tentacles):
-            count = 1
-            while not self._random_walk():
-                count += 1
-                if count == max_tries:
-                    break
-                continue
-
-        self.draw_grid = self.grid
 
     # Make a random tunnel
     @classmethod
@@ -80,6 +67,24 @@ class Octopus(RandomWalk):
             if intersect_or_touch(new_point, (self.grid | self.full_grid)):
                 return False
         return True
+
+    # Separate function for adding the tentacles
+    # Since it'd be better to add them all later
+    # Since they're easier to add than big objects
+    def addTentacles(self):
+        max_tries = 100
+        count = 0
+        # Add the number of tentacles that we want
+        # Retry if it fails
+        for i in range(self.num_tentacles):
+            count = 1
+            while not self._random_walk():
+                count += 1
+                if count == max_tries:
+                    break
+                continue
+
+        self.draw_grid = self.grid
 
     # Determines a start location for the walk
     # and returns the first point in the walk
@@ -152,10 +157,10 @@ class Octopus(RandomWalk):
     # and return the beginning of the new path
     def _branch_start(self, _path):
         # This tentacle will be smaller than its parent
-        if int(len(_path)/2) <= self.min_tentacle_length/2:
+        if int(len(_path)/2) <= int(self.min_tentacle_length/2):
             return []
-        self.tentacle_length = random.randrange(self.min_tentacle_length/2, 
-            int(len(_path)/2), 1)
+        self.tentacle_length = random.randrange(
+            int(self.min_tentacle_length/2), int(len(_path)/2), 1)
 
         path = copy.copy(_path)
         
