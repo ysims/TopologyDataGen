@@ -23,6 +23,8 @@ class RandomWalk(ABC):
         
         # If it wasn't successful, just return
         if not self._walk(all_points):
+            for point in all_points:
+                self.grid[point[0], point[1], point[2]] = False
             return False
 
         # The last two points won't be there, 
@@ -60,6 +62,8 @@ class RandomWalk(ABC):
                 # Do as before and create the path
                 # If it doesn't work, try again
                 if not self._walk(all_points):
+                    for point in all_points:
+                        self.grid[point[0], point[1], point[2]] = False
                     continue
 
                 # The last two points won't be there, 
