@@ -3,7 +3,8 @@ import random
 import scipy.ndimage
 
 import sys
-sys.path.append('Objects')
+
+sys.path.append("Objects")
 
 from Island import Island
 from Octopus import Octopus
@@ -11,20 +12,24 @@ from Spheroid import Spheroid
 from Torus import Torus, TorusN
 from Tunnel import Tunnel
 
-# Class that holds a cube with cavities in it, 
+# Class that holds a cube with cavities in it,
 # of various configurations
 class BettiCube(object):
-
     def __init__(self, size):
         # The number of voxels across any edge
         self.size = size
-        self.objects = [] # initialise our list of objects
-        # Create the full shape everything is contained in. 
+        self.objects = []  # initialise our list of objects
+        # Create the full shape everything is contained in.
         # True areas are the border and false are the insides
         x, y, z = np.indices((self.size, self.size, self.size))
-        self.border = ((x == 0) | (x == self.size - 1) 
-            | (y == 0) | (y == self.size - 1) 
-            | (z == 0) | (z == self.size - 1))
+        self.border = (
+            (x == 0)
+            | (x == self.size - 1)
+            | (y == 0)
+            | (y == self.size - 1)
+            | (z == 0)
+            | (z == self.size - 1)
+        )
 
     # Add the specified objects from the dictionary
     # to the cube as cavities
@@ -34,8 +39,9 @@ class BettiCube(object):
     def add_objects(self, num_objects):
         for key in num_objects:
             for _ in range(num_objects[key]):
-                while(not self.add_object(eval(key 
-                        + ".random(self.get_objects(draw=False))"))):
+                while not self.add_object(
+                    eval(key + ".random(self.get_objects(draw=False))")
+                ):
                     continue
 
         for object in self.objects:
@@ -45,16 +51,18 @@ class BettiCube(object):
     # Adds a random object to the cube
     # from a set of allowed objects
     def add_random(self):
-        objects = ["Tunnel", "Torus", "TorusN", 
-            "Spheroid", "Island", "Octopus"]
+        objects = ["Tunnel", "Torus", "TorusN", "Spheroid", "Island", "Octopus"]
 
         # Loop until object is successfully added
-        while not self.add_object(eval(
-                        objects[random.randrange(0, len(objects), 1)]
-                        + ".random(self.get_objects(draw=False))")):
+        while not self.add_object(
+            eval(
+                objects[random.randrange(0, len(objects), 1)]
+                + ".random(self.get_objects(draw=False))"
+            )
+        ):
             continue
 
-    # Check if this object was made correctly, 
+    # Check if this object was made correctly,
     # if so we can add it to the list
     # Requires object to have a `valid` boolean value
     def add_object(self, object):
@@ -65,17 +73,17 @@ class BettiCube(object):
 
     # Returns a grid with all the 'holes' as solid objects
     def get_objects(self, draw):
-        x,_,_ = np.indices((self.size, self.size, self.size))
+        x, _, _ = np.indices((self.size, self.size, self.size))
         grid = x < 0
-        
-        # Loop over all objects and add them to the voxel grid 
+
+        # Loop over all objects and add them to the voxel grid
         for object in self.objects:
             grid = (grid | object.grid) if not draw else (grid | object.draw_grid)
 
         # Add the border to it if we're not drawing
         if not draw:
             grid = grid | self.border
-        
+
         return grid
 
     # Get the full cube with holes
@@ -114,5 +122,4 @@ class BettiCube(object):
             "Island": island_count,
             "Tunnel": tunnel_count,
             "Octopus": octopus_count,
-}
-            
+        }

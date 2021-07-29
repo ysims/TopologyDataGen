@@ -4,6 +4,7 @@ import itertools
 from operator import add
 import random
 
+
 class RandomWalk(ABC):
 
     # Creates a random walk and adds it to the grid
@@ -17,34 +18,33 @@ class RandomWalk(ABC):
         # Keep track of all the points in the tunnel
         all_points = self._get_start()
         if not all_points:
-            print("Something went wrong, " 
-                "couldn't find a start position.")
+            print("Something went wrong, " "couldn't find a start position.")
             return False
-        
+
         # If it wasn't successful, just return
         if not self._walk(all_points):
             for point in all_points:
                 self.grid[point[0], point[1], point[2]] = False
             return False
 
-        # The last two points won't be there, 
+        # The last two points won't be there,
         # add everything in the walk to the grid
         for point in all_points:
             self.grid[point[0], point[1], point[2]] = True
 
-        # Nothing seemed to go wrong and we 
+        # Nothing seemed to go wrong and we
         # don't want to branch so return true
         if not self.branching:
             return True
 
-        # Loop until there are no more paths to 
+        # Loop until there are no more paths to
         # check for branching
         paths = []
         paths.append(copy.copy(all_points))
         while paths:
             # Find out how many branches should be made
             num_branch = self._num_branches(paths[0])
-            if num_branch is 0: 
+            if num_branch is 0:
                 paths.remove(paths[0])
                 continue
 
@@ -54,7 +54,7 @@ class RandomWalk(ABC):
                 # If we can't make any branch on this
                 # path, stop trying with this path
                 all_points = self._branch_start(paths[0])
-                # No need to remove the path because 
+                # No need to remove the path because
                 # we do it after breaking
                 if not all_points:
                     break
@@ -66,7 +66,7 @@ class RandomWalk(ABC):
                         self.grid[point[0], point[1], point[2]] = False
                     continue
 
-                # The last two points won't be there, 
+                # The last two points won't be there,
                 # add everything in the walk to the grid
                 for point in all_points:
                     self.grid[point[0], point[1], point[2]] = True
@@ -75,11 +75,10 @@ class RandomWalk(ABC):
                 num_branch -= 1
                 paths.append(copy.copy(all_points))
 
-            # Finished adding all the branches to this path 
+            # Finished adding all the branches to this path
             paths.remove(paths[0])
-        
-        return True
 
+        return True
 
     def _walk(self, all_points):
         # Loop until some given condition is satisfied
@@ -94,23 +93,22 @@ class RandomWalk(ABC):
         # Otherwise they would be flagged as intersections
         while not self._stop_walk_condition(all_points):
             # Add all possible movement directions
-            movement_direction = [] # list of value movements
-            for x,y,z in itertools.permutations([1,0,0],3):
-                movement_direction.append([x,y,z])
-                movement_direction.append([-x,-y,-z])       
+            movement_direction = []  # list of value movements
+            for x, y, z in itertools.permutations([1, 0, 0], 3):
+                movement_direction.append([x, y, z])
+                movement_direction.append([-x, -y, -z])
             movement_direction.sort()
             # Remove duplicates
             movement_direction = list(
-                movement_direction for movement_direction,
-                _ in itertools.groupby(movement_direction))
+                movement_direction
+                for movement_direction, _ in itertools.groupby(movement_direction)
+            )
 
             point_added = False
             random.shuffle(movement_direction)
             for direction in movement_direction:
                 # Add the direction and the last point
-                new_point = list(map(add, 
-                                    direction, 
-                                    all_points[len(all_points) - 1]))
+                new_point = list(map(add, direction, all_points[len(all_points) - 1]))
                 if self._allowed_point(new_point, all_points):
                     all_points.append(new_point)
                     # Add onto the grid the point from two runs ago
@@ -118,13 +116,13 @@ class RandomWalk(ABC):
                         to_add = all_points[len(all_points) - 3]
                         self.grid[to_add[0], to_add[1], to_add[2]] = True
                     point_added = True
-                    break   # Don't keep going with the for loop
-            
+                    break  # Don't keep going with the for loop
+
             # If a point wasn't added
             # see if this was a decent enough try
             # otherwise just return false
             if not point_added:
-                if (not self._acceptable_walk(all_points)):
+                if not self._acceptable_walk(all_points):
                     # Remove anything we added because we don't want it anymore
                     for point in all_points:
                         self.grid[point[0], point[1], point[2]] = False
