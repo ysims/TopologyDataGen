@@ -67,7 +67,7 @@ def create_single_data(args):
         # Make the normal cube
         full_grid = voxels.get_full_objects()  # get the objects
         numpy_point_cloud = None
-        for X, Y, Z in itertools.product(range(0, 30), repeat=3):
+        for X, Y, Z in itertools.product(range(0, args.cube_size), repeat=3):
             if full_grid[X][Y][Z]:
                 if type(numpy_point_cloud) is np.ndarray:
                     numpy_point_cloud = np.concatenate(

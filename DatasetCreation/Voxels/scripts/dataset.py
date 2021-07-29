@@ -25,7 +25,7 @@ def generate_dataset(args):
             # generate will be changed after
             spheroid_num = 0
             torus_num = 0
-            torus2_num = 0
+            torusN_num = 0
             island_num = 0
             tunnel_num = 0
             octopus_num = 0
@@ -38,7 +38,7 @@ def generate_dataset(args):
                 torusN_num = i + 1
             elif args.object == "island":
                 island_num = i + 1
-            elif args.object == "tunnels":
+            elif args.object == "tunnel":
                 tunnel_num = i + 1
             elif args.object == "octopus":
                 octopus_num = i + 1

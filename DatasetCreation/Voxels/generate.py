@@ -12,10 +12,10 @@ parser = argparse.ArgumentParser(
     description="This program creates and draws cavity-filled cube/s"
 )
 parser.add_argument(
-    "first_type",
+    "type",
     default="single",
-    choices=["single", "multi"],
-    help="Type of generation - a single cube or multiple.",
+    choices=["single", "dataset"],
+    help="Type of generation - a single cube or a whole dataset.",
 )
 parser.add_argument(
     "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
@@ -95,7 +95,7 @@ args = parser.parse_args()
 
 # **** MAKE THE DATA ****
 # Create just one cube with given parameters
-if args.first_type == "single":
+if args.type == "single":
     create_single_data(args)
 
 # Create a dataset of cubes
