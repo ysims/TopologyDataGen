@@ -27,7 +27,7 @@ class Spheroid(Shape):
         size = full_grid[0][0].size
         self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
 
-        self._place_and_move()
+        self._place()
 
         self.draw_grid = self.grid
 
