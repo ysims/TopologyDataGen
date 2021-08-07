@@ -36,7 +36,6 @@ class RandomWalk(ABC):
         # don't want to branch so return true
         if not self.branching:
             return True
-
         # Loop until there are no more paths to
         # check for branching
         paths = []
@@ -47,9 +46,11 @@ class RandomWalk(ABC):
             if num_branch is 0:
                 paths.remove(paths[0])
                 continue
-
             # Loop while we have branches to create
-            while num_branch > 0:
+            max_tries = 1000
+            amount_tried = 0
+            while num_branch > 0 or amount_tried >= max_tries:
+                amount_tried += 1
                 # Get the start of our branch
                 # If we can't make any branch on this
                 # path, stop trying with this path

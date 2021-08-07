@@ -20,7 +20,7 @@ def generate_dataset(args):
     # Loop over all configurations of # of object
     # from min to max for all objects
     for i in range(args.min_objects - 1, args.max_objects):
-        for j in range(args.repeat):
+        for _ in range(args.repeat):
             # Set all values to 0, the one we will
             # generate will be changed after
             spheroid_num = 0
