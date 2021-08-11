@@ -177,7 +177,11 @@ class Octopus(RandomWalk):
         choice_path.pop(len(choice_path) - 1)
 
         new_path = []
-        while not new_path:
+        max_tries = 1000
+        amount_tried = 0
+        while (not new_path) and (amount_tried < max_tries):
+            amount_tried += 1
+
             path = copy.copy(_path)
             start = random.choice(choice_path)
 

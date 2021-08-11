@@ -49,7 +49,7 @@ class RandomWalk(ABC):
             # Loop while we have branches to create
             max_tries = 1000
             amount_tried = 0
-            while num_branch > 0 or amount_tried >= max_tries:
+            while num_branch > 0 and amount_tried < max_tries:
                 amount_tried += 1
                 # Get the start of our branch
                 # If we can't make any branch on this
@@ -74,6 +74,7 @@ class RandomWalk(ABC):
 
                 # Successfully made a branch
                 num_branch -= 1
+                amount_tried = 0
                 paths.append(copy.copy(all_points))
 
             # Finished adding all the branches to this path
