@@ -1,0 +1,8 @@
+Octopus:
+  min_num_tentacles: 3
+  max_num_tentacles: 7
+  min_tentacle_length: 35
+  max_tentacle_length: 55
+  branching: true
+  length_between_branches: 5
+  shape: "Spheroid"
