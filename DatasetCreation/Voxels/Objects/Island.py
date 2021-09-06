@@ -23,7 +23,7 @@ class Island(Shape):
         self.rotation = rotation
 
         # Find a center that works
-        self._place_and_move()
+        self._place()
 
         # Make a rotated grid and use it to make a voxelised sphere
         # with a hole in the middle (island)
