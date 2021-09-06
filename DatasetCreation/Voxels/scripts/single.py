@@ -65,10 +65,9 @@ def create_single_data(args):
         )
 
         # Make the normal cube
-        full_grid = voxels.get_full_objects()  # get the objects
         numpy_point_cloud = None
         for X, Y, Z in itertools.product(range(0, args.cube_size), repeat=3):
-            if full_grid[X][Y][Z]:
+            if not grid[X][Y][Z]:
                 if type(numpy_point_cloud) is np.ndarray:
                     numpy_point_cloud = np.concatenate(
                         (numpy_point_cloud, [[X, Y, Z]]), axis=0
@@ -84,3 +83,5 @@ def create_single_data(args):
             os.path.join(path, "{r_num}_betti.yaml".format(r_num=r_num)), "w"
         ) as file:
             documents = yaml.dump(voxels.get_data(), file)
+
+        print("Saved as", r_num)
