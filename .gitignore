@@ -2,3 +2,4 @@
 *.ply
 data
 all_data
+*.npy
