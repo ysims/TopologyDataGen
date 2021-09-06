@@ -26,7 +26,7 @@ class Torus(Shape):
         size = full_grid[0][0].size
         self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
 
-        self._place_and_move()
+        self._place()
 
         # place_and_move uses a grid that is plugged up for intersection checking
         # In the end, we don't want this so just make the torus normally
@@ -127,7 +127,7 @@ class TorusN(Shape):
         self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
 
         # Find a center that works
-        self._place_and_move()
+        self._place()
 
         # Make the grid properly now that we've got a valid center
         self.draw_grid = (self.x == 0) & (self.x == 1)
