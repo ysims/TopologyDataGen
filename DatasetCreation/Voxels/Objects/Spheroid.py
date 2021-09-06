@@ -48,11 +48,14 @@ class Spheroid(Shape):
             random.randrange(center_place, size - center_place, 1),
             random.randrange(center_place, size - center_place, 1),
         )
-        radius = [
-            random.randrange(min_radius, max_radius, 1),
-            random.randrange(min_radius, max_radius, 1),
-            random.randrange(min_radius, max_radius, 1),
-        ]
+        if min_radius == max_radius:
+            radius = [min_radius, min_radius, min_radius]
+        else:
+            radius = [
+                random.randrange(min_radius, max_radius, 1),
+                random.randrange(min_radius, max_radius, 1),
+                random.randrange(min_radius, max_radius, 1),
+            ]
         rotation = [
             random.uniform(0, 2 * math.pi),
             random.uniform(0, 2 * math.pi),
