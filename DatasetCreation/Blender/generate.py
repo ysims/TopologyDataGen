@@ -1,9 +1,8 @@
 import os
 import sys
-import itertools
 import numpy as np
-import bpy      # import blender python
-import bmesh    # import blender mesh
+import bpy  # import blender python
+import bmesh  # import blender mesh
 
 dir = os.path.dirname(bpy.data.filepath)
 if not dir in sys.path:
@@ -25,16 +24,12 @@ bmesh.ops.create_cube(bm, size=1.0)
 # Store the bmesh inside the mesh
 bm.to_mesh(mesh)
 
-# cube.location = (0,0,0)
-
-size = 50 # size of the cube (cubed)
-
-grid = np.load('objects.npy')
+grid = np.load("objects.npy")
 
 # Create a numpy array from the voxel grid so we can turn it into an open3d geometry
-#numpy_point_cloud = None
+# numpy_point_cloud = None
 for point in grid:
     # Create the Blender cubes
     new_cube = cube.copy()
-    new_cube.location = (point[0],point[1],point[2])
+    new_cube.location = (point[0], point[1], point[2])
     scene.collection.objects.link(new_cube)
