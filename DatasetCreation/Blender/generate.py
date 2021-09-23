@@ -24,9 +24,8 @@ bmesh.ops.create_cube(bm, size=1.0)
 # Store the bmesh inside the mesh
 bm.to_mesh(mesh)
 
-grid = np.load("objects.npy")
+grid = np.load(os.path.join(dir, "objects.npy"))
 
-# Create a numpy array from the voxel grid so we can turn it into an open3d geometry
 # numpy_point_cloud = None
 for point in grid:
     # Create the Blender cubes

@@ -17,7 +17,7 @@ args = parser.parse_args()
 
 # Load array and create a voxel grid from it
 np_grid = np.load(args.grid_file)
-grid_size = np.amax(np_grid)
+grid_size = np.amax(np_grid) + 1
 x, y, z = np.indices((grid_size, grid_size, grid_size))
 grid = x == x + 1  # Full falsey grid
 

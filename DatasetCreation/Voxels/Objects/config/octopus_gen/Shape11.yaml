@@ -2,3 +2,11 @@ Spheroid:
   center_placement_border: 5
   min_radius: 1
   max_radius: 2
+
+Torus:
+  center_placement_border: 4
+  min_major_radius: 3
+  max_major_radius: 3
+  min_minor_radius: 1
+  min_holes: 5
+  max_holes: 5

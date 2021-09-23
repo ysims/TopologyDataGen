@@ -46,7 +46,7 @@ class BettiCube(object):
 
         for object in self.objects:
             if isinstance(object, Octopus):
-                object.addTentacles()
+                object.addTentacles(self.get_objects(draw=False))
 
     # Adds a random object to the cube
     # from a set of allowed objects

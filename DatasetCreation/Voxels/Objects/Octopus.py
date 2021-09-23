@@ -67,7 +67,9 @@ class Octopus(RandomWalk):
     # Separate function for adding the tentacles
     # Since it'd be better to add them all later
     # Since they're easier to add than big objects
-    def addTentacles(self):
+    def addTentacles(self, full_grid):
+        self.full_grid = full_grid & (~self.grid)
+
         max_tries = 100
         count = 0
         # Add the number of tentacles that we want
@@ -109,6 +111,10 @@ class Octopus(RandomWalk):
         # Find one open spot to add to the path
         found_point = False
         while not found_point:
+            if not edges:
+                print("No edges, something is wrong")
+                self.valid = False
+                return []
             edge = random.choice(edges)
             edges.remove(edge)
             directions = [

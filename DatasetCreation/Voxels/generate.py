@@ -18,7 +18,7 @@ parser.add_argument(
     help="Type of generation - a single cube or a whole dataset.",
 )
 parser.add_argument(
-    "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
+    "--cube_size", type=int, default=30, help="Size of the cavity-filled cube, cubed."
 )
 
 # Single specific

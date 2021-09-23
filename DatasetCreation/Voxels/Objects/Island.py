@@ -21,6 +21,7 @@ class Island(Shape):
         self.outer_radius = outer_radius
         self.inner_radius = inner_radius
         self.rotation = rotation
+        self.valid = True
 
         # Find a center that works
         self._place()
@@ -28,16 +29,16 @@ class Island(Shape):
         # Make a rotated grid and use it to make a voxelised sphere
         # with a hole in the middle (island)
         size = full_grid[0][0].size
-        x, y, z = np.indices((+size, size, size))
-        self.grid = (
+        x, y, z = np.indices((size, size, size))
+        self.draw_grid = (
             (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2))
             <= outer_radius ** 2
         ) & (
             (pow(x - center[0], 2) + pow(y - center[1], 2) + pow(z - center[2], 2))
             >= inner_radius ** 2
         )
-
-        self.draw_grid = self._create_grid()
+        # Set self.grid
+        self._create_grid()
 
     # Make a random island
     @classmethod
@@ -62,15 +63,22 @@ class Island(Shape):
             random.randrange(center_place, size - center_place, 1),
             random.randrange(center_place, size - center_place, 1),
         ]
-        outer_radius = random.randrange(min_outer, max_outer, 1)
-        inner_radius = random.randrange(min_inner, outer_radius - 1, 1)
-        return cls(center, grid, outer_radius, inner_radius, rotation)
+        if min_outer == max_outer:
+            outer_radius = min_outer
+        else:
+            outer_radius = random.randrange(min_outer, max_outer, 1)
+        if min_inner == outer_radius:
+            inner_radius = min_inner
+        else:
+            inner_radius = random.randrange(min_inner, outer_radius - 1, 1)
+        return cls(grid, center, outer_radius, inner_radius, rotation)
 
     # Make this as a ball for finding a good center,
     # or we might trap an object inside...
     def _create_grid(self):
         # Create a sphere
-        x, y, z = np.indices((self.size, self.size, self.size))
+        size = self.full_grid[0][0].size
+        x, y, z = np.indices((size, size, size))
         self.grid = (
             pow(x - self.center[0], 2)
             + pow(y - self.center[1], 2)

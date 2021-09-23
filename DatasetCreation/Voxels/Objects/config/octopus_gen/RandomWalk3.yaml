@@ -5,4 +5,4 @@ Octopus:
   max_tentacle_length: 15
   branching: false
   length_between_branches: 5
-  shape: "Spheroid"
+  shape: "Torus"

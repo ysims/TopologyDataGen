@@ -25,12 +25,12 @@ start = time.perf_counter()
 print("Begin!")
 
 # Calculate the persistent homology
-diagram = ripser(data, maxdim=2, thresh=2)["dgms"]
+diagram = ripser(data, maxdim=3)["dgms"]
 
 # Finish timing and print the time it took.
 end = time.perf_counter()
 print("Computation took ", (end - start), " seconds")
 
 # Save the diagram by picking
-with open(args.output_file, "wb") as fp:  # Pickling
+with open(args.input_file, "wb") as fp:  # Pickling
     pickle.dump(diagram, fp)
