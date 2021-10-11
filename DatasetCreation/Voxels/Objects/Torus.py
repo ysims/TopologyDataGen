@@ -68,10 +68,10 @@ class Torus(Shape):
         else:
             major_radius = random.randrange(min_major, max_major, 1)
 
-        if min_minor == (major_radius - 1):
+        if min_minor == (major_radius - 2):
             minor_radius = min_minor
         else:
-            minor_radius = random.randrange(min_minor, major_radius - 1, 1)
+            minor_radius = random.randrange(min_minor, major_radius - 2, 1)
         return cls(grid, center, major_radius, minor_radius, rotation)
 
     # This will get the circle that 'plugs' up the torus
@@ -176,7 +176,10 @@ class TorusN(Shape):
             random.randrange(center_place, size - center_place, 1),
         ]
         major_radius = random.randrange(min_major, max_major + 1, 1)
-        minor_radius = random.randrange(min_minor, major_radius, 1)
+        if min_minor == major_radius - 1:
+            minor_radius = min_minor
+        else:
+            minor_radius = random.randrange(min_minor, major_radius - 1, 1)
 
         # If they're the same, just use that number
         # otherwise do it randomly

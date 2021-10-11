@@ -58,7 +58,10 @@ def create_single_data(args):
                 else:
                     numpy_point_cloud = np.array([[X, Y, Z]])
         # Save the inverted cube
-        r_num = random.randint(0, 99999)
+        if args.save_num == "-1":
+            r_num = str(random.randint(0, 99999))
+        else:
+            r_num = args.save_num
         np.save(
             os.path.join(path, "{r_num}_inverted_cube".format(r_num=r_num)),
             numpy_point_cloud,

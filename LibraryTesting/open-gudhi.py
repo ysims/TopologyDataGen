@@ -45,8 +45,8 @@ b_1 = np.array(b_1).tolist()
 b_2 = np.array(b_2).tolist()
 
 b_0 = [life for life in b_0 if (life[1] - life[0] > 1.5)]
-b_1 = [life for life in b_1 if (life[1] - life[0] > 0.42)]
-b_2 = [life for life in b_2 if (life[1] - life[0] > 0.84)]
+b_1 = [life for life in b_1 if (life[1] - life[0] > 0.8)]
+b_2 = [life for life in b_2 if (life[1] - life[0] > 1.5)]
 
 print(b_0)
 print(b_1)

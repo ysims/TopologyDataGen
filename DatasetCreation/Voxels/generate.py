@@ -18,7 +18,7 @@ parser.add_argument(
     help="Type of generation - a single cube or a whole dataset.",
 )
 parser.add_argument(
-    "--cube_size", type=int, default=30, help="Size of the cavity-filled cube, cubed."
+    "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
 )
 
 # Single specific
@@ -63,6 +63,11 @@ parser.add_argument(
 )
 parser.add_argument(
     "--save", action="store_true", default=False, help="Save the data with numpy."
+)
+parser.add_argument(
+    "--save_num",
+    default="-1",
+    help="If saving, number to save the data as.",
 )
 
 # Dataset specific

@@ -21,22 +21,13 @@ args = parser.parse_args()
 data = np.load(args.input_file)
 data = data.astype(np.float32)
 
-# We want to time the computation - start the clock
-start = time.perf_counter()
-print("Begin!")
 
-rips_complex = gudhi.RipsComplex(points=data, max_edge_length=3.0)
+# DO THE SAME THING FOR THE ALPHA COMPLEX
+alpha_complex = gudhi.AlphaComplex(points=data)
+simplex_tree = alpha_complex.create_simplex_tree()
+diag = simplex_tree.persistence(min_persistence=0.0)
 
-# Finish timing and print the time it took.
-
-simplex_tree = rips_complex.create_simplex_tree(max_dimension=3)
-
-diag = simplex_tree.persistence(min_persistence=0.5)
-
-end = time.perf_counter()
-print("Computation took ", (end - start), " seconds")
-
-# print(diag)
+print("Completed Alpha computation.")
 
 b_0 = []
 b_1 = []
@@ -44,12 +35,6 @@ b_2 = []
 b_3 = []
 
 for entry in diag:
-    # if entry[1][1] < float("inf"):
-    #     continue
-
-    # if entry[1][0] > 1.5:
-    #     continue
-
     if entry[0] == 0:
         b_0.append(entry[1])
     elif entry[0] == 1:
@@ -59,29 +44,18 @@ for entry in diag:
     elif entry[0] == 3:
         b_3.append(entry[1])
 
+b_0 = np.array(b_0).tolist()
+b_1 = np.array(b_1).tolist()
+b_2 = np.array(b_2).tolist()
+
+b_0 = [life for life in b_0 if (life[1] - life[0] > 1.5)]
+b_1 = [life for life in b_1 if (life[1] - life[0] > 0.8)]
+b_2 = [life for life in b_2 if (life[1] - life[0] > 2.0)]
+
 print(b_0)
 print(b_1)
 print(b_2)
-# print(b_3)
 
-print("b_0:", len(b_0))
-print("b_1:", len(b_1))
-print("b_2:", len(b_2))
-# print("b_3:", len(b_3))
-
-# # Make it back into the Gudhi form for visualisation
-# result = []
-# for value in b_0:
-#     result.append([0, value])
-# for value in b_1:
-#     result.append([1, value])
-# for value in b_2:
-#     result.append([2, value])
-# for value in b_3:
-#     result.append([3, value])
-
-# gudhi.plot_persistence_barcode(result, legend=True)
-# plt.show()
-
-# gudhi.plot_persistence_diagram(result, legend=True)
-# plt.show()
+print("b_0", len(b_0))
+print("b_1", len(b_1))
+print("b_2", len(b_2))
