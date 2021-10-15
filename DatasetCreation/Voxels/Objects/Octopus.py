@@ -49,20 +49,21 @@ class Octopus(RandomWalk):
         num_tentacles = random.randrange(min_num_tentacles, max_num_tentacles, 1)
         return cls(full_grid, num_tentacles)
 
-    def _allowed_point(self, new_point, all_points):
+    def _try_add(self, direction, all_points):
+        pass
         # Don't repeat ourselves
-        if all_points.count(new_point) > 0:
-            return False
+        # if all_points.count(new_point) > 0:
+        #     return False
 
-        # If we're still close to the body,
-        # don't worry about touching the body
-        if len(all_points) < 2:
-            if intersect_or_touch(new_point, self.full_grid):
-                return False
-        else:
-            if intersect_or_touch(new_point, (self.grid | self.full_grid)):
-                return False
-        return True
+        # # If we're still close to the body,
+        # # don't worry about touching the body
+        # if len(all_points) < 2:
+        #     if intersect_or_touch(new_point, self.full_grid):
+        #         return False
+        # else:
+        #     if intersect_or_touch(new_point, (self.grid | self.full_grid)):
+        #         return False
+        # return True
 
     # Separate function for adding the tentacles
     # Since it'd be better to add them all later
