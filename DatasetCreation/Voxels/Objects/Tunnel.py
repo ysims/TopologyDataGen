@@ -44,7 +44,7 @@ class Tunnel(RandomWalk):
 
     def _try_add(self, direction, all_points):
         next_point = list(map(add, direction, all_points[len(all_points) - 1][0]))
-        if obj_intersect_touch(next_point, (self.grid | self.full_grid), True):
+        if obj_intersect_touch(next_point, (self.grid | self.full_grid)):
             return False
         # Don't repeat a point we've already done
         for points in all_points:
@@ -75,22 +75,11 @@ class Tunnel(RandomWalk):
 
         all_points.append(points_to_be_added)
 
-        if len(all_points) > 2:
-            last_index = len(all_points) - 2
+        if len(all_points) > 4:
+            last_index = len(all_points) - 2 - self.width
             for i in range(0, last_index + 1):
                 for point in all_points[i]:
                     self.grid[point[0]][point[1]][point[2]] = True
-
-        # count = 0
-        # for points in all_points:
-        #     if self.grid[points[0][0]][points[0][1]][points[0][2]] == True:
-        #         print("point", count, "is in")
-        #         for point in points:
-        #             if self.grid[point[0]][point[1]][point[2]] != True:
-        #                 print("the thing is true but the surrounding is not")
-        #     else:
-        #         print("point", count, "is not in")
-        #     count += 1
 
         return True
 
@@ -115,7 +104,7 @@ class Tunnel(RandomWalk):
         # For each thickness in the width,
         # add an extra point straight on from the starting point
         # to prevent
-        for _ in range(self.width):
+        for _ in range(self.width + 1):
             if not self._get_next_point(all_points):
                 return []
         return all_points
@@ -199,26 +188,22 @@ class Tunnel(RandomWalk):
 
     # Stop if we're on the boundary
     def _stop_walk_condition(self, all_points):
-        # if len(all_points) > 6:
-        #     # for points in all_points:
-        #     #     for point in points:
-        #     #         if self.grid[point[0]][point[1]][point[2]]:
-        #     #             pass
-        #     #             # print(point, "is in the grid")
-        #     print("It's a tunnel! \n", all_points)
-        #     return True
         last_points = all_points[len(all_points) - 1]
         for last_point in last_points:
             for x in last_point:
                 if x == self.full_grid[0][0].size - 1 or x == 0:
-                    # self._add_last_points(last_point, all_points)
+                    self._add_last_points(last_point, all_points)
                     return True
         return False
 
     # If the tunnel didn't stop on the boundary, it's not valid
     # Only want tunnels that go from one boundary to another
     def _acceptable_walk(self, all_points):
-        return True
+        last_point = all_points[len(all_points) - 1]
+        for point in last_point:
+            if min(point) == 0 or max(point) == self.grid[0][0].size - 1:
+                return True
+        return False
 
     # Not implemented
     # Branching tunnels not supported

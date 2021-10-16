@@ -32,10 +32,10 @@ class RandomWalk(ABC):
         # add everything in the walk to the grid
         for points in all_points:
             for point in points:
-                self.grid[point[0]][point[1]][point[2]] = False
-        for points in all_points:
-            point = points[0]
-            self.grid[point[0]][point[1]][point[2]] = True
+                self.grid[point[0]][point[1]][point[2]] = True
+        # for points in all_points:
+        #     point = points[0]
+        #     self.grid[point[0]][point[1]][point[2]] = True
 
         # Nothing seemed to go wrong and we
         # don't want to branch so return true
