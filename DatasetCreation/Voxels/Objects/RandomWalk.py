@@ -21,11 +21,9 @@ class RandomWalk(ABC):
             print("Something went wrong, couldn't find a start position.")
             return False
 
-        # If it wasn't successful, just return
+        original_grid = copy.copy(self.grid)
         if not self._walk(all_points):
-            for points in all_points:
-                for point in points:
-                    self.grid[point[0]][point[1]][point[2]] = False
+            self.grid = original_grid
             return False
 
         # The last two points won't be there,
@@ -33,9 +31,6 @@ class RandomWalk(ABC):
         for points in all_points:
             for point in points:
                 self.grid[point[0]][point[1]][point[2]] = True
-        # for points in all_points:
-        #     point = points[0]
-        #     self.grid[point[0]][point[1]][point[2]] = True
 
         # Nothing seemed to go wrong and we
         # don't want to branch so return true
@@ -52,7 +47,7 @@ class RandomWalk(ABC):
                 paths.remove(paths[0])
                 continue
             # Loop while we have branches to create
-            max_tries = 1000
+            max_tries = 10000
             amount_tried = 0
             while num_branch > 0 and amount_tried < max_tries:
                 amount_tried += 1
@@ -67,10 +62,9 @@ class RandomWalk(ABC):
 
                 # Do as before and create the path
                 # If it doesn't work, try again
+                original_grid = copy.copy(self.grid)
                 if not self._walk(all_points):
-                    for points in all_points:
-                        for point in points:
-                            self.grid[point[0]][point[1]][point[2]] = False
+                    self.grid = original_grid
                     continue
 
                 # The last two points won't be there,
