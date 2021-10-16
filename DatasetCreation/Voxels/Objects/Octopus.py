@@ -335,38 +335,75 @@ class Octopus(RandomWalk):
             # do intersect or touch properly
             index = path.index(start)
             before = path.pop(index - 1)
-            # The index has changed because we just popped
-            # Go back one for all
-            after = path.pop(index)
-            self.grid[start[0]][start[1]][start[2]] = False
-            self.grid[before[0]][before[1]][before[2]] = False
-            self.grid[after[0]][after[1]][after[2]] = False
 
-            directions = [
-                [1, 0, 0],
-                [0, 1, 0],
-                [0, 0, 1],
-                [-1, 0, 0],
-                [0, -1, 0],
-                [0, 0, -1],
+            # Get the direction
+            start_point = start[0]
+            before_point = before[0]
+            direction = [
+                start_point[0] - before_point[0],
+                start_point[1] - before_point[1],
+                start_point[2] - before_point[2],
             ]
-            for direction in directions:
-                try:  # skip if this is out of bounds
-                    start_path = list(map(add, direction, start))
-                    if start_path is before:
-                        continue
-                    if start_path is after:
-                        continue
-                    # start_path point is valid and by adding it to the list
-                    # we are breaking out of the while loop
-                    if not intersect_or_touch(start_path, (self.grid | self.full_grid)):
-                        new_path.append(start_path)
-                        break
-                except:
-                    pass
+            directions = (
+                [[0, 1, 0], [0, 0, 1], [0, -1, 0], [0, 0, -1]]
+                if direction[0] == 0
+                else [
+                    [1, 0, 0],
+                    [0, 0, 1],
+                    [-1, 0, 0],
+                    [0, 0, -1],
+                ]
+                if direction[0] == 0
+                else [
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                    [0, -1, 0],
+                ]
+            )
+            random.shuffle(directions)
 
-            self.grid[start[0]][start[1]][start[2]] = True
-            self.grid[before[0]][before[1]][before[2]] = True
-            self.grid[after[0]][after[1]][after[2]] = True
+            for i in range(index - 2, index + 2):
+                for point in _path[i]:
+                    self.grid[point[0]][point[1]][point[2]] = False
+
+            for direction in directions:
+                new_start = [
+                    start_point[0] + direction[0],
+                    start_point[1] + direction[1],
+                    start_point[2] + direction[2],
+                ]
+                new_points = [new_start]
+
+                if intersect_or_touch(new_start, (self.grid | self.full_grid)):
+                    continue
+                border = [[0, 1], [1, 0], [1, 1]]
+                add_border = (
+                    [[0, b[0], b[1]] for b in border]
+                    if direction[0] != 0
+                    else [[b[0], 0, b[1]] for b in border]
+                    if direction[1] != 0
+                    else [[b[0], b[1], 0] for b in border]
+                )
+                for border in add_border:
+                    try:  # skip if this is out of bounds
+                        new_surrounds = [
+                            new_start[0] + border[0],
+                            new_start[1] + border[1],
+                            new_start[2] + border[2],
+                        ]
+                        if not intersect_or_touch(
+                            new_start, (self.grid | self.full_grid)
+                        ):
+                            new_points.append(new_surrounds)
+                        else:
+                            continue
+                    except:
+                        pass
+                new_path = [new_points]
+
+            for i in range(index - 2, index + 2):
+                for point in _path[i]:
+                    self.grid[point[0]][point[1]][point[2]] = True
 
         return new_path
