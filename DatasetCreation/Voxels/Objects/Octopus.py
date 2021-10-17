@@ -12,13 +12,13 @@ from Torus import Torus
 
 
 class Octopus(RandomWalk):
-    def __init__(self, full_grid, num_tentacles):
+    def __init__(self, full_grid, num_tentacles, random_walk_config, shape_config):
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
         self.valid = True
         self.width = 2
         # Read values from config file
-        with open("./Objects/config/RandomWalk.yaml", "r") as stream:
+        with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         self.min_tentacle_length = data_loaded["Octopus"]["min_tentacle_length"]
         self.max_tentacle_length = data_loaded["Octopus"]["max_tentacle_length"]
@@ -27,27 +27,29 @@ class Octopus(RandomWalk):
         self.shape_name = data_loaded["Octopus"]["shape"]
 
         if self.shape_name == "Spheroid":
-            self.shape = Spheroid.random(full_grid)
+            self.shape = Spheroid.random(full_grid, shape_config, random_walk_config)
             while not self.shape.valid:
-                self.shape = Spheroid.random(full_grid)
+                self.shape = Spheroid.random(
+                    full_grid, shape_config, random_walk_config
+                )
         else:
-            self.shape = Torus.random(full_grid)
+            self.shape = Torus.random(full_grid, shape_config, random_walk_config)
             while not self.shape.valid:
-                self.shape = Torus.random(full_grid)
+                self.shape = Torus.random(full_grid, shape_config, random_walk_config)
 
         self.grid = copy.copy(self.shape.draw_grid)
 
     # Make a random tunnel
     @classmethod
-    def random(cls, full_grid):
+    def random(cls, full_grid, shape_config, random_walk_config):
         # Read values from config file
-        with open("./Objects/config/RandomWalk.yaml", "r") as stream:
+        with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         min_num_tentacles = data_loaded["Octopus"]["min_num_tentacles"]
         max_num_tentacles = data_loaded["Octopus"]["max_num_tentacles"]
 
         num_tentacles = random.randrange(min_num_tentacles, max_num_tentacles, 1)
-        return cls(full_grid, num_tentacles)
+        return cls(full_grid, num_tentacles, random_walk_config, shape_config)
 
     def _try_add(self, direction, all_points):
         next_point = list(map(add, direction, all_points[len(all_points) - 1][0]))

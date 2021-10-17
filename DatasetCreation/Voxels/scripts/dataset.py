@@ -54,7 +54,12 @@ def generate_dataset(args):
             }
             print("Adding: ", dict)  # print for debugging purposes
 
-            voxels = BettiCube(args.cube_size)  # make the cube
+            voxels = BettiCube(
+                args.cube_size,
+                args.shape_config,
+                args.random_walk_config,
+                args.torus_holes,
+            )  # make the cube
             voxels.add_objects(dict)  # add the right number of objects
             grid = voxels.get_objects(draw=True)  # get the objects
 

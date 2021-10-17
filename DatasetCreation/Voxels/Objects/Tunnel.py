@@ -33,7 +33,7 @@ class Tunnel(RandomWalk):
 
     # Make a random tunnel
     @classmethod
-    def random(cls, full_grid):
+    def random(cls, full_grid, shape_config, random_walk_config):
         size = full_grid[0][0].size
         # Create a random start position on a face
         start = [random.randrange(2, size - 2, 1) for _ in range(0, 3)]

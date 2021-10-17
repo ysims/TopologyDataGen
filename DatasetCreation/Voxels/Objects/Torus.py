@@ -42,9 +42,9 @@ class Torus(Shape):
 
     # Make a random torus
     @classmethod
-    def random(cls, grid):
+    def random(cls, grid, shape_config, random_walk_config):
         # Read values from config file
-        with open("./Objects/config/Shape.yaml", "r") as stream:
+        with open(shape_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Torus"]["center_placement_border"]
         min_major = data_loaded["Torus"]["min_major_radius"]
@@ -152,9 +152,9 @@ class TorusN(Shape):
 
     # Make a random torus
     @classmethod
-    def random(cls, grid):
+    def random(cls, grid, shape_config, random_walk_config, torus_holes=0):
         # Read values from config file
-        with open("./Objects/config/Shape.yaml", "r") as stream:
+        with open(shape_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Torus"]["center_placement_border"]
         min_major = data_loaded["Torus"]["min_major_radius"]
@@ -183,10 +183,13 @@ class TorusN(Shape):
 
         # If they're the same, just use that number
         # otherwise do it randomly
-        if max_holes == min_holes:
-            n_holes = min_holes
+        if torus_holes != 0:
+            n_holes = torus_holes
         else:
-            n_holes = random.randrange(min_holes, max_holes + 1, 1)
+            if max_holes == min_holes:
+                n_holes = min_holes
+            else:
+                n_holes = random.randrange(min_holes, max_holes + 1, 1)
 
         return cls(grid, center, major_radius, minor_radius, rotation, n_holes)
 
