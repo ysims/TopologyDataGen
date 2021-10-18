@@ -25,7 +25,9 @@ def create_single_data(args):
     start_time = time.time()
 
     # Create the cube with the given holes
-    voxels = BettiCube(args.cube_size)
+    voxels = BettiCube(
+        args.cube_size, args.shape_config, args.random_walk_config, args.torus_holes
+    )
     voxels.add_objects(dict)
 
     print("Adding --------- %s seconds ---" % (time.time() - start_time))

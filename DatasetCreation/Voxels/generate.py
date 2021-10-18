@@ -20,6 +20,23 @@ parser.add_argument(
 parser.add_argument(
     "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
 )
+parser.add_argument(
+    "--shape_config",
+    default="./Objects/config/Shape.yaml",
+    help="The path to the Shape config to use.",
+)
+parser.add_argument(
+    "--random_walk_config",
+    default="./Objects/config/RandomWalk.yaml",
+    help="The path to the RandomWalk config to use.",
+)
+
+parser.add_argument(
+    "--torus_holes",
+    type=int,
+    default=0,
+    help="Number of holes in an n-holed torus.",
+)
 
 # Single specific
 parser.add_argument(

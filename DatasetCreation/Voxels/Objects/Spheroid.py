@@ -33,9 +33,9 @@ class Spheroid(Shape):
 
     # Make a random spheroid
     @classmethod
-    def random(cls, grid):
+    def random(cls, grid, shape_config, random_walk_config):
         # Read values from config file
-        with open("./Objects/config/Shape.yaml", "r") as stream:
+        with open(shape_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         center_place = data_loaded["Spheroid"]["center_placement_border"]
         min_radius = data_loaded["Spheroid"]["min_radius"]

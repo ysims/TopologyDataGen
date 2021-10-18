@@ -15,9 +15,12 @@ from Tunnel import Tunnel
 # Class that holds a cube with cavities in it,
 # of various configurations
 class BettiCube(object):
-    def __init__(self, size):
+    def __init__(self, size, shape_config, random_walk_config, torus_holes):
         # The number of voxels across any edge
+        self.shape_config = shape_config
+        self.random_walk_config = random_walk_config
         self.size = size
+        self.torus_holes = torus_holes
         self.objects = []  # initialise our list of objects
         # Create the full shape everything is contained in.
         # True areas are the border and false are the insides
@@ -39,10 +42,22 @@ class BettiCube(object):
     def add_objects(self, num_objects):
         for key in num_objects:
             for _ in range(num_objects[key]):
-                while not self.add_object(
-                    eval(key + ".random(self.get_objects(draw=False))")
-                ):
-                    continue
+                if key == "TorusN":
+                    while not self.add_object(
+                        eval(
+                            key
+                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, self.torus_holes)"
+                        )
+                    ):
+                        continue
+                else:
+                    while not self.add_object(
+                        eval(
+                            key
+                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config)"
+                        )
+                    ):
+                        continue
 
         for object in self.objects:
             if isinstance(object, Octopus):
