@@ -17,6 +17,8 @@ class Octopus(RandomWalk):
         self.num_tentacles = num_tentacles
         self.valid = True
         self.width = 2
+        self.min_width = 2
+        self.max_width = 4
         # Read values from config file
         with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
@@ -60,7 +62,61 @@ class Octopus(RandomWalk):
             if next_point == points[0]:
                 return False
         points_to_be_added = [next_point]
-        border = [[0, 1], [1, 0], [1, 1]]
+
+        # ***** Determine width *****
+        previous_width = int(math.log(len(all_points[len(all_points) - 1]), 2))
+        # print(previous_width)
+        width = min(
+            max(
+                random.randrange(previous_width - 1, previous_width + 2), self.min_width
+            ),
+            self.max_width,
+        )
+
+        # ***** Sort out the grid *****
+        my_grid = copy.copy(self.grid)
+
+        for index, points in enumerate(all_points):
+            for point in points:
+                if (len(all_points) - width - 2) > index:
+                    my_grid[point[0]][point[1]][point[2]] = True
+                else:
+                    my_grid[point[0]][point[1]][point[2]] = False
+
+        # ***** Define borders *****
+        if width == 1:
+            border = []
+        elif width == 2:
+            border = [[0, 1], [1, 0], [1, 1]]
+        elif width == 3:
+            border = [
+                [0, 1],
+                [1, 0],
+                [1, 1],
+                [1, -1],
+                [0, -1],
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+            ]
+        elif width == 4:
+            border = [
+                [0, 1],
+                [1, 0],
+                [1, 1],
+                [1, -1],
+                [0, -1],
+                [-1, -1],
+                [-1, 0],
+                [-1, 1],
+                [-1, 2],
+                [0, 2],
+                [1, 2],
+                [2, 2],
+                [2, 1],
+                [2, 0],
+                [2, -1],
+            ]
         add_border = (
             [[0, b[0], b[1]] for b in border]
             if direction[0] != 0
@@ -75,7 +131,7 @@ class Octopus(RandomWalk):
                     next_point[1] + border[1],
                     next_point[2] + border[2],
                 ]
-                if not intersect_or_touch(test_point, (self.grid | self.full_grid)):
+                if not intersect_or_touch(test_point, (my_grid | self.full_grid)):
                     points_to_be_added.append(test_point)
                 else:
                     return False
@@ -83,12 +139,6 @@ class Octopus(RandomWalk):
                 pass
 
         all_points.append(points_to_be_added)
-
-        if len(all_points) > 4:
-            last_index = len(all_points) - 2 - self.width
-            for i in range(0, last_index + 1):
-                for point in all_points[i]:
-                    self.grid[point[0]][point[1]][point[2]] = True
 
         return True
 
