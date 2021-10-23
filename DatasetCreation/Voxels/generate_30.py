@@ -21,7 +21,7 @@ number_of = [
     "--tunnel_num 50",
 ]
 
-for experiment in range(0, len(number_of)):
+for experiment in range(11, len(number_of)):
     print("Experiment {}.".format(experiment + 1))
     path = "./all_data/single/30-cubed/normal/{}/".format(experiment + 1)
     Path(path).mkdir(parents=True, exist_ok=True)
