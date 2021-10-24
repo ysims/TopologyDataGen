@@ -8,7 +8,7 @@ import yaml
 from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
-from Torus import Torus
+from Torus import Torus, TorusN
 
 
 class Octopus(RandomWalk):
@@ -32,11 +32,17 @@ class Octopus(RandomWalk):
                 self.shape = Spheroid.random(
                     full_grid, shape_config, random_walk_config
                 )
-        else:
+        elif self.shape_name == "Torus":
             self.shape = Torus.random(full_grid, shape_config, random_walk_config)
             while not self.shape.valid:
                 self.shape = Torus.random(full_grid, shape_config, random_walk_config)
-
+        elif self.shape_name == "TorusN":
+            self.shape = TorusN.random(full_grid, shape_config, random_walk_config)
+            while not self.shape.valid:
+                self.shape = TorusN.random(full_grid, shape_config, random_walk_config)
+        else:
+            print("Error: {} not supported".format(self.shape_name))
+            return
         self.grid = copy.copy(self.shape.draw_grid)
 
     # Make a random tunnel
