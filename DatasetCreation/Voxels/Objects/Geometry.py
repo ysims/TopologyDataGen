@@ -120,7 +120,7 @@ def obj_intersect_touch(point, grid):
         try:  # skip if this is out of bounds
             touch_point = [point[0] + x, point[1] + y, point[2] + z]
             if grid[touch_point[0]][touch_point[1]][touch_point[2]]:
-                if (max(touch_point) >= grid[0][0].size - 1) and min(touch_point) <= 0:
+                if (max(touch_point) < grid[0][0].size - 1) and min(touch_point) > 0:
                     return True
         except:
             continue

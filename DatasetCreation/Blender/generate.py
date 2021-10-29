@@ -14,7 +14,7 @@ if not dir in sys.path:
     sys.path.append(dir)
 
 # Reset the scene, we don't want anything hanging around
-bpy.ops.wm.read_factory_settings(use_empty=True)
+# bpy.ops.wm.read_factory_settings(use_empty=True)
 
 # Get the scene, for ease
 scene = bpy.context.scene
@@ -30,7 +30,13 @@ bmesh.ops.create_cube(bm, size=1.0)
 bm.to_mesh(mesh)
 
 # Load the voxel grid
-grid = (np.load(os.path.join(dir, "31_inverted_cube.npy"))).tolist()
+grid = (
+    np.load(
+        os.path.join(
+            dir, "../Voxels/all_data/single/blender/single_tunnel_inverted_cube.npy"
+        )
+    )
+).tolist()
 
 # Make a new collection, which will contain everything we will union
 union_collection = bpy.data.collections.new("UnionCollection")
@@ -48,6 +54,15 @@ grid.remove(first_point)
 # and put those cube in our collection that will contain
 # everything that will be unioned with first_cube
 for point in grid:
+    # Don't add the point if it's completely surrounded!
+    isSurrounded = True
+    for x, y, z in itertools.product([-1, 0, 1], repeat=3):
+        touch_point = [point[0] + x, point[1] + y, point[2] + z]
+        if grid.count(touch_point) == 0:
+            isSurrounded = False
+    if isSurrounded:
+        continue
+
     new_cube = cube.copy()
     new_cube.location = (point[0], point[1], point[2])
     union_collection.objects.link(new_cube)
@@ -80,14 +95,43 @@ for obj in union_collection.objects:
     bpy.data.objects.remove(obj, do_unlink=True)
 bpy.data.collections.remove(union_collection)
 
+# Deselect everything and select the first_cube
+# so that we can do things to it
+bpy.ops.object.select_all(action="DESELECT")
+first_cube.select_set(True)
+bpy.context.view_layer.objects.active = first_cube
+
+# Merge duplicate vertices
+distance = 0.5
+meshes = set(o.data for o in bpy.context.selected_objects if o.type == "MESH")
+bm = bmesh.new()
+
+for m in meshes:
+    bm.from_mesh(m)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=distance)
+    bm.to_mesh(m)
+    m.update()
+    bm.clear()
+
+bm.free()
+
+subsurf_mod = first_cube.modifiers.new(type="SUBSURF", name="subsurf")
+subsurf_mod.subdivision_type = "CATMULL_CLARK"
+subsurf_mod.levels = 2
+
+mat = bpy.data.materials.new(name="BasicMaterial")  # set new material to variable
+first_cube.data.materials.append(mat)  # add the material to the object
+bpy.context.object.active_material.diffuse_color = (0.2, 0.3, 0.8)  # change color
+# bpy.context.object.active_material.
+
 # Add a modifier to smooth it out
-smooth = first_cube.modifiers.new(type="REMESH", name="remesh-smooth")
-smooth.mode = "SMOOTH"
-smooth.octree_depth = 7
-smooth.scale = 0.4
-smooth.use_remove_disconnected = False
-smooth.threshold = 0.0
-smooth.use_smooth_shade = True
+# smooth = first_cube.modifiers.new(type="REMESH", name="remesh-smooth")
+# smooth.mode = "SMOOTH"
+# smooth.octree_depth = 7
+# smooth.scale = 0.4
+# smooth.use_remove_disconnected = False
+# smooth.threshold = 0.0
+# smooth.use_smooth_shade = True
 
 # # Apply the remesh modifier to the cube, so we're sure we have the right vertices
 # bpy.ops.object.modifier_apply({"object": first_cube}, modifier=smooth.name)
