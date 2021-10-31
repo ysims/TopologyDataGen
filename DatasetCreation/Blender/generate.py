@@ -33,7 +33,8 @@ bm.to_mesh(mesh)
 grid = (
     np.load(
         os.path.join(
-            dir, "../Voxels/all_data/single/blender/single_tunnel_inverted_cube.npy"
+            dir,
+            "../Voxels/all_data/single/30-cubed/octopus/torus/5/1_inverted_cube.npy",
         )
     )
 ).tolist()
@@ -119,19 +120,21 @@ subsurf_mod = first_cube.modifiers.new(type="SUBSURF", name="subsurf")
 subsurf_mod.subdivision_type = "CATMULL_CLARK"
 subsurf_mod.levels = 2
 
-mat = bpy.data.materials.new(name="BasicMaterial")  # set new material to variable
-first_cube.data.materials.append(mat)  # add the material to the object
-bpy.context.object.active_material.diffuse_color = (0.2, 0.3, 0.8)  # change color
+# mat = bpy.data.materials.new(name="BasicMaterial")  # set new material to variable
+# first_cube.data.materials.append(mat)  # add the material to the object
+# bpy.context.object.active_material.diffuse_color = (0.2, 0.3, 0.8)  # change color
 # bpy.context.object.active_material.
 
 # Add a modifier to smooth it out
-# smooth = first_cube.modifiers.new(type="REMESH", name="remesh-smooth")
-# smooth.mode = "SMOOTH"
-# smooth.octree_depth = 7
-# smooth.scale = 0.4
-# smooth.use_remove_disconnected = False
-# smooth.threshold = 0.0
-# smooth.use_smooth_shade = True
+smooth = first_cube.modifiers.new(type="REMESH", name="remesh-smooth")
+smooth.mode = "VOXEL"
+smooth.voxel_size = 0.4
+smooth.adaptivity = 1.0
+smooth.use_smooth_shade = True
+
+subsurf_mod2 = first_cube.modifiers.new(type="SUBSURF", name="subsurf2")
+subsurf_mod2.subdivision_type = "CATMULL_CLARK"
+subsurf_mod2.levels = 2
 
 # # Apply the remesh modifier to the cube, so we're sure we have the right vertices
 # bpy.ops.object.modifier_apply({"object": first_cube}, modifier=smooth.name)

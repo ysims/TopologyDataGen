@@ -5,11 +5,11 @@ Spheroid:
 
 Torus:
   center_placement_border: 4
-  min_major_radius: 3
-  max_major_radius: 3
-  min_minor_radius: 1
-  min_holes: 5
-  max_holes: 5
+  min_major_radius: 5
+  max_major_radius: 5
+  min_minor_radius: 2
+  min_holes: 3
+  max_holes: 3
 
 Island:
   center_placement_border: 5
