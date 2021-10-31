@@ -1,8 +1,15 @@
+# This script performs actions to do with running Gudhi on a point cloud dataset.
+# run: takes a numpy array of points and runs either the Vietoris-Rips complex or the Alpha complex on it.
+#      it may filter the resulting data and print it or save the data in a pickle file.
+# load: takes a pickle file with output from Gudhi and filters it and prints it.
+
 import argparse
 import gudhi
 import numpy as np
 import pickle
 import sys
+
+# ******************************************************************
 
 # Parse the commands line arguments
 parser = argparse.ArgumentParser(
@@ -60,6 +67,8 @@ parser.add_argument(
     help="The minimum lifetime to use when filtering Betti two.",
 )
 args = parser.parse_args()
+
+# ******************************************************************
 
 if args.save and type == "run":
     if args.output_file is None:
