@@ -10,7 +10,6 @@ import pickle
 import sys
 
 # ******************************************************************
-
 # Parse the commands line arguments
 parser = argparse.ArgumentParser(
     description="This program loads a voxel grid and runs Gudhi, or loads a pickle file output of Gudhi and filters it."
@@ -67,7 +66,6 @@ parser.add_argument(
     help="The minimum lifetime to use when filtering Betti two.",
 )
 args = parser.parse_args()
-
 # ******************************************************************
 
 if args.save and type == "run":
@@ -101,6 +99,7 @@ if type == "run":
         diag = simplex_tree.persistence(min_persistence=0.0)
     else:
         sys.exit("Unsupported filtration type.")
+    print("Completed computation.")
 
 if type == "load":
     with open(args.input_file, "rb") as fp:
@@ -108,6 +107,7 @@ if type == "load":
 
 # Filter the data
 if args.filtering or type == "load":
+    print("Filtering the data.")
     b_0, b_1, b_2, b_3 = []
 
     for entry in diag:
@@ -138,3 +138,4 @@ if args.save and type == "run":
     # Save the data
     with open(args.output_path, "wb") as fp:  # Pickling
         pickle.dump(diag, fp)
+    print("Saved the data as {}".format(args.output_path))
