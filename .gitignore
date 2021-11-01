@@ -3,4 +3,7 @@
 data
 all_data
 *.npy
+*.yaml
 *.pickle
+
+!src/datagen/config/
