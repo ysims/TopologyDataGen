@@ -36,6 +36,8 @@ class RandomWalk(ABC):
         # don't want to branch so return true
         if not self.branching:
             return True
+        # Flag to allow for different functionality in functions when branching
+        self.isBranching = True
         # Loop until there are no more paths to
         # check for branching
         paths = []
@@ -242,12 +244,97 @@ class RandomWalk(ABC):
         pass
 
     # Given the path, how many times will we branch from it?
-    @abstractmethod
     def _num_branches(self, path):
-        pass
+        # -2 from endpoints (no branches on endpoints)
+        if len(path) < self.length_between_branches - 2:
+            return 0
+        return math.floor(len(path) / self.length_between_branches)
 
     # Find a point to branch from on the path
     # and return the beginning of the new path
-    @abstractmethod
-    def _branch_start(path):
-        pass
+    def _branch_start(self, _path):
+        # This tentacle will be smaller than its parent
+        if int(len(_path) / 2) <= int(self.min_branch_length / 2):
+            return []
+        self.branch_length = random.randrange(
+            int(self.min_branch_length / 2), int(len(_path) / 2), 1
+        )
+
+        path = copy.copy(_path)
+
+        # This is the path we choose a point from
+        # It has the first and last taken out
+        choice_path = copy.copy(_path)
+        choice_path.pop(0)
+        choice_path.pop(len(choice_path) - 1)
+
+        new_path = []
+        max_tries = 1000
+        amount_tried = 0
+        while (not new_path) and (amount_tried < max_tries):
+            amount_tried += 1
+
+            path = copy.copy(_path)
+            start = random.choice(choice_path)
+
+            # Remove this point and adjacent points so we can
+            # do intersect or touch properly
+            index = path.index(start)
+            before = path.pop(index - 1)
+
+            # Get the direction that the parent branch is moving in
+            # and chose a random direction that is not the direction of the parent
+            # to move in, so that the branch moves away from the parent
+            start_point = start[0]
+            before_point = before[0]
+            direction = [
+                start_point[0] - before_point[0],
+                start_point[1] - before_point[1],
+                start_point[2] - before_point[2],
+            ]
+            directions = (
+                [[0, 1, 0], [0, 0, 1], [0, -1, 0], [0, 0, -1]]
+                if direction[0] == 0
+                else [
+                    [1, 0, 0],
+                    [0, 0, 1],
+                    [-1, 0, 0],
+                    [0, 0, -1],
+                ]
+                if direction[0] == 0
+                else [
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                    [0, -1, 0],
+                ]
+            )
+            random.shuffle(directions)
+
+            # Remove these points from the grid so that intersection/touch checking
+            # doesn't stop the walk from moving
+            for i in range(index - 2, index + 2):
+                for point in _path[i]:
+                    self.grid[point[0]][point[1]][point[2]] = False
+
+            for direction in directions:
+                new_start = [
+                    start_point[0] + direction[0],
+                    start_point[1] + direction[1],
+                    start_point[2] + direction[2],
+                ]
+                # Add in this point with its border, with minimum width
+                new_points = [new_start]
+                if not self._add_point_and_border(
+                    new_points, direction, self.min_width
+                ):
+                    continue
+
+                new_path = [new_points]
+
+            # Add the parent path points back in
+            for i in range(index - 2, index + 2):
+                for point in _path[i]:
+                    self.grid[point[0]][point[1]][point[2]] = True
+
+        return new_path
