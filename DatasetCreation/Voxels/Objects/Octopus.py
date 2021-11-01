@@ -151,66 +151,51 @@ class Octopus(RandomWalk):
             return []
 
         # Need to find which direction has the body of the octopus
+        # Then create two points towards it to create a clean seam
         for direction in directions:
             body_point = [
                 second_points[0][0] + direction[0],
                 second_points[0][1] + direction[1],
                 second_points[0][2] + direction[2],
             ]
-            if self.grid[body_point[0]][body_point[1]][body_point[2]]:
-                # We've found the body
+            # It is on the body, so we've found the right direction and can create the points
+            if self.shape.grid[body_point[0]][body_point[1]][body_point[2]]:
                 first_points = [body_point]
+                # Remove the body from the grid because we don't want to check for intersection with it
+                old_grid = copy.copy(self.grid)
+                self.grid = self.grid != self.shape.grid
                 # Add the border around the body
-                border = [[0, 1], [1, 0], [1, 1]]
-                add_border = (
-                    [[0, b[0], b[1]] for b in border]
-                    if direction[0] != 0
-                    else [[b[0], 0, b[1]] for b in border]
-                    if direction[1] != 0
-                    else [[b[0], b[1], 0] for b in border]
-                )
-                for border in add_border:
-                    try:  # skip if this is out of bounds
-                        body_surrounds = [
-                            body_point[0] + border[0],
-                            body_point[1] + border[1],
-                            body_point[2] + border[2],
-                        ]
-                        # Don't care about intersection in this case
-                        # it will definitely intersect with the body
-                        # and that is ok
-                        first_points.append(body_surrounds)
-                    except:
-                        pass
-
+                if not self._add_point_and_border(
+                    first_points, direction, self.min_width
+                ):
+                    # Didn't work, so return empty and fix up the grid
+                    self.grid = old_grid
+                    return []
+                # Do it one more time for a nice seam
                 zero_point = [
                     body_point[0] + direction[0],
                     body_point[1] + direction[1],
                     body_point[2] + direction[2],
                 ]
                 zero_points = [zero_point]
-                for border in add_border:
-                    try:  # skip if this is out of bounds
-                        zero_surrounds = [
-                            zero_point[0] + border[0],
-                            zero_point[1] + border[1],
-                            zero_point[2] + border[2],
-                        ]
-                        # Don't care about intersection in this case
-                        # it will definitely intersect with the body
-                        # and that is ok
-                        zero_points.append(zero_surrounds)
-                    except:
-                        pass
+                if not self._add_point_and_border(
+                    zero_points, direction, self.min_width
+                ):
+                    self.grid = old_grid
+                    return []
 
+                # Finished with the points, add back in the right body.
+                self.grid = old_grid
+
+                # Add in the initial point and the two seams
                 all_points.append(zero_points)
                 all_points.append(first_points)
                 all_points.append(second_points)
+
+                # Add in enough forward directions for the width.
                 forward_direction = [-x for x in direction]
                 for _ in range(self.min_width):
-                    if not self._get_next_point(
-                        all_points, forward_direction, add_border
-                    ):
+                    if not self._try_add(forward_direction, all_points):
                         return []
                 return all_points
 
@@ -243,31 +228,6 @@ class Octopus(RandomWalk):
                 pass
         self.grid = old_grid
         return []
-
-    # Try to add another point after the starting point/s
-    def _get_next_point(self, all_points, forward_direction, add_border):
-        next_point = list(
-            map(add, forward_direction, all_points[len(all_points) - 1][0])
-        )
-        # Check if the point is valid
-        if intersect_or_touch(next_point, self.full_grid):
-            return []
-        points_to_be_added = [next_point]
-        for border in add_border:
-            try:  # skip if this is out of bounds
-                test_point = [
-                    next_point[0] + border[0],
-                    next_point[1] + border[1],
-                    next_point[2] + border[2],
-                ]
-                if not intersect_or_touch(test_point, self.full_grid):
-                    points_to_be_added.append(test_point)
-                else:
-                    return False
-            except:
-                pass
-        all_points.append(points_to_be_added)
-        return True
 
     # Stop if the path is long enough
     def _stop_walk_condition(self, all_points):

@@ -19,7 +19,6 @@ class RandomWalk(ABC):
         # Keep track of all the points in the tunnel
         all_points = self._get_start()
         if not all_points:
-            print("Something went wrong, couldn't find a start position.")
             return False
 
         original_grid = copy.copy(self.grid)
@@ -143,24 +142,28 @@ class RandomWalk(ABC):
                 return False
 
         # ***** Determine width *****
-        previous_width = int(math.log(len(all_points[len(all_points) - 1]), 2))
+        if len(all_points[len(all_points) - 1]) > 1:
+            previous_width = int(math.log(len(all_points[len(all_points) - 1]), 2))
+        else:
+            previous_width = 1
+
         width = min(
             max(
                 random.randrange(previous_width - 1, previous_width + 2), self.min_width
             ),
             self.max_width,
         )
-        print(width)
 
         # ***** Sort out the grid *****
         my_grid = copy.copy(self.grid)
 
-        for index, points in enumerate(all_points):
-            for point in points:
-                if (len(all_points) - width - 1) > index:
-                    my_grid[point[0]][point[1]][point[2]] = True
-                else:
-                    my_grid[point[0]][point[1]][point[2]] = False
+        if len(all_points) > 2 + width:
+            for index, points in enumerate(all_points):
+                for point in points:
+                    if (len(all_points) - width) > index:
+                        my_grid[point[0]][point[1]][point[2]] = True
+                    else:
+                        my_grid[point[0]][point[1]][point[2]] = False
 
         # ***** Add it to the list and try to add the border *****
         points_to_be_added = [next_point]
@@ -169,6 +172,7 @@ class RandomWalk(ABC):
 
         # It worked! Add this next set of points to the path
         all_points.append(points_to_be_added)
+        self.grid = my_grid
         return True
 
     def _add_point_and_border(self, points_to_be_added, direction, width):
