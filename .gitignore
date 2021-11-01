@@ -3,7 +3,4 @@
 data
 all_data
 *.npy
-*.yaml
 *.pickle
-
-!DataCreation/Voxels/Objects/config/
