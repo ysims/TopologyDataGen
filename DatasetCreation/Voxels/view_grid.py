@@ -1,11 +1,12 @@
-# Loads numpy array (grid) and plots it as a voxel grid
+# Loads numpy array (grid) and plots it as a voxel grid with Matplotlib
 
 import argparse
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 import numpy as np
 
-# Parse the argument
+# ******************************************************************
+# Parse the commands line arguments
 parser = argparse.ArgumentParser(
     description="This program loads a voxel grid and plots the grid in matplotlib."
 )
@@ -14,6 +15,7 @@ parser.add_argument(
     help="The file path to the grid to load.",
 )
 args = parser.parse_args()
+# ******************************************************************
 
 # Load array and create a voxel grid from it
 np_grid = np.load(args.grid_file)
