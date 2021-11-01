@@ -1,25 +1,25 @@
+# This script loads a voxel grid with each voxel rendered as a cube.
+# These are then unioned together into one mesh.
+# The remesh modifier is used to smooth out the mesh.
+
+
 import itertools
 import os
 import numpy as np
 import sys
 import bpy  # import blender python
 import bmesh  # import blender mesh
-import mathutils
+
+folder_path = "C:/Users/c3256711/Documents/Uni/Honours Project/TopologyCollection/DatasetCreation/Blender/"
+data_path = "../Voxels/all_data/single/30-cubed/octopus/torus/5/1_inverted_cube.npy"
 
 # Give it a path so we can open the numpy voxel grid file
-dir = os.path.dirname(
-    "C:/Users/c3256711/Documents/Uni/Honours Project/TopologyCollection/DatasetCreation/Blender/"
-)
+dir = os.path.dirname(folder_path)
 if not dir in sys.path:
     sys.path.append(dir)
 
-# Reset the scene, we don't want anything hanging around
-# bpy.ops.wm.read_factory_settings(use_empty=True)
-
 # Get the scene, for ease
 scene = bpy.context.scene
-
-# Create an empty mesh
 
 # Make a cube/voxel object
 # Requires creating an empty mesh and attaching a cube object to it
@@ -30,14 +30,7 @@ bmesh.ops.create_cube(bm, size=1.0)
 bm.to_mesh(mesh)
 
 # Load the voxel grid
-grid = (
-    np.load(
-        os.path.join(
-            dir,
-            "../Voxels/all_data/single/30-cubed/octopus/torus/5/1_inverted_cube.npy",
-        )
-    )
-).tolist()
+grid = (np.load(os.path.join(dir, data_path))).tolist()
 
 # Make a new collection, which will contain everything we will union
 union_collection = bpy.data.collections.new("UnionCollection")
@@ -116,14 +109,10 @@ for m in meshes:
 
 bm.free()
 
+# Add a subdivision surface modifier for smoothness
 subsurf_mod = first_cube.modifiers.new(type="SUBSURF", name="subsurf")
 subsurf_mod.subdivision_type = "CATMULL_CLARK"
 subsurf_mod.levels = 2
-
-# mat = bpy.data.materials.new(name="BasicMaterial")  # set new material to variable
-# first_cube.data.materials.append(mat)  # add the material to the object
-# bpy.context.object.active_material.diffuse_color = (0.2, 0.3, 0.8)  # change color
-# bpy.context.object.active_material.
 
 # Add a modifier to smooth it out
 smooth = first_cube.modifiers.new(type="REMESH", name="remesh-smooth")
@@ -132,9 +121,7 @@ smooth.voxel_size = 0.4
 smooth.adaptivity = 1.0
 smooth.use_smooth_shade = True
 
+# Add another subdivision surface modifier for smoothness
 subsurf_mod2 = first_cube.modifiers.new(type="SUBSURF", name="subsurf2")
 subsurf_mod2.subdivision_type = "CATMULL_CLARK"
 subsurf_mod2.levels = 2
-
-# # Apply the remesh modifier to the cube, so we're sure we have the right vertices
-# bpy.ops.object.modifier_apply({"object": first_cube}, modifier=smooth.name)
