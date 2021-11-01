@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import copy
 import itertools
+import math
 from operator import add
 import random
 
@@ -128,10 +129,97 @@ class RandomWalk(ABC):
                     return True
         return True
 
+    # Try to add a point to the tunnel
+    def _try_add(self, direction, all_points):
+        # ***** Get the next point in the spine and check it *****
+        # The next point in the spine of the tunnel
+        # Check it doesn't touch the grid and
+        # don't repeat a point we've already done
+        next_point = list(map(add, direction, all_points[len(all_points) - 1][0]))
+        if self._grid_check(next_point, (self.grid | self.full_grid)):
+            return False
+        for points in all_points:
+            if next_point == points[0]:
+                return False
+
+        # ***** Determine width *****
+        previous_width = int(math.log(len(all_points[len(all_points) - 1]), 2))
+        width = min(
+            max(
+                random.randrange(previous_width - 1, previous_width + 2), self.min_width
+            ),
+            self.max_width,
+        )
+        print(width)
+
+        # ***** Sort out the grid *****
+        my_grid = copy.copy(self.grid)
+
+        for index, points in enumerate(all_points):
+            for point in points:
+                if (len(all_points) - width - 1) > index:
+                    my_grid[point[0]][point[1]][point[2]] = True
+                else:
+                    my_grid[point[0]][point[1]][point[2]] = False
+
+        # ***** Add it to the list and try to add the border *****
+        points_to_be_added = [next_point]
+        if not self._add_point_and_border(points_to_be_added, direction, width):
+            return False
+
+        # It worked! Add this next set of points to the path
+        all_points.append(points_to_be_added)
+        return True
+
+    def _add_point_and_border(self, points_to_be_added, direction, width):
+        # Points to add a border to, starting with the spine
+        recurse_border = [points_to_be_added[0]]
+
+        for _ in range(0, width - 1):
+            new_recurse_border = []  # the next set of points to add the border to
+            border = [[0, 1], [1, 0], [1, 1]]
+            add_border = (
+                [[0, b[0], b[1]] for b in border]
+                if direction[0] != 0
+                else [[b[0], 0, b[1]] for b in border]
+                if direction[1] != 0
+                else [[b[0], b[1], 0] for b in border]
+            )
+            # Add the border points to expand the width
+            for recurse_border_point in recurse_border:
+                for border in add_border:
+                    try:  # skip if this is out of bounds
+                        # Point to try to add
+                        test_point = [
+                            recurse_border_point[0] + border[0],
+                            recurse_border_point[1] + border[1],
+                            recurse_border_point[2] + border[2],
+                        ]
+                        # Don't want to intersect/touch the grid
+                        if not self._grid_check(
+                            test_point, (self.grid | self.full_grid)
+                        ):
+                            # Don't add it if it's already there
+                            if points_to_be_added.count(test_point) == 0:
+                                points_to_be_added.append(test_point)
+                                new_recurse_border.append(test_point)
+                        else:
+                            return False
+                    except:
+                        pass
+        return True
+
     # Determines a start location for the walk
     # and returns the first point in the walk
     @abstractmethod
     def _get_start(self):
+        pass
+
+    # Checks if the point touches the grid
+    # Returns True if the point touches or intersects the grid
+    # Returns False otherwise
+    @abstractmethod
+    def _grid_check(self, point, grid):
         pass
 
     # Returns True if the walk should stop

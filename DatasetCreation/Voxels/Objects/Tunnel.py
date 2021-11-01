@@ -1,8 +1,11 @@
+import copy
+import math
 import numpy as np
 from operator import add
 import random
+import yaml
 
-from Geometry import intersect_or_touch, obj_intersect_touch
+from Geometry import obj_intersect_touch
 from RandomWalk import RandomWalk
 
 
@@ -13,75 +16,49 @@ class Tunnel(RandomWalk):
     # Description
     # Given a starting position on the border, make a tunnel from this point to some other point on the border
     # Any border point should not intersect with an object since object cannot be on the border
-    def __init__(self, full_grid, start):
+    def __init__(self, full_grid, start, random_walk_config):
         # Set tunnel information
         self.full_grid = full_grid
         self.start = start
-        # Don't worry about branching rn, we might not care about tunnels
-        # And branching might be too complex to count
-        self.branching = False
-        self.width = 2
+
+        with open(random_walk_config, "r") as stream:
+            data_loaded = yaml.safe_load(stream)
+        self.min_width = data_loaded["Tunnel"]["min_width"]
+        self.max_width = data_loaded["Tunnel"]["max_width"]
+        self.branching = data_loaded["Tunnel"]["branching"]
 
         # Make a grid with just this starting point
         size = self.full_grid[0][0].size
         x, y, z = np.indices((size, size, size))
         self.grid = x > size  # False grid
 
+        # Draw the random walk
         self.valid = self._random_walk()
-
         self.draw_grid = self.grid
 
     # Make a random tunnel
     @classmethod
     def random(cls, full_grid, shape_config, random_walk_config):
-        size = full_grid[0][0].size
         # Create a random start position on a face
-        start = [random.randrange(2, size - 2, 1) for _ in range(0, 3)]
+        size = full_grid[0][0].size
+        with open(random_walk_config, "r") as stream:
+            data_loaded = yaml.safe_load(stream)
+        min_width = data_loaded["Tunnel"]["min_width"]
+        # Don't want to touch the corners, adjust based on minimum width so no voxels touch the corners
+        start = [
+            random.randrange(1 + min_width, size - 1 - min_width, 1)
+            for _ in range(0, 3)
+        ]
         start[random.randrange(0, 3, 1)] = (
             0 if random.randrange(0, 2, 1) == 0 else size - 1
         )
-        return cls(full_grid, start)
+        return cls(full_grid, start, random_walk_config)
 
-    def _try_add(self, direction, all_points):
-        next_point = list(map(add, direction, all_points[len(all_points) - 1][0]))
-        if obj_intersect_touch(next_point, (self.grid | self.full_grid)):
-            return False
-        # Don't repeat a point we've already done
-        for points in all_points:
-            if next_point == points[0]:
-                return False
-        points_to_be_added = [next_point]
-        border = [[0, 1], [1, 0], [1, 1]]
-        add_border = (
-            [[0, b[0], b[1]] for b in border]
-            if direction[0] != 0
-            else [[b[0], 0, b[1]] for b in border]
-            if direction[1] != 0
-            else [[b[0], b[1], 0] for b in border]
-        )
-        for border in add_border:
-            try:  # skip if this is out of bounds
-                test_point = [
-                    next_point[0] + border[0],
-                    next_point[1] + border[1],
-                    next_point[2] + border[2],
-                ]
-                if not obj_intersect_touch(test_point, (self.grid | self.full_grid)):
-                    points_to_be_added.append(test_point)
-                else:
-                    return False
-            except:
-                pass
-
-        all_points.append(points_to_be_added)
-
-        if len(all_points) > 4:
-            last_index = len(all_points) - 2 - self.width
-            for i in range(0, last_index + 1):
-                for point in all_points[i]:
-                    self.grid[point[0]][point[1]][point[2]] = True
-
-        return True
+    # Returns True if the point touches any existing objects
+    # in the grid, or itself, but NOT the border
+    # Returns False otherwise
+    def _grid_check(self, point, grid):
+        return obj_intersect_touch(point, grid)
 
     # Get the vector to add to a point to give it a border thickness
     def _get_border(self):

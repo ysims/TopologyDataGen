@@ -16,9 +16,7 @@ class Octopus(RandomWalk):
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
         self.valid = True
-        self.width = 2
-        self.min_width = 2
-        self.max_width = 4
+
         # Read values from config file
         with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
@@ -27,6 +25,8 @@ class Octopus(RandomWalk):
         self.branching = data_loaded["Octopus"]["branching"]
         self.length_between_branches = data_loaded["Octopus"]["length_between_branches"]
         self.shape_name = data_loaded["Octopus"]["shape"]
+        self.min_width = data_loaded["Octopus"]["min_width"]
+        self.max_width = data_loaded["Octopus"]["max_width"]
 
         if self.shape_name == "Spheroid":
             self.shape = Spheroid.random(full_grid, shape_config, random_walk_config)
@@ -41,7 +41,7 @@ class Octopus(RandomWalk):
 
         self.grid = copy.copy(self.shape.draw_grid)
 
-    # Make a random tunnel
+    # Make a random octopus
     @classmethod
     def random(cls, full_grid, shape_config, random_walk_config):
         # Read values from config file
@@ -52,95 +52,6 @@ class Octopus(RandomWalk):
 
         num_tentacles = random.randrange(min_num_tentacles, max_num_tentacles, 1)
         return cls(full_grid, num_tentacles, random_walk_config, shape_config)
-
-    def _try_add(self, direction, all_points):
-        next_point = list(map(add, direction, all_points[len(all_points) - 1][0]))
-        if intersect_or_touch(next_point, (self.grid | self.full_grid)):
-            return False
-        # Don't repeat a point we've already done
-        for points in all_points:
-            if next_point == points[0]:
-                return False
-        points_to_be_added = [next_point]
-
-        # ***** Determine width *****
-        previous_width = int(math.log(len(all_points[len(all_points) - 1]), 2))
-        # print(previous_width)
-        width = min(
-            max(
-                random.randrange(previous_width - 1, previous_width + 2), self.min_width
-            ),
-            self.max_width,
-        )
-
-        # ***** Sort out the grid *****
-        my_grid = copy.copy(self.grid)
-
-        for index, points in enumerate(all_points):
-            for point in points:
-                if (len(all_points) - width - 2) > index:
-                    my_grid[point[0]][point[1]][point[2]] = True
-                else:
-                    my_grid[point[0]][point[1]][point[2]] = False
-
-        # ***** Define borders *****
-        if width == 1:
-            border = []
-        elif width == 2:
-            border = [[0, 1], [1, 0], [1, 1]]
-        elif width == 3:
-            border = [
-                [0, 1],
-                [1, 0],
-                [1, 1],
-                [1, -1],
-                [0, -1],
-                [-1, -1],
-                [-1, 0],
-                [-1, 1],
-            ]
-        elif width == 4:
-            border = [
-                [0, 1],
-                [1, 0],
-                [1, 1],
-                [1, -1],
-                [0, -1],
-                [-1, -1],
-                [-1, 0],
-                [-1, 1],
-                [-1, 2],
-                [0, 2],
-                [1, 2],
-                [2, 2],
-                [2, 1],
-                [2, 0],
-                [2, -1],
-            ]
-        add_border = (
-            [[0, b[0], b[1]] for b in border]
-            if direction[0] != 0
-            else [[b[0], 0, b[1]] for b in border]
-            if direction[1] != 0
-            else [[b[0], b[1], 0] for b in border]
-        )
-        for border in add_border:
-            try:  # skip if this is out of bounds
-                test_point = [
-                    next_point[0] + border[0],
-                    next_point[1] + border[1],
-                    next_point[2] + border[2],
-                ]
-                if not intersect_or_touch(test_point, (my_grid | self.full_grid)):
-                    points_to_be_added.append(test_point)
-                else:
-                    return False
-            except:
-                pass
-
-        all_points.append(points_to_be_added)
-
-        return True
 
     # Separate function for adding the tentacles
     # Since it'd be better to add them all later
@@ -162,6 +73,12 @@ class Octopus(RandomWalk):
 
         self.draw_grid = self.grid
 
+    # Returns True if the point touches any existing objects
+    # in the grid, or itself, or the border
+    # Returns False otherwise
+    def _grid_check(self, point, grid):
+        return intersect_or_touch(point, grid)
+
     # Determines a start location for the walk
     # and returns the first point in the walk
     def _get_start(self):
@@ -170,7 +87,7 @@ class Octopus(RandomWalk):
             self.min_tentacle_length, self.max_tentacle_length, 1
         )
         all_points = []
-        second_points = []
+
         # We will make a 'tentacle' going off from one of the edges
         edges = []
         for X, Y, Z in itertools.product(range(0, self.full_grid[0][0].size), repeat=3):
@@ -203,43 +120,12 @@ class Octopus(RandomWalk):
                 return []
             edge = random.choice(edges)
             edges.remove(edge)
-            for direction in directions:
-                try:  # skip if this is out of bounds
-                    test_point = [
-                        edge[0] + direction[0],
-                        edge[1] + direction[1],
-                        edge[2] + direction[2],
-                    ]
-                    if not (self.grid[test_point[0]][test_point[1]][test_point[2]]):
-                        if not intersect_or_touch(test_point, self.full_grid):
-                            found_point = True
-                            second_points.append(test_point)
-                            border = [[0, 1], [1, 0], [1, 1]]
-                            add_border = (
-                                [[0, b[0], b[1]] for b in border]
-                                if direction[0] != 0
-                                else [[b[0], 0, b[1]] for b in border]
-                                if direction[1] != 0
-                                else [[b[0], b[1], 0] for b in border]
-                            )
-                            for border in add_border:
-                                try:  # skip if this is out of bounds
-                                    second_surrounds = [
-                                        test_point[0] + border[0],
-                                        test_point[1] + border[1],
-                                        test_point[2] + border[2],
-                                    ]
-                                    # Don't care about intersection in this case
-                                    # it will definitely intersect with the body
-                                    # and that is ok
-                                    second_points.append(second_surrounds)
-                                except:
-                                    pass
-                            break
-                except:
-                    pass
+            # Try to start on this edge, and exit the loop if it works
+            second_points = self._try_start_edge(edge, directions)
+            if second_points:
+                found_point = True
 
-        # If it didn't work, return now before sorting out the extra points
+        # If it didn't work at all, return now before sorting out the extra points
         if not second_points:
             return []
 
@@ -300,7 +186,7 @@ class Octopus(RandomWalk):
                 all_points.append(first_points)
                 all_points.append(second_points)
                 forward_direction = [-x for x in direction]
-                for _ in range(self.width):
+                for _ in range(self.min_width):
                     if not self._get_next_point(
                         all_points, forward_direction, add_border
                     ):
@@ -311,6 +197,31 @@ class Octopus(RandomWalk):
         # so we're returning that point and will make a tentacle with it
         # or we did not and we're returning an empty list and will try again
         return all_points
+
+    def _try_start_edge(self, edge, directions):
+        old_grid = copy.copy(self.grid)
+        self.grid = self.grid != self.shape.grid
+        for direction in directions:
+            try:  # skip if this is out of bounds
+                test_point = [
+                    edge[0] + direction[0],
+                    edge[1] + direction[1],
+                    edge[2] + direction[2],
+                ]
+                if not (self.grid[test_point[0]][test_point[1]][test_point[2]]):
+                    if not intersect_or_touch(test_point, self.full_grid):
+                        second_points = [test_point]
+                        if not self._add_point_and_border(
+                            second_points, direction, self.min_width
+                        ):
+                            self.grid = old_grid
+                            return []
+                        self.grid = old_grid
+                        return second_points
+            except:
+                pass
+        self.grid = old_grid
+        return []
 
     # Try to add another point after the starting point/s
     def _get_next_point(self, all_points, forward_direction, add_border):

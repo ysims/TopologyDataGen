@@ -6,3 +6,10 @@ Octopus:
   branching: False
   length_between_branches: 10
   shape: "Spheroid"
+  min_width: 1
+  max_width: 1
+
+Tunnel:
+  branching: False
+  min_width: 1
+  max_width: 1
