@@ -44,7 +44,8 @@ class Tunnel(RandomWalk):
         with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         min_width = data_loaded["Tunnel"]["min_width"]
-        # Don't want to touch the corners, adjust based on minimum width so no voxels touch the corners
+        # Don't want to touch the corners,
+        # adjust based on minimum width so no voxels touch the corners
         start = [
             random.randrange(1 + min_width, size - 1 - min_width, 1)
             for _ in range(0, 3)
@@ -75,70 +76,32 @@ class Tunnel(RandomWalk):
     # and returns the first point in the walk
     def _get_start(self):
         all_points = []
-        # Fill out the starting point
-        if not self._get_first_points(all_points):
-            return []
-        # For each thickness in the width,
-        # add an extra point straight on from the starting point
-        # to prevent
-        for _ in range(self.width + 1):
-            if not self._get_next_point(all_points):
-                return []
-        return all_points
 
-    # Try to add a border around the starting point
-    def _get_first_points(self, all_points):
-        if obj_intersect_touch(self.start, self.full_grid):
-            return False
-        points_to_be_added = [self.start]
-        add_border = self._get_border()
-        for border in add_border:
-            try:  # skip if this is out of bounds
-                test_point = [
-                    self.start[0] + border[0],
-                    self.start[1] + border[1],
-                    self.start[2] + border[2],
-                ]
-                if not obj_intersect_touch(test_point, self.full_grid):
-                    points_to_be_added.append(test_point)
-                else:
-                    return False
-            except:
-                pass
-        all_points.append(points_to_be_added)
-        return True
-
-    # Try to add another point after the starting point/s
-    def _get_next_point(self, all_points):
-        # Create a new point facing forwards (start point perspective)
         forward_direction = [
             1 if x is 0 else -1 if x is (self.grid[0][0].size) - 1 else 0
             for x in self.start
         ]
-        next_point = list(
-            map(add, forward_direction, all_points[len(all_points) - 1][0])
-        )
-        # Check if the point is valid
-        if obj_intersect_touch(next_point, self.full_grid):
+        first_points = [self.start]
+        # Fill out the starting point
+        if not self._add_point_and_border(
+            first_points, forward_direction, self.min_width
+        ):
             return []
-        points_to_be_added = [next_point]
-        # Get the border and try to add the points
-        add_border = self._get_border()
-        for border in add_border:
-            try:  # skip if this is out of bounds
-                test_point = [
-                    next_point[0] + border[0],
-                    next_point[1] + border[1],
-                    next_point[2] + border[2],
-                ]
-                if not obj_intersect_touch(test_point, self.full_grid):
-                    points_to_be_added.append(test_point)
-                else:
-                    return False
-            except:
-                pass
-        all_points.append(points_to_be_added)
-        return True
+        all_points.append(first_points)
+        # For each thickness in the width,
+        # add an extra point straight on from the starting point
+        # to prevent
+        for _ in range(self.min_width + 1):
+            next_point = list(
+                map(add, forward_direction, all_points[len(all_points) - 1][0])
+            )
+            next_points = [next_point]
+            if not self._add_point_and_border(
+                next_points, forward_direction, self.min_width
+            ):
+                return []
+            all_points.append(next_points)
+        return all_points
 
     def _add_last_points(self, last_point, all_points):
         border = [[0, 1], [1, 0], [1, 1]]
@@ -152,16 +115,38 @@ class Tunnel(RandomWalk):
             if last_point[1] == 0 or last_point[1] == self.full_grid[0][0].size - 1
             else border_z
         )
-        for border in add_border:
-            try:  # skip if this is out of bounds
-                add_point = [
-                    last_point[0] + border[0],
-                    last_point[1] + border[1],
-                    last_point[2] + border[2],
-                ]
-                all_points[len(all_points) - 1].append(add_point)
-            except:
-                pass
+
+        if len(all_points[len(all_points) - 1]) > 1:
+            width = int(math.log(len(all_points[len(all_points) - 1]), 2))
+        else:
+            width = 1
+
+        # Points to add a border to, starting with the spine
+        recurse_border = [last_point]
+        for _ in range(0, width - 1):
+            new_recurse_border = []  # the next set of points to add the border to
+            # Add the border points to expand the width
+            for recurse_border_point in recurse_border:
+                for border in add_border:
+                    try:  # skip if this is out of bounds
+                        # Point to try to add
+                        test_point = [
+                            recurse_border_point[0] + border[0],
+                            recurse_border_point[1] + border[1],
+                            recurse_border_point[2] + border[2],
+                        ]
+                        # Don't want to intersect/touch the grid
+                        if not self._grid_check(
+                            test_point, (self.grid | self.full_grid)
+                        ):
+                            # Don't add it if it's already there
+                            if all_points[len(all_points) - 1].count(test_point) == 0:
+                                all_points[len(all_points) - 1].append(test_point)
+                                new_recurse_border.append(test_point)
+                        else:
+                            return False
+                    except:
+                        pass
 
     # Stop if we're on the boundary
     def _stop_walk_condition(self, all_points):
