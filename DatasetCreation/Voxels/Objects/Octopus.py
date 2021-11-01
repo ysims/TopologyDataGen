@@ -73,7 +73,7 @@ class Octopus(RandomWalk):
     def addTentacles(self, full_grid):
         self.full_grid = full_grid & (~self.grid)
 
-        max_tries = 100
+        max_tries = 1000
         count = 0
         # Add the number of tentacles that we want
         # Retry if it fails
@@ -138,6 +138,7 @@ class Octopus(RandomWalk):
             if not edges:
                 print("No edges, something is wrong")
                 self.valid = False
+                print("no edges left")
                 return []
             edge = random.choice(edges)
             edges.remove(edge)
@@ -170,7 +171,7 @@ class Octopus(RandomWalk):
                 ):
                     # Didn't work, so return empty and fix up the grid
                     self.grid = old_grid
-                    return []
+                    continue  # try a different direction
                 # Do it one more time for a nice seam
                 zero_point = [
                     body_point[0] + direction[0],
@@ -182,7 +183,7 @@ class Octopus(RandomWalk):
                     zero_points, direction, self.min_width
                 ):
                     self.grid = old_grid
-                    return []
+                    continue  # try a different direction
 
                 # Finished with the points, add back in the right body.
                 self.grid = old_grid
@@ -196,12 +197,14 @@ class Octopus(RandomWalk):
                 forward_direction = [-x for x in direction]
                 for _ in range(self.min_width):
                     if not self._try_add(forward_direction, all_points):
-                        return []
+                        continue  # try a different direction
                 return all_points
 
         # At this point, either we found a good point off the edge
         # so we're returning that point and will make a tentacle with it
         # or we did not and we're returning an empty list and will try again
+        if not all_points:
+            print("at the end")
         return all_points
 
     def _try_start_edge(self, edge, directions):
@@ -280,7 +283,9 @@ class Octopus(RandomWalk):
             index = path.index(start)
             before = path.pop(index - 1)
 
-            # Get the direction
+            # Get the direction that the parent branch is moving in
+            # and chose a random direction that is not the direction of the parent
+            # to move in, so that the branch moves away from the parent
             start_point = start[0]
             before_point = before[0]
             direction = [
@@ -307,6 +312,8 @@ class Octopus(RandomWalk):
             )
             random.shuffle(directions)
 
+            # Remove these points from the grid so that intersection/touch checking
+            # doesn't stop the walk from moving
             for i in range(index - 2, index + 2):
                 for point in _path[i]:
                     self.grid[point[0]][point[1]][point[2]] = False
@@ -317,35 +324,16 @@ class Octopus(RandomWalk):
                     start_point[1] + direction[1],
                     start_point[2] + direction[2],
                 ]
+                # Add in this point with its border, with minimum width
                 new_points = [new_start]
-
-                if intersect_or_touch(new_start, (self.grid | self.full_grid)):
+                if not self._add_point_and_border(
+                    new_points, direction, self.min_width
+                ):
                     continue
-                border = [[0, 1], [1, 0], [1, 1]]
-                add_border = (
-                    [[0, b[0], b[1]] for b in border]
-                    if direction[0] != 0
-                    else [[b[0], 0, b[1]] for b in border]
-                    if direction[1] != 0
-                    else [[b[0], b[1], 0] for b in border]
-                )
-                for border in add_border:
-                    try:  # skip if this is out of bounds
-                        new_surrounds = [
-                            new_start[0] + border[0],
-                            new_start[1] + border[1],
-                            new_start[2] + border[2],
-                        ]
-                        if not intersect_or_touch(
-                            new_start, (self.grid | self.full_grid)
-                        ):
-                            new_points.append(new_surrounds)
-                        else:
-                            continue
-                    except:
-                        pass
+
                 new_path = [new_points]
 
+            # Add the parent path points back in
             for i in range(index - 2, index + 2):
                 for point in _path[i]:
                     self.grid[point[0]][point[1]][point[2]] = True
