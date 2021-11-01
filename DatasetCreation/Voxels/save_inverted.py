@@ -4,7 +4,8 @@ import argparse
 import itertools
 import numpy as np
 
-# Parse arguments
+# ******************************************************************
+# Parse the commands line arguments
 parser = argparse.ArgumentParser(
     description="This program loads a voxel grid and saved the inverted form."
 )
@@ -22,6 +23,7 @@ parser.add_argument(
     help="The size of the grid being loaded.",
 )
 args = parser.parse_args()
+# ******************************************************************
 
 # Open the array
 np_grid = np.load(args.grid_file)
