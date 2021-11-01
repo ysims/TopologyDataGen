@@ -17,6 +17,7 @@ class Octopus(RandomWalk):
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
         self.valid = True
+        self.isBranching = False
 
         # Read values from config file
         with open(random_walk_config, "r") as stream:
@@ -28,6 +29,7 @@ class Octopus(RandomWalk):
         self.shape_name = data_loaded["Octopus"]["shape"]
         self.min_width = data_loaded["Octopus"]["min_width"]
         self.max_width = data_loaded["Octopus"]["max_width"]
+        self.min_branch_length = self.min_tentacle_length
 
         if self.shape_name == "Spheroid":
             self.shape = Spheroid.random(full_grid, shape_config, random_walk_config)
@@ -234,12 +236,20 @@ class Octopus(RandomWalk):
 
     # Stop if the path is long enough
     def _stop_walk_condition(self, all_points):
+        if self.isBranching:
+            if len(all_points) >= self.branch_length:
+                return True
+            return False
         if len(all_points) >= self.tentacle_length:
             return True
         return False
 
     # Valid if it's as long or longer than the minimal acceptable length
     def _acceptable_walk(self, all_points):
+        if self.isBranching:
+            if len(all_points) >= self.min_branch_length:
+                return True
+            return False
         if len(all_points) >= self.min_tentacle_length:
             return True
         return False

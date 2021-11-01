@@ -1,11 +1,10 @@
-import copy
 import math
 import numpy as np
 from operator import add
 import random
 import yaml
 
-from Geometry import obj_intersect_touch
+from Geometry import obj_intersect_touch, intersect_or_touch
 from RandomWalk import RandomWalk
 
 
@@ -27,7 +26,8 @@ class Tunnel(RandomWalk):
         self.min_width = data_loaded["Tunnel"]["min_width"]
         self.max_width = data_loaded["Tunnel"]["max_width"]
         self.branching = data_loaded["Tunnel"]["branching"]
-        self.min_branching_length = data_loaded["Tunnel"]["min_branching_length"]
+        self.min_branch_length = data_loaded["Tunnel"]["min_branch_length"]
+        self.length_between_branches = data_loaded["Tunnel"]["length_between_branches"]
 
         # Make a grid with just this starting point
         size = self.full_grid[0][0].size
@@ -61,7 +61,9 @@ class Tunnel(RandomWalk):
     # in the grid, or itself, but NOT the border
     # Returns False otherwise
     def _grid_check(self, point, grid):
-        return obj_intersect_touch(point, grid)
+        if not self.isBranching:
+            return obj_intersect_touch(point, grid)
+        return intersect_or_touch(point, grid)
 
     # Determines a start location for the walk
     # and returns the first point in the walk
@@ -143,10 +145,12 @@ class Tunnel(RandomWalk):
 
     # Stop if it's on the boundary
     def _stop_walk_condition(self, all_points):
+        # If it's a branch, it should stop when it's a certain length
         if self.isBranching:
-            if len(all_points) >= self.branching_length:
+            if len(all_points) >= self.branch_length:
                 return True
             return False
+        # Stop when it hits the boundary
         last_points = all_points[len(all_points) - 1]
         for last_point in last_points:
             for x in last_point:
@@ -159,7 +163,7 @@ class Tunnel(RandomWalk):
     # Only want tunnels that go from one boundary to another
     def _acceptable_walk(self, all_points):
         if self.isBranching:
-            if len(all_points) >= self.min_branching_length:
+            if len(all_points) >= self.min_branch_length:
                 return True
             return False
         last_point = all_points[len(all_points) - 1]
