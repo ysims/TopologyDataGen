@@ -4,11 +4,12 @@ import math
 from operator import add
 import random
 import yaml
+import numpy as np
 
 from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
-from Torus import Torus
+from Torus import Torus, TorusN
 
 
 class Octopus(RandomWalk):
@@ -34,14 +35,27 @@ class Octopus(RandomWalk):
                 self.shape = Spheroid.random(
                     full_grid, shape_config, random_walk_config
                 )
-        else:
+        elif self.shape_name == "Torus":
             self.shape = Torus.random(full_grid, shape_config, random_walk_config)
             while not self.shape.valid:
                 self.shape = Torus.random(full_grid, shape_config, random_walk_config)
+        elif self.shape_name == "TorusN":
+            self.shape = TorusN.random(full_grid, shape_config, random_walk_config)
+            while not self.shape.valid:
+                self.shape = TorusN.random(full_grid, shape_config, random_walk_config)
+        elif self.shape_name == "None":
+            size = full_grid[0][0].size
+            x, y, z = np.indices((size, size, size))
+            self.grid = x < 0
 
-        self.grid = copy.copy(self.shape.draw_grid)
+        else:
+            print("Error: {} not supported".format(self.shape_name))
+            return
 
-    # Make a random octopus
+        if self.shape_name != "None":
+            self.grid = copy.copy(self.shape.draw_grid)
+
+    # Make a random tunnel
     @classmethod
     def random(cls, full_grid, shape_config, random_walk_config):
         # Read values from config file
@@ -88,18 +102,25 @@ class Octopus(RandomWalk):
         )
         all_points = []
 
-        # We will make a 'tentacle' going off from one of the edges
-        edges = []
-        for X, Y, Z in itertools.product(range(0, self.full_grid[0][0].size), repeat=3):
-            if self.shape.draw_grid[X][Y][Z] and not hard_surrounded(
-                [X, Y, Z], self.grid
+        if self.shape_name != "None":
+            # We will make a 'tentacle' going off from one of the edges
+            edges = []
+            for X, Y, Z in itertools.product(
+                range(0, self.full_grid[0][0].size), repeat=3
             ):
-                edges.append([X, Y, Z])
+                if self.shape.draw_grid[X][Y][Z] and not hard_surrounded(
+                    [X, Y, Z], self.grid
+                ):
+                    edges.append([X, Y, Z])
 
-        if not edges:
-            print("No edges, something is wrong")
-            self.valid = False
-            return []
+            if not edges:
+                print("No edges, something is wrong")
+                self.valid = False
+                return []
+        else:
+            # Edges could be any of the 'interior' points
+            edges = []
+            edges.append([15, 15, 15])
 
         # Grab a random edge to use
         # Don't add it to the path because it's already on the circle

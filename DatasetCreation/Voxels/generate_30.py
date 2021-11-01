@@ -21,16 +21,16 @@ number_of = [
     "--tunnel_num 50",
 ]
 
-for experiment in range(0, len(number_of)):
-    print("Experiment {}.".format(experiment))
+for experiment in range(11, len(number_of)):
+    print("Experiment {}.".format(experiment + 1))
     path = "./all_data/single/30-cubed/normal/{}/".format(experiment + 1)
     Path(path).mkdir(parents=True, exist_ok=True)
     for i in range(0, 20):
         print("Run {}.".format(i))
-        sp_path = "./30-cubed/normal/{}/{}".format(experiment, i)
+        sp_path = "./30-cubed/normal/{}/{}".format(experiment + 1, i)
         subprocess.run(
             "python generate.py single {} --cube_size 30 --save --save_num {}".format(
                 number_of[experiment], sp_path
             )
         )
-        print("Subprocess complete. {} / {}".format(experiment, i))
+        print("Subprocess complete. {} / {}".format(experiment + 1, i))
