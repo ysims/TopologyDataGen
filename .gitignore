@@ -1,8 +1,9 @@
 *.pyc
 *.ply
-all_data
+data
 *.npy
 *.yaml
 *.pickle
 
+!src/scripts/data
 !src/datagen/config/

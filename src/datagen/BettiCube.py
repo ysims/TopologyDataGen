@@ -1,10 +1,5 @@
 import numpy as np
 import random
-import scipy.ndimage
-
-import sys
-
-sys.path.append("Objects")
 
 from Island import Island
 from Octopus import Octopus

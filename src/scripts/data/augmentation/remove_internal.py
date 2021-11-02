@@ -5,7 +5,7 @@
 import numpy as np
 import sys
 
-sys.path.append("Objects")
+sys.path.append("src/datagen")
 from Geometry import surrounded
 
 

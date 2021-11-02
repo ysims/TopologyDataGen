@@ -6,6 +6,9 @@ import numpy as np
 import os
 import random
 import yaml
+import sys
+
+sys.path.append("../../../datagen")
 
 from BettiCube import BettiCube
 
@@ -40,11 +43,11 @@ def create_single_data(args):
 
     # Save the cube with numpy
     if args.save:
-        path = os.path.join(os.getcwd(), "all_data/single")
+        path = os.path.join(os.getcwd(), "data/single")
 
         # Create the directory to store any data
         try:
-            os.mkdir(path)
+            os.makedirs(path)
         except:
             pass
 
