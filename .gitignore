@@ -1,9 +1,9 @@
 *.pyc
 *.ply
 data
-all_data
 *.npy
 *.yaml
 *.pickle
 
-!DataCreation/Voxels/Objects/config/
+!src/scripts/data
+!src/datagen/config/

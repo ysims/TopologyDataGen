@@ -2,16 +2,19 @@ import os
 import yaml
 import itertools
 import numpy as np
+import sys
+
+sys.path.append("../../../datagen")
 
 from BettiCube import BettiCube
 
 
 def generate_dataset(args):
-    path = os.path.join(os.getcwd(), "all_data/dataset")
+    path = os.path.join(os.getcwd(), "data/dataset")
 
     # Create the directory to store the data
     try:
-        os.mkdir(path)
+        os.makedirs(path)
     except:
         pass
 
