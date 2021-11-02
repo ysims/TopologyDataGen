@@ -7,7 +7,7 @@ import numpy as np
 def invert(grid_file, grid_output):
     # Open the array
     np_grid = np.load(grid_file)
-    grid_size = np.amax(np.data) + 1
+    grid_size = np.amax(np_grid) + 1
 
     # Make the inverted form of the grid
     numpy_point_cloud = None
@@ -21,3 +21,4 @@ def invert(grid_file, grid_output):
                 numpy_point_cloud = np.array([[X, Y, Z]])
     # Save the grid
     np.save(grid_output, numpy_point_cloud)
+    print("Inverted form of {} saved to {}".format(grid_file, grid_output))

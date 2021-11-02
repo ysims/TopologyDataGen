@@ -28,4 +28,6 @@ def remove_internal(grid_file, grid_output):
         if not surrounded(point, data_grid):
             new_grid.append(point)
 
+    print("Removed {}/{} points.".format(len(data) - len(new_grid), len(data)))
+
     np.save(grid_output, new_grid)
