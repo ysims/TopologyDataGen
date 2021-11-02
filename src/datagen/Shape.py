@@ -234,10 +234,12 @@ class Shape(ABC):
 
             count += 1
 
-    def _place(self):
+    def _place(self, object_min_distance):
         # Create the object
         self._create_grid()
-        grid_dilation = scipy.ndimage.binary_dilation(self.grid, iterations=2)
+        grid_dilation = scipy.ndimage.binary_dilation(
+            self.grid, iterations=object_min_distance + 1
+        )
         # Check intersect
         if (grid_dilation & self.full_grid).any():
             self.valid = False

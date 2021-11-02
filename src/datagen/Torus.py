@@ -9,9 +9,17 @@ from Shape import Shape
 
 class Torus(Shape):
     # Make a specific torus
-    def __init__(self, full_grid, center, major_radius, minor_radius, rotation):
+    def __init__(
+        self,
+        full_grid,
+        center,
+        major_radius,
+        minor_radius,
+        rotation,
+        object_min_distance,
+    ):
         # Check we can even go here in the first place
-        if intersect_or_touch(center, full_grid):
+        if intersect_or_touch(center, full_grid, object_min_distance):
             self.valid = False
             return
 
@@ -26,7 +34,7 @@ class Torus(Shape):
         size = full_grid[0][0].size
         self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
 
-        self._place()
+        self._place(object_min_distance)
 
         # place_and_move uses a grid that is plugged up for intersection checking
         # In the end, we don't want this so just make the torus normally
@@ -50,6 +58,7 @@ class Torus(Shape):
         min_major = data_loaded["Torus"]["min_major_radius"]
         max_major = data_loaded["Torus"]["max_major_radius"]
         min_minor = data_loaded["Torus"]["min_minor_radius"]
+        object_min_distance = data_loaded["object_min_distance"]
         size = grid[0][0].size
 
         # Make random torus
@@ -72,7 +81,9 @@ class Torus(Shape):
             minor_radius = min_minor
         else:
             minor_radius = random.randrange(min_minor, major_radius - 2, 1)
-        return cls(grid, center, major_radius, minor_radius, rotation)
+        return cls(
+            grid, center, major_radius, minor_radius, rotation, object_min_distance
+        )
 
     # This will get the circle that 'plugs' up the torus
     # to prevent tunnels going through
@@ -113,11 +124,18 @@ class Torus(Shape):
         return True
 
 
-# A 2-torus
+# A k-torus
 class TorusN(Shape):
     # Make a specific torus
     def __init__(
-        self, full_grid, center, major_radius, minor_radius, rotation, n_holes
+        self,
+        full_grid,
+        center,
+        major_radius,
+        minor_radius,
+        rotation,
+        n_holes,
+        object_min_distance,
     ):
         # Set torus information
         self.full_grid = full_grid
@@ -130,8 +148,13 @@ class TorusN(Shape):
         size = full_grid[0][0].size
         self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
 
+        # Check we can even go here in the first place
+        if intersect_or_touch(center, full_grid, object_min_distance):
+            self.valid = False
+            return
+
         # Find a center that works
-        self._place()
+        self._place(object_min_distance)
 
         # Make the grid properly now that we've got a valid center
         self.draw_grid = (self.x == 0) & (self.x == 1)
@@ -162,6 +185,7 @@ class TorusN(Shape):
         min_minor = data_loaded["Torus"]["min_minor_radius"]
         max_holes = data_loaded["Torus"]["max_holes"]
         min_holes = data_loaded["Torus"]["min_holes"]
+        object_min_distance = data_loaded["object_min_distance"]
         size = grid[0][0].size
 
         # Make random torus
@@ -195,7 +219,15 @@ class TorusN(Shape):
             else:
                 n_holes = random.randrange(min_holes, max_holes + 1, 1)
 
-        return cls(grid, center, major_radius, minor_radius, rotation, n_holes)
+        return cls(
+            grid,
+            center,
+            major_radius,
+            minor_radius,
+            rotation,
+            n_holes,
+            object_min_distance,
+        )
 
     # When creating the grid, plug up the torus so place and move
     # can detect if there's anything going through the torus

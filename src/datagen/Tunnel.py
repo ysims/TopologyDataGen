@@ -28,6 +28,7 @@ class Tunnel(RandomWalk):
         self.branching = data_loaded["Tunnel"]["branching"]
         self.min_branch_length = data_loaded["Tunnel"]["min_branch_length"]
         self.length_between_branches = data_loaded["Tunnel"]["length_between_branches"]
+        self.object_min_distance = data_loaded["object_min_distance"]
 
         # Make a grid with just this starting point
         size = self.full_grid[0][0].size
@@ -62,8 +63,8 @@ class Tunnel(RandomWalk):
     # Returns False otherwise
     def _grid_check(self, point, grid):
         if not self.isBranching:
-            return obj_intersect_touch(point, grid)
-        return intersect_or_touch(point, grid)
+            return obj_intersect_touch(point, grid, self.object_min_distance)
+        return intersect_or_touch(point, grid, self.object_min_distance)
 
     # Determines a start location for the walk
     # and returns the first point in the walk

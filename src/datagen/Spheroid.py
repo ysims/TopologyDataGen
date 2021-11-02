@@ -11,9 +11,9 @@ class Spheroid(Shape):
     # full_grid:    all other objects
     # center:       center of the sphere
     # radius:       radius of the sphere
-    def __init__(self, full_grid, center, radius, rotation):
+    def __init__(self, full_grid, center, radius, rotation, object_min_distance):
         # Check we're not starting in an invalid location
-        if intersect_or_touch(center, full_grid):
+        if intersect_or_touch(center, full_grid, object_min_distance):
             self.valid = False
             return
 
@@ -27,7 +27,7 @@ class Spheroid(Shape):
         size = full_grid[0][0].size
         self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
 
-        self._place()
+        self._place(object_min_distance)
 
         self.draw_grid = self.grid
 
@@ -40,6 +40,7 @@ class Spheroid(Shape):
         center_place = data_loaded["Spheroid"]["center_placement_border"]
         min_radius = data_loaded["Spheroid"]["min_radius"]
         max_radius = data_loaded["Spheroid"]["max_radius"]
+        object_min_distance = data_loaded["object_min_distance"]
         size = grid[0][0].size
 
         # Create a spheroid randomly
@@ -61,7 +62,7 @@ class Spheroid(Shape):
             random.uniform(0, 2 * math.pi),
             random.uniform(0, 2 * math.pi),
         ]
-        return cls(grid, center, radius, rotation)
+        return cls(grid, center, radius, rotation, object_min_distance)
 
     def _create_grid(self):
         # Create a spheroid
