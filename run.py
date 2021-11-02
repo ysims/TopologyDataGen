@@ -10,6 +10,9 @@ from invert import invert
 from subsample import subsample
 from remove_internal import remove_internal
 from generate import generate
+from run_gudhi import run_gudhi
+from ripser_cpp_convert import ripser_cpp_convert
+from view_grid import view_grid
 
 parser = argparse.ArgumentParser(description="Helper script to run other scripts")
 subparsers = parser.add_subparsers(dest="program", help="sub-command help")
@@ -21,24 +24,23 @@ parser_gen = subparsers.add_parser("datagen", help="Generate data.")
 parser_gen.add_argument(
     "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
 )
-
-gen_subparsers = parser_gen.add_subparsers(dest="type", help="Generation method")
-gen_subparsers.add_argument(
+parser_gen.add_argument(
     "--shape_config",
     default="./Objects/config/Shape.yaml",
     help="The path to the Shape config to use.",
 )
-gen_subparsers.add_argument(
+parser_gen.add_argument(
     "--random_walk_config",
     default="./Objects/config/RandomWalk.yaml",
     help="The path to the RandomWalk config to use.",
 )
-gen_subparsers.add_argument(
+parser_gen.add_argument(
     "--torus_holes",
     type=int,
     default=0,
     help="Number of holes in an n-holed torus.",
 )
+gen_subparsers = parser_gen.add_subparsers(dest="type", help="Generation method")
 
 # Single
 single_parser = gen_subparsers.add_parser(
@@ -124,7 +126,7 @@ dataset_parser.add_argument(
 parser_augment = subparsers.add_parser("augment", help="Data augmentation")
 parser_augment.add_argument(
     "type",
-    choices=["remove_internal", "subsample", "invert"],
+    choices=["remove_internal", "subsample", "invert", "ripser_cpp_convert"],
     help="Augmentation program to run.",
 )
 parser_augment.add_argument("input_file", help="Input data file to augment.")
@@ -138,7 +140,69 @@ parser_augment.add_argument(
 parser_homology = subparsers.add_parser(
     "homology", help="Run persistent homology software."
 )
+homology_subparsers = parser_homology.add_subparsers(
+    dest="type", help="Generation method"
+)
 
+# Gudhi
+gudhi_parser = gen_subparsers.add_parser("gudhi", help="Run Gudhi.")
+gudhi_parser.add_argument(
+    "type",
+    choices=["run", "load"],
+    help="Whether to run Gudhi on a numpy array or load a pickle file that corresponds to Gudhi output.",
+)
+gudhi_parser.add_argument(
+    "input_file",
+    help="The file path of the data to load.",
+)
+gudhi_parser.add_argument(
+    "--output_file",
+    help="The file path to save the result to.",
+)
+gudhi_parser.add_argument(
+    "--save", action="store_true", default=False, help="Save the data with pickle."
+)
+gudhi_parser.add_argument(
+    "--filtering",
+    action="store_true",
+    default=False,
+    help="Filter the results based on lifetime and print the Betti numbers.",
+)
+gudhi_parser.add_argument(
+    "filtration_type",
+    default="vietoris-rips",
+    choices=["vietoris-rips", "alpha"],
+    help="Type of filtration to use with Gudhi.",
+)
+gudhi_parser.add_argument(
+    "--vr_threshold",
+    type=int,
+    help="The threshold value, or max_edge_length, of the Vietoris-Rips complex. Setting this will improve memory usage.",
+)
+gudhi_parser.add_argument(
+    "--b0",
+    type=int,
+    default=1.0,
+    help="The minimum lifetime to use when filtering Betti zero.",
+)
+gudhi_parser.add_argument(
+    "--b1",
+    type=int,
+    default=1.0,
+    help="The minimum lifetime to use when filtering Betti one.",
+)
+gudhi_parser.add_argument(
+    "--b2",
+    type=int,
+    default=1.0,
+    help="The minimum lifetime to use when filtering Betti two.",
+)
+
+# ***************************
+# ****** VISUALISATION ******
+# ***************************
+parser_visualise = subparsers.add_parser("visualise", help="Visualise data.")
+parser_visualise.add_argument("input_file", help="Data file to view.")
 
 # ***************************
 # ******* RUN PROGRAM *******
@@ -156,7 +220,14 @@ elif args.program == "augment":
         subsample(args.input_file, args.output_file)
     elif args.type == "invert":
         invert(args.input_file, args.output_file)
+    elif args.type == "ripser_cpp_convert":
+        ripser_cpp_convert(args.input_file, args.output_file)
     else:
         sys.exit("Not a valid augmentation program.")
 elif args.program == "homology":
-    pass
+    if args.type == "gudhi":
+        run_gudhi(args)
+elif args.program == "visualise":
+    view_grid(args.input_file)
+else:
+    sys.exit("Unsupported program.")
