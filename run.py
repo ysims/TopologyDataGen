@@ -156,6 +156,12 @@ gudhi_parser.add_argument(
     help="The file path of the data to load.",
 )
 gudhi_parser.add_argument(
+    "filtration_type",
+    default="vietoris-rips",
+    choices=["vietoris-rips", "alpha"],
+    help="Type of filtration to use with Gudhi.",
+)
+gudhi_parser.add_argument(
     "--output_file",
     help="The file path to save the result to.",
 )
@@ -167,12 +173,6 @@ gudhi_parser.add_argument(
     action="store_true",
     default=False,
     help="Filter the results based on lifetime and print the Betti numbers.",
-)
-gudhi_parser.add_argument(
-    "filtration_type",
-    default="vietoris-rips",
-    choices=["vietoris-rips", "alpha"],
-    help="Type of filtration to use with Gudhi.",
 )
 gudhi_parser.add_argument(
     "--vr_threshold",
