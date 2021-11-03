@@ -119,6 +119,11 @@ dataset_parser.add_argument(
     default=1000,
     help="Number of times to repeat on one set of parameters.",
 )
+dataset_parser.add_argument(
+    "--save_folder",
+    default="",
+    help="Path relative to data/dataset/ to save the dataset to.",
+)
 
 # ***************************
 # **** DATA AUGMENTATION ****

@@ -1,3 +1,6 @@
+# The minimum amount of voxels that should separate any two objects
+object_min_distance: 4
+
 Spheroid:
   center_placement_border: 5
   min_radius: 4

@@ -10,7 +10,7 @@ from BettiCube import BettiCube
 
 
 def generate_dataset(args):
-    path = os.path.join(os.getcwd(), "data/dataset")
+    path = os.path.join(os.getcwd(), "data/dataset/" + args.save_folder)
 
     # Create the directory to store the data
     try:
