@@ -21,6 +21,7 @@ class RandomWalk(ABC):
         if not all_points:
             return False
 
+        self.isBranching = False
         original_grid = copy.copy(self.grid)
         if not self._walk(all_points):
             self.grid = original_grid
