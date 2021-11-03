@@ -83,7 +83,7 @@ def generate_dataset(args):
             ) as file:
                 documents = yaml.dump(voxels.get_data(), file)
             np.save(
-                os.path.join(path, "{count}_grid.ply".format(count=count)),
+                os.path.join(path, "{count}_grid".format(count=count)),
                 numpy_point_cloud,
             )
 
