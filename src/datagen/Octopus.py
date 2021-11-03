@@ -5,6 +5,7 @@ from operator import add
 import random
 import yaml
 import numpy as np
+import scipy.ndimage
 
 from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
@@ -29,6 +30,7 @@ class Octopus(RandomWalk):
         self.shape_name = data_loaded["Octopus"]["shape"]
         self.min_width = data_loaded["Octopus"]["min_width"]
         self.max_width = data_loaded["Octopus"]["max_width"]
+        self.object_min_distance = data_loaded["object_min_distance"]
         self.min_branch_length = self.min_tentacle_length
 
         if self.shape_name == "Spheroid":
@@ -89,11 +91,14 @@ class Octopus(RandomWalk):
 
         self.draw_grid = self.grid
 
-    # Returns True if the point touches any existing objects
-    # in the grid, or itself, or the border
+    # Returns True if the point is closer than object_min_distance
+    # to existing objects in the grid or the border,
+    # or is closer than one voxel to itself.
     # Returns False otherwise
-    def _grid_check(self, point, grid):
-        return intersect_or_touch(point, grid)
+    def _grid_check(self, point):
+        if intersect_or_touch(point, self.full_grid, self.object_min_distance):
+            return True
+        return intersect_or_touch(point, self.grid, 1)
 
     # Determines a start location for the walk
     # and returns the first point in the walk
@@ -116,7 +121,7 @@ class Octopus(RandomWalk):
                     edges.append([X, Y, Z])
 
             if not edges:
-                print("No edges, something is wrong")
+                print("No edges, something is wrong 1")
                 self.valid = False
                 return []
         else:
@@ -138,9 +143,8 @@ class Octopus(RandomWalk):
         ]
         while not found_point:
             if not edges:
-                print("No edges, something is wrong")
+                print("No edges, something is wrong 2")
                 self.valid = False
-                print("no edges left")
                 return []
             edge = random.choice(edges)
             edges.remove(edge)
@@ -166,7 +170,7 @@ class Octopus(RandomWalk):
                 first_points = [body_point]
                 # Remove the body from the grid because we don't want to check for intersection with it
                 old_grid = copy.copy(self.grid)
-                self.grid = self.grid != self.shape.grid
+                self.grid = self.grid != self.grid
                 # Add the border around the body
                 if not self._add_point_and_border(
                     first_points, direction, self.min_width
@@ -205,13 +209,11 @@ class Octopus(RandomWalk):
         # At this point, either we found a good point off the edge
         # so we're returning that point and will make a tentacle with it
         # or we did not and we're returning an empty list and will try again
-        if not all_points:
-            print("at the end")
         return all_points
 
     def _try_start_edge(self, edge, directions):
         old_grid = copy.copy(self.grid)
-        self.grid = self.grid != self.shape.grid
+        # Try each direction
         for direction in directions:
             try:  # skip if this is out of bounds
                 test_point = [
@@ -219,14 +221,21 @@ class Octopus(RandomWalk):
                     edge[1] + direction[1],
                     edge[2] + direction[2],
                 ]
+                # If this isn't an occupied space, it might be a valid starting point
                 if not (self.grid[test_point[0]][test_point[1]][test_point[2]]):
-                    if not intersect_or_touch(test_point, self.full_grid):
+                    # Check if it's close to anything else in the grid
+                    if not intersect_or_touch(
+                        test_point, self.full_grid, self.object_min_distance
+                    ):
                         second_points = [test_point]
+                        # Add in the surrounding points but don't care about intersecting/touching
+                        self.grid = self.grid != self.grid
                         if not self._add_point_and_border(
                             second_points, direction, self.min_width
                         ):
                             self.grid = old_grid
-                            return []
+                            # Didn't work, try a different direction
+                            continue
                         self.grid = old_grid
                         return second_points
             except:

@@ -3,7 +3,7 @@ import numpy as np
 import random
 import yaml
 
-from Geometry import distance3d
+from Geometry import distance3d, intersect_or_touch
 from Shape import Shape
 
 
@@ -14,7 +14,15 @@ class Island(Shape):
     # inner radius: radius of the inner sphere
     # rotation: a list of three rotations that are x,y,z axis
     #           rotations and rotated in that order
-    def __init__(self, full_grid, center, outer_radius, inner_radius, rotation):
+    def __init__(
+        self,
+        full_grid,
+        center,
+        outer_radius,
+        inner_radius,
+        rotation,
+        object_min_distance,
+    ):
         # Set sphere information
         self.full_grid = full_grid
         self.center = center
@@ -23,8 +31,13 @@ class Island(Shape):
         self.rotation = rotation
         self.valid = True
 
+        # Check we can even go here in the first place
+        if intersect_or_touch(center, full_grid, object_min_distance):
+            self.valid = False
+            return
+
         # Find a center that works
-        self._place()
+        self._place(object_min_distance)
 
         # Make a rotated grid and use it to make a voxelised sphere
         # with a hole in the middle (island)
@@ -50,6 +63,7 @@ class Island(Shape):
         min_outer = data_loaded["Island"]["min_outer_radius"]
         max_outer = data_loaded["Island"]["max_outer_radius"]
         min_inner = data_loaded["Island"]["min_inner_radius"]
+        object_min_distance = data_loaded["object_min_distance"]
         size = grid[0][0].size
 
         # Make random Island
@@ -71,7 +85,9 @@ class Island(Shape):
             inner_radius = min_inner
         else:
             inner_radius = random.randrange(min_inner, outer_radius - 1, 1)
-        return cls(grid, center, outer_radius, inner_radius, rotation)
+        return cls(
+            grid, center, outer_radius, inner_radius, rotation, object_min_distance
+        )
 
     # Make this as a ball for finding a good center,
     # or we might trap an object inside...

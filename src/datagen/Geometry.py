@@ -87,7 +87,7 @@ def distance3d(point1, point2):
 
 
 # Check if a given point intersects or touches something in the grid
-def intersect_or_touch(point, grid):
+def intersect_or_touch(point, grid, object_min_distance):
     # Check if it hits the boundary
     if (max(point) > grid[0][0].size - 1) or min(point) < 0:
         return True
@@ -96,34 +96,72 @@ def intersect_or_touch(point, grid):
     if grid[point[0]][point[1]][point[2]]:
         return True
 
-    # Check if the point touches anything in the grid
-    for x, y, z in itertools.product([-1, 0, 1], repeat=3):
-        try:  # skip if this is out of bounds
-            if grid[point[0] + x][point[1] + y][point[2] + z]:
-                return True
-        except:
-            continue
+    # Iteratively check the area around each position which was checked
+    # with object_min_distance iterations.
+    recurse_points = [point]
+    new_recurse_points = []
+    for _ in range(object_min_distance):
+        for recurse_point in recurse_points:
+            # Check if the point touches anything in the grid
+            for x, y, z in itertools.product([-1, 0, 1], repeat=3):
+                try:  # skip if this is out of bounds
+                    new_recurse_points.append(
+                        [
+                            recurse_point[0] + x,
+                            recurse_point[1] + y,
+                            recurse_point[2] + z,
+                        ]
+                    )
+                    if grid[recurse_point[0] + x][recurse_point[1] + y][
+                        recurse_point[2] + z
+                    ]:
+                        return True
+                except:
+                    continue
+            recurse_points = new_recurse_points
+            new_recurse_points = []
+
     # Nothing is wrong, so return false
     return False
 
 
-def obj_intersect_touch(point, grid):
+def obj_intersect_touch(point, grid, object_min_distance):
     # Check if this point intersects,
     # but only if it's not on the border
-    if grid[point[0]][point[1]][point[2]]:
-        if (max(point) != grid[0][0].size - 1) and min(point) != 0:
-            return True
+    try:
+        if grid[point[0]][point[1]][point[2]]:
+            if (max(point) != grid[0][0].size - 1) and min(point) != 0:
+                return True
+    except:
+        # In this case the point is outside of the grid
+        # So we don't want it
+        return True
 
-    # Check if the point touches anything in the grid,
-    # but ignore if it's on the border
-    for x, y, z in itertools.product([-1, 0, 1], repeat=3):
-        try:  # skip if this is out of bounds
-            touch_point = [point[0] + x, point[1] + y, point[2] + z]
-            if grid[touch_point[0]][touch_point[1]][touch_point[2]]:
-                if (max(touch_point) < grid[0][0].size - 1) and min(touch_point) > 0:
-                    return True
-        except:
-            continue
+    # Iteratively check the area around each position which was checked
+    # with object_min_distance iterations.
+    recurse_points = [point]
+    new_recurse_points = []
+    for _ in range(object_min_distance):
+        for recurse_point in recurse_points:
+            # Check if the point touches anything in the grid,
+            # but ignore if it's on the border
+            for x, y, z in itertools.product([-1, 0, 1], repeat=3):
+                try:  # skip if this is out of bounds
+                    check_point = [
+                        recurse_point[0] + x,
+                        recurse_point[1] + y,
+                        recurse_point[2] + z,
+                    ]
+                    new_recurse_points.append(check_point)
+                    if grid[check_point[0]][check_point[1]][check_point[2]]:
+                        if (max(check_point) < grid[0][0].size - 1) and min(
+                            check_point
+                        ) > 0:
+                            return True
+                except:
+                    continue
+            recurse_points = new_recurse_points
+            new_recurse_points = []
     # Nothing is wrong, so return false
     return False
 

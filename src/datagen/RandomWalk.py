@@ -137,7 +137,7 @@ class RandomWalk(ABC):
         # Check it doesn't touch the grid and
         # don't repeat a point we've already done
         next_point = list(map(add, direction, all_points[len(all_points) - 1][0]))
-        if self._grid_check(next_point, (self.grid | self.full_grid)):
+        if self._grid_check(next_point):
             return False
         for points in all_points:
             if next_point == points[0]:
@@ -202,9 +202,7 @@ class RandomWalk(ABC):
                             recurse_border_point[2] + border[2],
                         ]
                         # Don't want to intersect/touch the grid
-                        if not self._grid_check(
-                            test_point, (self.grid | self.full_grid)
-                        ):
+                        if not self._grid_check(test_point):
                             # Don't add it if it's already there
                             if points_to_be_added.count(test_point) == 0:
                                 points_to_be_added.append(test_point)
@@ -225,7 +223,8 @@ class RandomWalk(ABC):
     # Returns True if the point touches or intersects the grid
     # Returns False otherwise
     @abstractmethod
-    def _grid_check(self, point, grid):
+    def _grid_check(self, point):
+        print("second hello")
         pass
 
     # Returns True if the walk should stop

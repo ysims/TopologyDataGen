@@ -4,7 +4,7 @@ from operator import add
 import random
 import yaml
 
-from Geometry import obj_intersect_touch, intersect_or_touch
+from Geometry import obj_intersect_touch
 from RandomWalk import RandomWalk
 
 
@@ -28,6 +28,7 @@ class Tunnel(RandomWalk):
         self.branching = data_loaded["Tunnel"]["branching"]
         self.min_branch_length = data_loaded["Tunnel"]["min_branch_length"]
         self.length_between_branches = data_loaded["Tunnel"]["length_between_branches"]
+        self.object_min_distance = data_loaded["object_min_distance"]
 
         # Make a grid with just this starting point
         size = self.full_grid[0][0].size
@@ -57,13 +58,14 @@ class Tunnel(RandomWalk):
         )
         return cls(full_grid, start, random_walk_config)
 
-    # Returns True if the point touches any existing objects
-    # in the grid, or itself, but NOT the border
+    # Returns True if the point is closer than object_min_distance
+    # to existing objects in the grid but NOT the border,
+    # or is closer than one voxel to itself.
     # Returns False otherwise
-    def _grid_check(self, point, grid):
-        if not self.isBranching:
-            return obj_intersect_touch(point, grid)
-        return intersect_or_touch(point, grid)
+    def _grid_check(self, point):
+        if obj_intersect_touch(point, self.full_grid, self.object_min_distance):
+            return True
+        return obj_intersect_touch(point, self.grid, 1)
 
     # Determines a start location for the walk
     # and returns the first point in the walk
@@ -131,9 +133,7 @@ class Tunnel(RandomWalk):
                             recurse_border_point[2] + border[2],
                         ]
                         # Don't want to intersect/touch the grid
-                        if not self._grid_check(
-                            test_point, (self.grid | self.full_grid)
-                        ):
+                        if not self._grid_check(test_point):
                             # Don't add it if it's already there
                             if all_points[len(all_points) - 1].count(test_point) == 0:
                                 all_points[len(all_points) - 1].append(test_point)

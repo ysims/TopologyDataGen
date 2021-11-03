@@ -1,17 +1,26 @@
+# The minimum amount of voxels that should separate any two objects
+object_min_distance: 4
+
+# Config for the octopus shape
 Octopus:
-  min_num_tentacles: 1
-  max_num_tentacles: 2
+  # Will choose a random integer between [min,max-1]
+  # This will be the number of tentacles generated on a particular octopus
+  min_num_tentacles: 5
+  max_num_tentacles: 6
+  # Length of each tentacle is chosen as some random number between [min,max]
+  # Unit is voxels, ie the number of voxels add to the spine of the walk
   min_tentacle_length: 30
-  max_tentacle_length: 70
-  branching: True
+  max_tentacle_length: 40
+  # If True, each walk will have branches connected to it if it is long enough
+  branching: False
   length_between_branches: 20
   shape: "Spheroid"
-  min_width: 1
+  min_width: 2
   max_width: 2
 
 Tunnel:
   min_width: 2
   max_width: 2
-  branching: True
+  branching: False
   min_branch_length: 10
   length_between_branches: 20

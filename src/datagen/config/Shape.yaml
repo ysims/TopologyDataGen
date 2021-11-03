@@ -1,7 +1,14 @@
+# The minimum amount of voxels that should separate any two objects
+object_min_distance: 5
+
+# Config for the spheroid
+# center_placement_border: places the object at least 4 voxels away from the border. This can help the algorithm find a valid spot faster.
+# min_radius: minimum radius of the spheroid
+# max_radius: maximum radius of the spheroid
 Spheroid:
   center_placement_border: 4
-  min_radius: 5
-  max_radius: 7
+  min_radius: 4
+  max_radius: 6
 
 Torus:
   center_placement_border: 4
