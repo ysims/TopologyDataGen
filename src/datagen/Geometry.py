@@ -96,6 +96,8 @@ def intersect_or_touch(point, grid, object_min_distance):
     if grid[point[0]][point[1]][point[2]]:
         return True
 
+    # Iteratively check the area around each position which was checked
+    # with object_min_distance iterations.
     recurse_points = [point]
     new_recurse_points = []
     for _ in range(object_min_distance):

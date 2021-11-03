@@ -238,7 +238,7 @@ class Shape(ABC):
         # Create the object
         self._create_grid()
         grid_dilation = scipy.ndimage.binary_dilation(
-            self.grid, iterations=object_min_distance + 1
+            self.grid, iterations=(object_min_distance + 1)
         )
         # Check intersect
         if (grid_dilation & self.full_grid).any():
