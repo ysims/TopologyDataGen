@@ -21,6 +21,6 @@ Octopus:
 Tunnel:
   min_width: 2
   max_width: 2
-  branching: True
+  branching: False
   min_branch_length: 10
   length_between_branches: 20
