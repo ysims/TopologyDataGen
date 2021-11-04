@@ -83,7 +83,23 @@ def generate_dataset(args):
             ) as file:
                 documents = yaml.dump(voxels.get_data(), file)
             np.save(
-                os.path.join(path, "{count}_grid".format(count=count)),
+                os.path.join(path, "{count}_inverted_cube".format(count=count)),
+                numpy_point_cloud,
+            )
+
+            # Make the normal cube
+            numpy_point_cloud = None
+            for X, Y, Z in itertools.product(range(0, args.cube_size), repeat=3):
+                if not grid[X][Y][Z]:
+                    if type(numpy_point_cloud) is np.ndarray:
+                        numpy_point_cloud = np.concatenate(
+                            (numpy_point_cloud, [[X, Y, Z]]), axis=0
+                        )
+                    else:
+                        numpy_point_cloud = np.array([[X, Y, Z]])
+
+            np.save(
+                os.path.join(path, "{count}_cube".format(count=count)),
                 numpy_point_cloud,
             )
 
