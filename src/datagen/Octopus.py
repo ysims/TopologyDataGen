@@ -77,16 +77,10 @@ class Octopus(RandomWalk):
     def addTentacles(self, full_grid):
         self.full_grid = full_grid & (~self.grid)
 
-        max_tries = 1000
-        count = 0
         # Add the number of tentacles that we want
         # Retry if it fails
-        for i in range(self.num_tentacles):
-            count = 1
+        for _ in range(self.num_tentacles):
             while not self._random_walk():
-                count += 1
-                if count == max_tries:
-                    break
                 continue
 
         self.draw_grid = self.grid
