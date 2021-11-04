@@ -1,89 +1,45 @@
 import numpy as np
 import itertools
-import time
-
-# General function for creating a homogeneous transformation matrix
-# made up of X-Y-Z rotations
-# rotation is a 3d array of x rotation,
-# y rotation, z rotation applied that order.
-def get_rotation(rotation):
-    X = np.array(
-        [
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, np.cos(rotation[0]), np.sin(rotation[0]), 0.0],
-            [0.0, -np.sin(rotation[0]), np.cos(rotation[0]), 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-    Y = np.array(
-        [
-            [np.cos(rotation[1]), 0.0, -np.sin(rotation[1]), 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [np.sin(rotation[1]), 0.0, np.cos(rotation[1]), 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-    Z = np.array(
-        [
-            [np.cos(rotation[2]), np.sin(rotation[2]), 0.0, 0.0],
-            [-np.sin(rotation[2]), np.cos(rotation[2]), 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-    return Z.dot(Y.dot(X))
-
-
-# R is a rotation matrix
-# C is the center about which we want to rotate - in most cases,
-#   the center of the shape we are rotating
-# P is a point x,y,z which we are rotating about the center
-#   by the angled defined in rotation
-def rotate(R, C, P):
-    # Homogeneous transformation matrices with the
-    # negative center and positive center
-    T_neg = np.array(
-        [
-            [1.0, 0.0, 0.0, -C[0]],
-            [0.0, 1.0, 0.0, -C[1]],
-            [0.0, 0.0, 1.0, -C[2]],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-    T_pos = np.array(
-        [
-            [1.0, 0.0, 0.0, C[0]],
-            [0.0, 1.0, 0.0, C[1]],
-            [0.0, 0.0, 1.0, C[2]],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-    # Turn the point into a form we can multiply with
-    P_full = [P[0], P[1], P[2], 1.0]
-    # Return C*R*(-C)*P - move the origin to the center,
-    # rotate the point, then move the origin back
-    return T_pos.dot(R.dot(T_neg.dot(P_full)))[:3]
+import scipy.ndimage
+import math
 
 
 # Returns a rotated grid of indices
 def rotate_grid(size, rotation, center):
-    x, y, z = np.indices((size, size, size))
-    R = get_rotation(rotation)
+    dimensions = len(center)
+    grid = np.indices((size, size, size))
+    # Scipy uses degrees, so convert rotation from radians to degrees
+    rotation = [x * 180 / math.pi for x in rotation]
 
+    # Move the grid so that the center of the rotation is at the origin
     for X, Y, Z in itertools.product(range(0, size), repeat=3):
-        x[X][Y][Z], y[X][Y][Z], z[X][Y][Z] = rotate(R, center, [X, Y, Z])
+        grid[0][X][Y][Z] -= center[0]
+        grid[1][X][Y][Z] -= center[1]
+        grid[2][X][Y][Z] -= center[2]
 
-    return x, y, z
+    grid[0] = scipy.ndimage.rotate(grid[0], 45, axes=(0, 2), reshape=False)
+    grid[1] = scipy.ndimage.rotate(grid[1], 45, axes=(0, 2), reshape=False)
+    grid[2] = scipy.ndimage.rotate(grid[2], 45, axes=(0, 2), reshape=False)
+
+    # Move the grid back to its original position
+    for X, Y, Z in itertools.product(range(0, size), repeat=3):
+        grid[0][X][Y][Z] += center[0]
+        grid[1][X][Y][Z] += center[1]
+        grid[2][X][Y][Z] += center[2]
+
+    return grid
 
 
-# Get the distance in 3d between these two points
-def distance3d(point1, point2):
-    if (not point1 or not point2) or (len(point1) != 3 or len(point2) != 3):
-        return 0
-    x_sq = pow((point1[0] - point2[0]), 2)
-    y_sq = pow((point1[1] - point2[1]), 2)
-    z_sq = pow((point1[2] - point2[2]), 2)
-    return np.sqrt(x_sq + y_sq + z_sq)
+# Get the distance between these two points
+def distanceNd(point1, point2):
+    if len(point1) != len(point2):
+        print("Error: dimensions of the points differ.")
+    dimension = len(point1)
+    acc_sq = 0
+    for i in range(dimension):
+        acc_sq += pow((point1[i] - point2[i]), 2)
+
+    return np.sqrt(acc_sq)
 
 
 # Check if a given point intersects or touches something in the grid
@@ -168,11 +124,16 @@ def obj_intersect_touch(point, grid, object_min_distance):
 
 # Check this point is surrounded by the grid or an edge point
 def surrounded(point, grid):
+    dimensions = len(point)
+
     # Check all the surrounding points and see if they're filled
-    for x, y, z in itertools.product([-1, 0, 1], repeat=3):
+    for add in itertools.product([-1, 0, 1], repeat=dimensions):
         try:  # skip if this is out of bounds
             # If it's empty, we're not surrounded
-            if not grid[point[0] + x][point[1] + y][point[2] + z]:
+            gridPoint = grid
+            for i in add:
+                gridPoint = gridPoint[point[i] + add[i]]
+            if not gridPoint:
                 return False
         except:
             continue

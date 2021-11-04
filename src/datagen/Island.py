@@ -3,7 +3,7 @@ import numpy as np
 import random
 import yaml
 
-from Geometry import distance3d, intersect_or_touch
+from Geometry import distanceNd, intersect_or_touch
 from Shape import Shape
 
 
@@ -103,6 +103,6 @@ class Island(Shape):
 
     # Only valid if it's not in the inside cavity
     def _valid_edge(self, point):
-        if distance3d(point, self.center) <= self.inner_radius:
+        if distanceNd(point, self.center) <= self.inner_radius:
             return False
         return True

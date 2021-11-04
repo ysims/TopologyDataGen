@@ -3,7 +3,7 @@ import numpy as np
 import random
 import yaml
 
-from Geometry import intersect_or_touch, rotate_grid, distance3d
+from Geometry import intersect_or_touch, rotate_grid, distanceNd
 from Shape import Shape
 
 
@@ -119,7 +119,7 @@ class Torus(Shape):
     # Checks if a point is a valid edge point
     # For a torus, we don't want the inner edges counting
     def _valid_edge(self, point):
-        if distance3d(point, self.center) <= self.major_radius:
+        if distanceNd(point, self.center) <= self.major_radius:
             return False
         return True
 
@@ -269,10 +269,10 @@ class TorusN(Shape):
     # Only valid if it's not in the inner part of either torus
     def _valid_edge(self, point):
         # Can't be inside the first torus
-        if distance3d(point, self.center) <= self.major_radius:
+        if distanceNd(point, self.center) <= self.major_radius:
             return False
         # Can't be inside the second torus
         second_center = [(x + self.major_radius * 2) for x in self.center]
-        if distance3d(point, second_center) <= self.major_radius:
+        if distanceNd(point, second_center) <= self.major_radius:
             return False
         return True

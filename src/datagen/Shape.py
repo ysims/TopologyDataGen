@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import itertools
-from Geometry import distance3d, surrounded
+from Geometry import distanceNd, surrounded
 import scipy.ndimage
 import random
 import math
@@ -130,8 +130,8 @@ class Shape(ABC):
                 largest_distance = 0
                 move_vector = random.choice(cluster_edge)
                 for edge in cluster_edge:
-                    if distance3d(chosen_edge, edge) > largest_distance:
-                        largest_distance = distance3d(chosen_edge, edge)
+                    if distanceNd(chosen_edge, edge) > largest_distance:
+                        largest_distance = distanceNd(chosen_edge, edge)
                         move_vector = edge
                 # Vector from the intersection point to the edge
                 # we want to move the intersecting object
@@ -152,8 +152,8 @@ class Shape(ABC):
                 shortest_distance = size
                 local_vector = []
                 for e_point in cluster_shape_edge:
-                    if distance3d(c_point, e_point) < shortest_distance:
-                        shortest_distance = distance3d(c_point, e_point)
+                    if distanceNd(c_point, e_point) < shortest_distance:
+                        shortest_distance = distanceNd(c_point, e_point)
                         local_vector = [
                             e_point[0] - c_point[0],
                             e_point[1] - c_point[1],
@@ -237,12 +237,12 @@ class Shape(ABC):
     def _place(self, object_min_distance):
         # Create the object
         self._create_grid()
-        grid_dilation = scipy.ndimage.binary_dilation(
-            self.grid, iterations=(object_min_distance + 1)
-        )
-        # Check intersect
-        if (grid_dilation & self.full_grid).any():
-            self.valid = False
+        # grid_dilation = scipy.ndimage.binary_dilation(
+        #     self.grid, iterations=(object_min_distance + 1)
+        # )
+        # # Check intersect
+        # if (grid_dilation & self.full_grid).any():
+        #     self.valid = False
         return
 
     @abstractmethod
