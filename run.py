@@ -146,11 +146,11 @@ parser_homology = subparsers.add_parser(
     "homology", help="Run persistent homology software."
 )
 homology_subparsers = parser_homology.add_subparsers(
-    dest="type", help="Generation method"
+    dest="software", help="Software to use."
 )
 
 # Gudhi
-gudhi_parser = gen_subparsers.add_parser("gudhi", help="Run Gudhi.")
+gudhi_parser = homology_subparsers.add_parser("gudhi", help="Run Gudhi.")
 gudhi_parser.add_argument(
     "type",
     choices=["run", "load"],
@@ -186,19 +186,19 @@ gudhi_parser.add_argument(
 )
 gudhi_parser.add_argument(
     "--b0",
-    type=int,
+    type=float,
     default=1.0,
     help="The minimum lifetime to use when filtering Betti zero.",
 )
 gudhi_parser.add_argument(
     "--b1",
-    type=int,
+    type=float,
     default=1.0,
     help="The minimum lifetime to use when filtering Betti one.",
 )
 gudhi_parser.add_argument(
     "--b2",
-    type=int,
+    type=float,
     default=1.0,
     help="The minimum lifetime to use when filtering Betti two.",
 )
@@ -230,7 +230,7 @@ elif args.program == "augment":
     else:
         sys.exit("Not a valid augmentation program.")
 elif args.program == "homology":
-    if args.type == "gudhi":
+    if args.software == "gudhi":
         run_gudhi(args)
 elif args.program == "visualise":
     view_grid(args.input_file)
