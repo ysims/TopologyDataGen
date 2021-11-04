@@ -22,7 +22,7 @@ subparsers = parser.add_subparsers(dest="program", help="sub-command help")
 # ***************************
 parser_gen = subparsers.add_parser("datagen", help="Generate data.")
 parser_gen.add_argument(
-    "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
+    "--cube_size", type=int, default=30, help="Size of the cavity-filled cube, cubed."
 )
 parser_gen.add_argument(
     "--shape_config",
