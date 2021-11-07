@@ -13,6 +13,7 @@ from generate import generate
 from run_gudhi import run_gudhi
 from ripser_cpp_convert import ripser_cpp_convert
 from view_grid import view_grid
+from run_ripser import run_ripser
 
 parser = argparse.ArgumentParser(description="Helper script to run other scripts")
 subparsers = parser.add_subparsers(dest="program", help="sub-command help")
@@ -149,6 +150,13 @@ homology_subparsers = parser_homology.add_subparsers(
     dest="software", help="Software to use."
 )
 
+# Ripser
+ripser_parser = homology_subparsers.add_parser("ripser", help="Run Ripser.")
+ripser_parser.add_argument(
+    "input_file",
+    help="Input file to filter.",
+)
+
 # Gudhi
 gudhi_parser = homology_subparsers.add_parser("gudhi", help="Run Gudhi.")
 gudhi_parser.add_argument(
@@ -232,6 +240,8 @@ elif args.program == "augment":
 elif args.program == "homology":
     if args.software == "gudhi":
         run_gudhi(args)
+    elif args.software == "ripser":
+        run_ripser(args)
 elif args.program == "visualise":
     view_grid(args.input_file)
 else:
