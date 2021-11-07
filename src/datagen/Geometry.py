@@ -100,7 +100,7 @@ def intersect_or_touch(point, grid, object_min_distance):
     # with object_min_distance iterations.
     recurse_points = [point]
     new_recurse_points = []
-    for _ in range(object_min_distance):
+    for i in range(object_min_distance):
         for recurse_point in recurse_points:
             # Check if the point touches anything in the grid
             for x, y, z in itertools.product([-1, 0, 1], repeat=3):
@@ -118,8 +118,8 @@ def intersect_or_touch(point, grid, object_min_distance):
                         return True
                 except:
                     continue
-            recurse_points = new_recurse_points
-            new_recurse_points = []
+        recurse_points = new_recurse_points
+        new_recurse_points = []
 
     # Nothing is wrong, so return false
     return False
@@ -160,8 +160,8 @@ def obj_intersect_touch(point, grid, object_min_distance):
                             return True
                 except:
                     continue
-            recurse_points = new_recurse_points
-            new_recurse_points = []
+        recurse_points = new_recurse_points
+        new_recurse_points = []
     # Nothing is wrong, so return false
     return False
 
