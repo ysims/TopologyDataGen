@@ -9,10 +9,10 @@ Octopus:
   max_num_tentacles: 2
   # Length of each tentacle is chosen as some random number between [min,max]
   # Unit is voxels, ie the number of voxels add to the spine of the walk
-  min_tentacle_length: 19
-  max_tentacle_length: 20
+  min_tentacle_length: 8
+  max_tentacle_length: 13
   # If True, each walk will have branches connected to it if it is long enough
-  branching: True
+  branching: False
   length_between_branches: 5
   shape: "Spheroid"
   min_width: 2
