@@ -1,5 +1,5 @@
 # The minimum amount of voxels that should separate any two objects
-object_min_distance: 4
+object_min_distance: 2
 
 Spheroid:
   center_placement_border: 5
@@ -7,9 +7,15 @@ Spheroid:
   max_radius: 2
 
 Torus:
-  center_placement_border: 4
-  min_major_radius: 4
-  max_major_radius: 4
-  min_minor_radius: 2
+  center_placement_border: 3
+  min_major_radius: 3
+  max_major_radius: 3
+  min_minor_radius: 1.5
   min_holes: 5
   max_holes: 5
+
+Island:
+  center_placement_border: 5
+  min_outer_radius: 3
+  max_outer_radius: 5
+  min_inner_radius: 1

@@ -14,6 +14,6 @@ Octopus:
   # If True, each walk will have branches connected to it if it is long enough
   branching: False
   length_between_branches: 5
-  shape: "Spheroid"
+  shape: "Torus"
   min_width: 2
   max_width: 2
