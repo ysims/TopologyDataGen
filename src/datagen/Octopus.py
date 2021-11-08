@@ -31,7 +31,7 @@ class Octopus(RandomWalk):
         self.min_width = data_loaded["Octopus"]["min_width"]
         self.max_width = data_loaded["Octopus"]["max_width"]
         self.object_min_distance = data_loaded["object_min_distance"]
-        self.min_branch_length = self.min_tentacle_length
+        self.min_branch_length = self.min_tentacle_length/2
 
         if self.shape_name == "Spheroid":
             self.shape = Spheroid.random(full_grid, shape_config, random_walk_config)
@@ -39,6 +39,7 @@ class Octopus(RandomWalk):
                 self.shape = Spheroid.random(
                     full_grid, shape_config, random_walk_config
                 )
+            print("Sphere")
         elif self.shape_name == "Torus":
             self.shape = Torus.random(full_grid, shape_config, random_walk_config)
             while not self.shape.valid:
