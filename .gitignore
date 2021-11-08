@@ -7,3 +7,5 @@ data
 
 !src/scripts/data
 !src/datagen/config/
+!src/datagen/config/30_octopus_gen/*
+!src/datagen/config/30_octo_torus_gen/*
