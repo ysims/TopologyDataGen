@@ -144,3 +144,33 @@ python run.py homology gudhi run my_data.npy alpha --filtering --b0 2.5 --b1 0.8
 ```
 
 This will run Gudhi with the Alpha complex on `my_data.npy` and filter it with minimum lifetimes of 2.5 for Betti zero, 0.8 for Betti one and 1.5 for Betti two.
+
+To run Ripser:
+
+1. Compile by running
+
+   ```bash
+   cd ripser
+   make
+   cd ..
+   ```
+
+2. If you have a NumPy data file <file>, convert it into a text file that Ripser can use using
+
+   ```bash
+   python run.py augment ripser_cpp_convert <file> <ripser_file>
+   ```
+
+   `<ripser_file>` is where the output Ripser text file will be save to.
+
+3. Run Ripser and output to text file
+
+   ```bash
+   ./ripser/ripser <ripser_file> --format point-cloud --threshold <threshold> --dim 2 > <output_file>
+   ```
+
+4. Filter the data into something meaningful
+
+   ```bash
+   python run.py homology ripser <output_file>
+   ```
