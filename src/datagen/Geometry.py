@@ -7,27 +7,30 @@ import math
 # Returns a rotated grid of indices
 def rotate_grid(size, rotation, center):
     dimensions = len(center)
-    grid = np.indices((size, size, size))
+    shape = [size for _ in range(0,dimensions)]
+    grid = np.indices(shape)
+
+    # Pad the array so that the desired center is the rotation center
+    padX = [grid.shape[1] - center[0], center[0]]
+    padY = [grid.shape[2] - center[1], center[1]]
+    padZ = [grid.shape[3] - center[2], center[2]]
+    grid = np.pad(grid, [[0,0], padX, padY, padZ])
+
     # Scipy uses degrees, so convert rotation from radians to degrees
-    rotation = [x * 180 / math.pi for x in rotation]
+    degrees_rotation = [x * 180 / math.pi for x in rotation]
 
-    # Move the grid so that the center of the rotation is at the origin
-    for X, Y, Z in itertools.product(range(0, size), repeat=3):
-        grid[0][X][Y][Z] -= center[0]
-        grid[1][X][Y][Z] -= center[1]
-        grid[2][X][Y][Z] -= center[2]
+    # Get all possible axes to rotate on, and rotate on them
+    axes = [x for x in range(dimensions)]
+    for axis_1,axis_2 in itertools.combinations(axes,2):
+        current_rotation = degrees_rotation[0]
+        degrees_rotation.pop(0)
+        for i in range(0, len(grid)):
+            grid[i] = scipy.ndimage.rotate(grid[i], current_rotation, axes=(axis_1, axis_2), reshape=False)
 
-    grid[0] = scipy.ndimage.rotate(grid[0], 45, axes=(0, 2), reshape=False)
-    grid[1] = scipy.ndimage.rotate(grid[1], 45, axes=(0, 2), reshape=False)
-    grid[2] = scipy.ndimage.rotate(grid[2], 45, axes=(0, 2), reshape=False)
+    # Reverse the padding
+    grid = grid[:, padX[0] : -padX[1], padY[0] : -padY[1], padZ[0] : -padZ[1]]
 
-    # Move the grid back to its original position
-    for X, Y, Z in itertools.product(range(0, size), repeat=3):
-        grid[0][X][Y][Z] += center[0]
-        grid[1][X][Y][Z] += center[1]
-        grid[2][X][Y][Z] += center[2]
-
-    return grid
+    return [grid[0], grid[1], grid[2]]
 
 
 # Get the distance between these two points
