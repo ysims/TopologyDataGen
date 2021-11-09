@@ -11,10 +11,11 @@ def rotate_grid(size, rotation, center):
     grid = np.indices(shape)
 
     # Pad the array so that the desired center is the rotation center
-    padX = [grid.shape[1] - center[0], center[0]]
-    padY = [grid.shape[2] - center[1], center[1]]
-    padZ = [grid.shape[3] - center[2], center[2]]
-    grid = np.pad(grid, [[0,0], padX, padY, padZ])
+    padding = [[0,0]]
+    for i in range(0,dimensions):
+        padN = [grid.shape[i+1] - center[i], center[i]]
+        padding.append(padN)
+    grid = np.pad(grid, padding)
 
     # Scipy uses degrees, so convert rotation from radians to degrees
     degrees_rotation = [x * 180 / math.pi for x in rotation]
@@ -28,6 +29,17 @@ def rotate_grid(size, rotation, center):
             grid[i] = scipy.ndimage.rotate(grid[i], current_rotation, axes=(axis_1, axis_2), reshape=False)
 
     # Reverse the padding
+    reverse_padding_start = [0]
+    reverse_padding_end = [dimensions]
+    for i in range(dimensions):
+        reverse_padding_start.append(padding[i+1][0])
+        reverse_padding_end.append(-padding[i+1][1])
+    # grid = grid[tuple(map(slice, reverse_padding_start, reverse_padding_end))]
+
+    padX = [50 - center[0], center[0]]
+    padY = [50 - center[1], center[1]]
+    padZ = [50 - center[1], center[1]]
+
     grid = grid[:, padX[0] : -padX[1], padY[0] : -padY[1], padZ[0] : -padZ[1]]
 
     return [grid[0], grid[1], grid[2]]
