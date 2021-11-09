@@ -118,59 +118,72 @@ The second method uses Blender (version 2.93.1).
 
 ## Persistent Homology Libraries
 
-For running data on persistent homology software. Gudhi is currently supported.
+For running data on persistent homology software. Gudhi and Ripser are currently supported. Ripser requires being able to compile and run C++ in the command line.
 
 ```bash
-python run.py homology <type> <input_file> <filtration_type> [options]
+python run.py homology [generic options] <software> [specific args/options]
 ```
 
-| Argument          | Default  | Description                                                                                              |
-| ----------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| `type`            | Required | `run` or `load`, for either running Gudhi on a dataset or loading Gudhi results to filter.               |
-| `input_file`      | Required | File path of the data to input - data file or pickle file with Gudhi results.                            |
-| `filtration_type` | Required | Either the Vietoris-Rips complex (`vietoris-rips`) or the Alpha complex (`alpha`).                       |
-| `--save`          | False    | Saves the results of Gudhi in a pickle file.                                                             |
-| `--output_file`   | None     | File path to save the Gudhi results to. Only required if `--save` is set.                                |
-| `--filtering`     | False    | Set to filter the results of Gudhi and print the resulting homology.                                     |
-| `--vr_threshold`  | None     | If the Vietoris-Rips complex is chosen, this can be used to set the threshold/max_edge_length parameter. |
+Generic arguments are
+
+| Argument         | Default  | Description                                                                                              |
+| ---------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| `software`       | Required | `gudhi` or `ripser`.                                                                                     |
+| `--vr_threshold` | None     | If the Vietoris-Rips complex is chosen, this can be used to set the threshold/max_edge_length parameter. |
 | `--b0`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti zero.           |
 | `--b1`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti one.            |
 | `--b2`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti two.            |
 
+### Gudhi
+
+Gudhi arguments are
+
+| Argument          | Default  | Description                                                                                |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `type`            | Required | `run` or `load`, for either running Gudhi on a dataset or loading Gudhi results to filter. |
+| `input_file`      | Required | File path of the data to input - data file or pickle file with Gudhi results.              |
+| `filtration_type` | Required | Either the Vietoris-Rips complex (`vietoris-rips`) or the Alpha complex (`alpha`).         |
+| `--save`          | False    | Saves the results of Gudhi in a pickle file.                                               |
+| `--output_file`   | None     | File path to save the Gudhi results to. Only required if `--save` is set.                  |
+| `--filtering`     | False    | Set to filter the results of Gudhi and print the resulting homology.                       |
+
 Example:
 
 ```bash
-python run.py homology gudhi run my_data.npy alpha --filtering --b0 2.5 --b1 0.8 --b2 1.5
+python run.py homology --b0 2.5 --b1 0.8 --b2 1.5 gudhi run my_data.npy alpha --filtering
 ```
 
 This will run Gudhi with the Alpha complex on `my_data.npy` and filter it with minimum lifetimes of 2.5 for Betti zero, 0.8 for Betti one and 1.5 for Betti two.
 
-To run Ripser:
+### Ripser
 
-1. Compile by running
+To run Ripser, first compile it
 
-   ```bash
-   cd ripser
-   make
-   cd ..
-   ```
+```bash
+cd ripser
+make
+cd ..
+```
 
-2. If you have a NumPy data file <file>, convert it into a text file that Ripser can use using
+Ripser arguments are
 
-   ```bash
-   python run.py augment ripser_cpp_convert <file> <ripser_file>
-   ```
+| Argument     | Default  | Description                                                                                                                 |
+| ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `input_file` | Required | File path of the data to input - NumPy data file or text file with Ripser results.                                          |
+| `--run`      | False    | If True, runs Ripser on a NumPy data file. If False, takes a text file with Ripser results, filters the data and prints it. |
 
-   `<ripser_file>` is where the output Ripser text file will be save to.
+Example:
 
-3. Run Ripser and output to text file
+```bash
+python run.py homology --vr_threshold 3.0 ripser my_data.npy --run
+```
 
-   ```bash
-   ./ripser/ripser <ripser_file> --format point-cloud --threshold <threshold> --dim 2 > <output_file>
-   ```
+This will take my_data.npy, convert it into the Ripser text file format and run Ripser using a threshold of 3.0. The Ripser data text file and Ripser results will be saved to files `my_data.txt` and `my_data_result.txt` respectively. It will filter the results using the default Betti number lifetime thresholds of 1.0 for each. The filtered results are then printed out.
 
-4. Filter the data into something meaningful
+Example:
 
-   ```bash
-   python run.py homology ripser <output_file>
-   ```
+```bash
+python run.py --b0 2.5 --b1 0.5 --b2 1.5 homology ripser my_data.txt
+```
+
+Given that my_data.txt is the resulting output of Ripser on some data file, it will filter these results using Betti number lifetime thresholds of 2.5, 0.5 and 1.5 for Betti zero, one and two respectively. The filtered results are then printed out.
