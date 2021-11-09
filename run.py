@@ -146,6 +146,31 @@ parser_augment.add_argument(
 parser_homology = subparsers.add_parser(
     "homology", help="Run persistent homology software."
 )
+parser_homology.add_argument(
+    "--vr_threshold",
+    type=float,
+    default=4.0,
+    help="The threshold value, or max_edge_length, of the Vietoris-Rips complex. A lower number will result in lower memory usage.",
+)
+parser_homology.add_argument(
+    "--b0",
+    type=float,
+    default=1.0,
+    help="The minimum lifetime to use when filtering Betti zero.",
+)
+parser_homology.add_argument(
+    "--b1",
+    type=float,
+    default=1.0,
+    help="The minimum lifetime to use when filtering Betti one.",
+)
+parser_homology.add_argument(
+    "--b2",
+    type=float,
+    default=1.0,
+    help="The minimum lifetime to use when filtering Betti two.",
+)
+
 homology_subparsers = parser_homology.add_subparsers(
     dest="software", help="Software to use."
 )
@@ -154,7 +179,12 @@ homology_subparsers = parser_homology.add_subparsers(
 ripser_parser = homology_subparsers.add_parser("ripser", help="Run Ripser.")
 ripser_parser.add_argument(
     "input_file",
-    help="Input file to filter.",
+    help="Input file to filter or run Ripser on.",
+)
+ripser_parser.add_argument(
+    "--run",
+    action="store_true", default=False,
+    help="Whether or not to run Ripser. If not set, the input file will be treater as Ripser output.",
 )
 
 # Gudhi
@@ -186,29 +216,6 @@ gudhi_parser.add_argument(
     action="store_true",
     default=False,
     help="Filter the results based on lifetime and print the Betti numbers.",
-)
-gudhi_parser.add_argument(
-    "--vr_threshold",
-    type=int,
-    help="The threshold value, or max_edge_length, of the Vietoris-Rips complex. Setting this will improve memory usage.",
-)
-gudhi_parser.add_argument(
-    "--b0",
-    type=float,
-    default=1.0,
-    help="The minimum lifetime to use when filtering Betti zero.",
-)
-gudhi_parser.add_argument(
-    "--b1",
-    type=float,
-    default=1.0,
-    help="The minimum lifetime to use when filtering Betti one.",
-)
-gudhi_parser.add_argument(
-    "--b2",
-    type=float,
-    default=1.0,
-    help="The minimum lifetime to use when filtering Betti two.",
 )
 
 # ***************************

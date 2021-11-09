@@ -1,5 +1,5 @@
 import math
-
+import subprocess
 
 def is_number(s):
     try:
@@ -10,15 +10,24 @@ def is_number(s):
 
 
 def run_ripser(args):
+    file_name = (args.input_file).rsplit(".",1)[0]
+    results = args.input_file
+
+    if args.run:
+        out = open(file_name + "_results.txt", "w")
+        subprocess.call(["python", "run.py", "augment", "ripser_cpp_convert", file_name + ".npy", file_name + ".txt"])
+        subprocess.call(["./ripser/ripser", file_name + ".txt", "--format", "point-cloud", "--threshold", str(args.vr_threshold), "--dim", "2"], stdout=out)
+        results = file_name + "_results.txt"
+
     b0 = []
     b1 = []
     b2 = []
 
-    b0_thresh = 1.0
-    b1_thresh = 1.0
-    b2_thresh = 1.0
+    b0_thresh = args.b0
+    b1_thresh = args.b1
+    b2_thresh = args.b2
 
-    with open(args.input_file, "rb") as f:
+    with open(results, "rb") as f:
         f.readline()  # point cloud with x points in dimension y
         f.readline()  # persistence intervals in dim 0:
 

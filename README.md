@@ -133,9 +133,9 @@ python run.py homology <type> <input_file> <filtration_type> [options]
 | `--output_file`   | None     | File path to save the Gudhi results to. Only required if `--save` is set.                                |
 | `--filtering`     | False    | Set to filter the results of Gudhi and print the resulting homology.                                     |
 | `--vr_threshold`  | None     | If the Vietoris-Rips complex is chosen, this can be used to set the threshold/max_edge_length parameter. |
-| `--b_0`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti zero.           |
-| `--b_1`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti one.            |
-| `--b_2`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti two.            |
+| `--b0`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti zero.           |
+| `--b1`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti one.            |
+| `--b2`           | 1.0      | If filtering is set, this is the minimum lifetime that will be used when filtering Betti two.            |
 
 Example:
 

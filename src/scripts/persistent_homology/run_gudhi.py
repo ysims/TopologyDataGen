@@ -10,7 +10,7 @@ import sys
 
 
 def run_gudhi(args):
-    if args.save and type == "run":
+    if args.save and args.type == "run":
         if args.output_file is None:
             sys.exit(
                 "Save option has been chosen but no output file has been specified!"
@@ -50,7 +50,7 @@ def run_gudhi(args):
             diag = pickle.load(fp)
 
     # Filter the data
-    if args.filtering or type == "load":
+    if args.filtering or args.type == "load":
         print("Filtering the data.")
         b_0 = []
         b_1 = []
@@ -86,3 +86,5 @@ def run_gudhi(args):
         with open(args.output_path, "wb") as fp:  # Pickling
             pickle.dump(diag, fp)
         print("Saved the data as {}".format(args.output_path))
+
+    return [b_0, b_1, b_2]
