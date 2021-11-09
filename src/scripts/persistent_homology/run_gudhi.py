@@ -16,7 +16,7 @@ def run_gudhi(args):
                 "Save option has been chosen but no output file has been specified!"
             )
 
-    if type == "run":
+    if args.type == "run":
         # Load the data
         data = np.load(args.input_file)
         data = data.astype(np.float32)
@@ -45,14 +45,17 @@ def run_gudhi(args):
             sys.exit("Unsupported filtration type.")
         print("Completed computation.")
 
-    if type == "load":
+    if args.type == "load":
         with open(args.input_file, "rb") as fp:
             diag = pickle.load(fp)
 
     # Filter the data
     if args.filtering or type == "load":
         print("Filtering the data.")
-        b_0, b_1, b_2, b_3 = []
+        b_0 = []
+        b_1 = []
+        b_2 = []
+        b_3 = []
 
         for entry in diag:
             if entry[0] == 0:
