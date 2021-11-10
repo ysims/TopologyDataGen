@@ -11,7 +11,7 @@ class Spheroid(Shape):
     # full_grid:    all other objects
     # center:       center of the sphere
     # radius:       radius of the sphere
-    def __init__(self, full_grid, center, radius, rotation, object_min_distance):
+    def __init__(self, full_grid, center, radius, rotation, object_min_distance, dimensions):
         # Check we're not starting in an invalid location
         if intersect_or_touch(center, full_grid, object_min_distance):
             self.valid = False
@@ -23,9 +23,13 @@ class Spheroid(Shape):
         self.full_grid = full_grid
         self.rotation = rotation
         self.valid = True
+        self.dimensions = dimensions
 
-        size = full_grid[0][0].size
-        self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
+        grid_size = full_grid
+        for _ in range(dimensions - 1):
+            grid_size = grid_size[0]
+        grid_size = grid_size.size
+        self.index_grid = rotate_grid(grid_size, self.rotation, self.center)
 
         self._place(object_min_distance)
 
@@ -33,7 +37,7 @@ class Spheroid(Shape):
 
     # Make a random spheroid
     @classmethod
-    def random(cls, grid, shape_config, random_walk_config):
+    def random(cls, grid, shape_config, random_walk_config, dimensions):
         # Read values from config file
         with open(shape_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
@@ -41,36 +45,36 @@ class Spheroid(Shape):
         min_radius = data_loaded["Spheroid"]["min_radius"]
         max_radius = data_loaded["Spheroid"]["max_radius"]
         object_min_distance = data_loaded["object_min_distance"]
-        size = grid[0][0].size
+
+        grid_size = grid
+        for _ in range(dimensions-1):
+            grid_size = grid_size[0]
+        grid_size = grid_size.size
 
         # Create a spheroid randomly
-        center = (
-            random.randrange(center_place, size - center_place, 1),
-            random.randrange(center_place, size - center_place, 1),
-            random.randrange(center_place, size - center_place, 1),
-        )
+        center = [
+            random.randrange(center_place, grid_size - center_place, 1) for _ in range(dimensions)
+        ]
         if min_radius == max_radius:
-            radius = [min_radius, min_radius, min_radius]
+            radius = [min_radius for _ in range(dimensions)]
         else:
             radius = [
-                random.randrange(min_radius, max_radius, 1),
-                random.randrange(min_radius, max_radius, 1),
-                random.randrange(min_radius, max_radius, 1),
+                random.randrange(min_radius, max_radius, 1) for _ in range(dimensions)
             ]
         rotation = [
-            random.uniform(0, 2 * math.pi),
-            random.uniform(0, 2 * math.pi),
-            random.uniform(0, 2 * math.pi),
+            random.uniform(0, 2 * math.pi) for _ in range(dimensions)
         ]
-        return cls(grid, center, radius, rotation, object_min_distance)
+        return cls(grid, center, radius, rotation, object_min_distance, dimensions)
 
     def _create_grid(self):
         # Create a spheroid
-        self.grid = (
-            (pow(self.x - self.center[0], 2) / pow(self.radius[0], 2))
-            + (pow(self.y - self.center[1], 2) / pow(self.radius[1], 2))
-            + (pow(self.z - self.center[2], 2) / pow(self.radius[2], 2))
-        ) <= 1
+        for i in range(self.dimensions):
+            if i == 0:
+                lhs = (pow(self.index_grid[i] - self.center[i], 2) / pow(self.radius[i], 2))
+                continue
+            lhs += (pow(self.index_grid[i] - self.center[i], 2) / pow(self.radius[i], 2))
+
+        self.grid = lhs <= 1
 
     # This only gets called if it's not surrounded - there's no other things to check for a ball
     def _valid_edge(self, point):

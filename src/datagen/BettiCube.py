@@ -10,24 +10,25 @@ from Tunnel import Tunnel
 # Class that holds a cube with cavities in it,
 # of various configurations
 class BettiCube(object):
-    def __init__(self, size, shape_config, random_walk_config, torus_holes):
+    def __init__(self, size, shape_config, random_walk_config, torus_holes, dimensions):
         # The number of voxels across any edge
         self.shape_config = shape_config
         self.random_walk_config = random_walk_config
         self.size = size
         self.torus_holes = torus_holes
         self.objects = []  # initialise our list of objects
+        self.dimensions = dimensions
         # Create the full shape everything is contained in.
         # True areas are the border and false are the insides
-        x, y, z = np.indices((self.size, self.size, self.size))
-        self.border = (
-            (x == 0)
-            | (x == self.size - 1)
-            | (y == 0)
-            | (y == self.size - 1)
-            | (z == 0)
-            | (z == self.size - 1)
-        )
+        index_grid = np.indices([self.size for _ in range(dimensions)])
+
+        for i in range(dimensions):
+            if i == 0:
+                self.border = (index_grid[i] == 0) | (index_grid[i] == self.size - 1)
+                continue
+            self.border = (
+                self.border | (index_grid[i] == 0) | (index_grid[i] == self.size - 1)
+            )
 
     # Add the specified objects from the dictionary
     # to the cube as cavities
@@ -39,9 +40,11 @@ class BettiCube(object):
             for _ in range(num_objects[key]):
                 if key == "TorusN":
                     while not self.add_object(
-                        eval(
-                            key
-                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, self.torus_holes)"
+                        TorusN.random(
+                            self.get_objects(draw=False),
+                            self.shape_config,
+                            self.random_walk_config,
+                            self.torus_holes,
                         )
                     ):
                         continue
@@ -49,7 +52,7 @@ class BettiCube(object):
                     while not self.add_object(
                         eval(
                             key
-                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config)"
+                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, self.dimensions)"
                         )
                     ):
                         continue
@@ -83,8 +86,8 @@ class BettiCube(object):
 
     # Returns a grid with all the 'holes' as solid objects
     def get_objects(self, draw):
-        x, _, _ = np.indices((self.size, self.size, self.size))
-        grid = x < 0
+        index_grid = np.indices([self.size for _ in range(self.dimensions)])
+        grid = index_grid[0] < 0
 
         # Loop over all objects and add them to the voxel grid
         for object in self.objects:

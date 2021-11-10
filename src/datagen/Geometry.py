@@ -59,7 +59,7 @@ def intersect_or_touch(point, grid, object_min_distance):
     dimensions = len(point)
     # Get the size of the grid
     grid_size = grid
-    for i in range(dimensions - 1):
+    for _ in range(dimensions - 1):
         grid_size = grid_size[0]
     grid_size = grid_size.size
     # Check if it hits the boundary
