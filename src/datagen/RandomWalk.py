@@ -31,11 +31,11 @@ class RandomWalk(ABC):
         # add everything in the walk to the grid
         for points in all_points:
             for point in points:
-                grid_set = self.grid
+                indexing = ""
                 for i in range(self.dimensions):
-                    grid_set = grid_set[point[i]]
-                grid_set = True
-                self.grid[point[0]][point[1]][point[2]] = True
+                    indexing += "[" + str(point[i]) + "]"
+                exec("self.grid" + indexing + " = True")
+                # self.grid[point[0]][point[1]][point[2]] = True
 
         # Nothing seemed to go wrong and we
         # don't want to branch so return true
@@ -78,12 +78,11 @@ class RandomWalk(ABC):
                 # add everything in the walk to the grid
                 for points in all_points:
                     for point in points:
-                        grid_set = self.grid
+                        indexing = ""
                         for i in range(self.dimensions):
-                            grid_set = grid_set[point[i]]
-                        grid_set = True
-                        self.grid[point[0]][point[1]][point[2]] = True
-
+                            indexing += "[" + str(point[i]) + "]"
+                        exec("self.grid" + indexing + " = True")
+    
                 # Successfully made a branch
                 num_branch -= 1
                 amount_tried = 0
@@ -133,11 +132,10 @@ class RandomWalk(ABC):
                     # Remove anything we added because we don't want it anymore
                     for points in all_points:
                         for point in points:
-                            grid_set = self.grid
+                            indexing = ""
                             for i in range(self.dimensions):
-                                grid_set = grid_set[point[i]]
-                            grid_set = False
-                            self.grid[point[0]][point[1]][point[2]] = False
+                                indexing += "[" + str(point[i]) + "]"
+                            exec("self.grid" + indexing + " = False")
                     return False
                 else:
                     return True
@@ -176,18 +174,16 @@ class RandomWalk(ABC):
             for index, points in enumerate(all_points):
                 for point in points:
                     if (len(all_points) - width) > index:
-                        grid_set = self.grid
+                        indexing = ""
                         for i in range(self.dimensions):
-                            grid_set = grid_set[point[i]]
-                        grid_set = True
-                        self.grid[point[0]][point[1]][point[2]] = True
+                            indexing += "[" + str(point[i]) + "]"
+                        exec("self.grid" + indexing + " = True")
                     else:
-                        grid_set = self.grid
+                        indexing = ""
                         for i in range(self.dimensions):
-                            grid_set = grid_set[point[i]]
-                        grid_set = False
-                        self.grid[point[0]][point[1]][point[2]] = False
-
+                            indexing += "[" + str(point[i]) + "]"
+                        exec("self.grid" + indexing + " = False")
+    
         # ***** Add it to the list and try to add the border *****
         points_to_be_added = [next_point]
         if not self._add_point_and_border(points_to_be_added, direction, width):
@@ -332,11 +328,10 @@ class RandomWalk(ABC):
             # doesn't stop the walk from moving
             for i in range(index - 2, index + 2):
                 for point in _path[i]:
-                    grid_set = self.grid
+                    indexing = ""
                     for i in range(self.dimensions):
-                        grid_set = grid_set[point[i]]
-                    grid_set = False
-                    self.grid[point[0]][point[1]][point[2]] = False
+                        indexing += "[" + str(point[i]) + "]"
+                    exec("self.grid" + indexing + " = False")
 
             for direction in directions:
                 new_start = []
@@ -354,10 +349,9 @@ class RandomWalk(ABC):
             # Add the parent path points back in
             for i in range(index - 2, index + 2):
                 for point in _path[i]:
-                    grid_set = self.grid
+                    indexing = ""
                     for i in range(self.dimensions):
-                        grid_set = grid_set[point[i]]
-                    grid_set = True
-                    self.grid[point[0]][point[1]][point[2]] = True
+                        indexing += "[" + str(point[i]) + "]"
+                    exec("self.grid" + indexing + " = True")
 
         return new_path
