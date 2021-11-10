@@ -29,7 +29,7 @@ def create_single_data(args):
 
     # Create the cube with the given holes
     voxels = BettiCube(
-        args.cube_size, args.shape_config, args.random_walk_config, args.torus_holes
+        args.cube_size, args.shape_config, args.random_walk_config, args.torus_holes, 3
     )
     voxels.add_objects(dict)
 
