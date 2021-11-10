@@ -91,8 +91,8 @@ def intersect_or_touch(point, grid, object_min_distance):
                         return True
                 except:
                     continue
-            recurse_points = new_recurse_points
-            new_recurse_points = []
+        recurse_points = new_recurse_points
+        new_recurse_points = []
 
     # Nothing is wrong, so return false
     return False
@@ -143,8 +143,8 @@ def obj_intersect_touch(point, grid, object_min_distance):
                             return True
                 except:
                     continue
-            recurse_points = new_recurse_points
-            new_recurse_points = []
+        recurse_points = new_recurse_points
+        new_recurse_points = []
     # Nothing is wrong, so return false
     return False
 

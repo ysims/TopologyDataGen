@@ -53,7 +53,7 @@ class RandomWalk(ABC):
                 paths.remove(paths[0])
                 continue
             # Loop while we have branches to create
-            max_tries = 10000
+            max_tries = 1000
             amount_tried = 0
             while num_branch > 0 and amount_tried < max_tries:
                 amount_tried += 1
@@ -268,7 +268,7 @@ class RandomWalk(ABC):
         if int(len(_path) / 2) <= int(self.min_branch_length / 2):
             return []
         self.branch_length = random.randrange(
-            int(self.min_branch_length / 2), int(len(_path) / 2), 1
+            int(self.min_branch_length / 2), int(len(_path) / 2)
         )
 
         path = copy.copy(_path)
