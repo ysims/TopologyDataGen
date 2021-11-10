@@ -15,11 +15,12 @@ class Tunnel(RandomWalk):
     # Description
     # Given a starting position on the border, make a tunnel from this point to some other point on the border
     # Any border point should not intersect with an object since object cannot be on the border
-    def __init__(self, full_grid, start, random_walk_config):
+    def __init__(self, full_grid, start, random_walk_config, dimensions):
         # Set tunnel information
         self.full_grid = full_grid
         self.start = start
         self.isBranching = False
+        self.dimensions = dimensions
 
         with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
@@ -31,9 +32,12 @@ class Tunnel(RandomWalk):
         self.object_min_distance = data_loaded["object_min_distance"]
 
         # Make a grid with just this starting point
-        size = self.full_grid[0][0].size
-        x, y, z = np.indices((size, size, size))
-        self.grid = x > size  # False grid
+        grid_size = full_grid
+        for _ in range(dimensions - 1):
+            grid_size = grid_size[0]
+        grid_size = grid_size.size
+        index_grid = np.indices([grid_size for _ in range(dimensions)])
+        self.grid = index_grid[0] > grid_size  # False grid
 
         # Draw the random walk
         self.valid = self._random_walk()
@@ -41,22 +45,27 @@ class Tunnel(RandomWalk):
 
     # Make a random tunnel
     @classmethod
-    def random(cls, full_grid, shape_config, random_walk_config):
-        # Create a random start position on a face
-        size = full_grid[0][0].size
+    def random(cls, full_grid, shape_config, random_walk_config, dimensions):
+        # Get the grid size
+        grid_size = full_grid
+        for _ in range(dimensions - 1):
+            grid_size = grid_size[0]
+        grid_size = grid_size.size
+        # Config values
         with open(random_walk_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)
         min_width = data_loaded["Tunnel"]["min_width"]
+        # Create a random start position on a face
         # Don't want to touch the corners,
         # adjust based on minimum width so no voxels touch the corners
         start = [
-            random.randrange(1 + min_width, size - 1 - min_width, 1)
-            for _ in range(0, 3)
+            random.randrange(1 + min_width, grid_size - 1 - min_width, 1)
+            for _ in range(dimensions)
         ]
-        start[random.randrange(0, 3, 1)] = (
-            0 if random.randrange(0, 2, 1) == 0 else size - 1
+        start[random.randrange(0, dimensions, 1)] = (
+            0 if random.randrange(0, 2, 1) == 0 else grid_size - 1
         )
-        return cls(full_grid, start, random_walk_config)
+        return cls(full_grid, start, random_walk_config, dimensions)
 
     # Returns True if the point is closer than object_min_distance
     # to existing objects in the grid but NOT the border,
@@ -73,7 +82,7 @@ class Tunnel(RandomWalk):
         all_points = []
 
         forward_direction = [
-            1 if x is 0 else -1 if x is (self.grid[0][0].size) - 1 else 0
+            1 if x == 0 else -1 if x == (self.grid[0][0].size) - 1 else 0
             for x in self.start
         ]
         first_points = [self.start]

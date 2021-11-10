@@ -31,6 +31,10 @@ class RandomWalk(ABC):
         # add everything in the walk to the grid
         for points in all_points:
             for point in points:
+                grid_set = self.grid
+                for i in range(self.dimensions):
+                    grid_set = grid_set[point[i]]
+                grid_set = True
                 self.grid[point[0]][point[1]][point[2]] = True
 
         # Nothing seemed to go wrong and we
@@ -46,7 +50,7 @@ class RandomWalk(ABC):
         while paths:
             # Find out how many branches should be made
             num_branch = self._num_branches(paths[0])
-            if num_branch is 0:
+            if num_branch == 0:
                 paths.remove(paths[0])
                 continue
             # Loop while we have branches to create
@@ -74,6 +78,10 @@ class RandomWalk(ABC):
                 # add everything in the walk to the grid
                 for points in all_points:
                     for point in points:
+                        grid_set = self.grid
+                        for i in range(self.dimensions):
+                            grid_set = grid_set[point[i]]
+                        grid_set = True
                         self.grid[point[0]][point[1]][point[2]] = True
 
                 # Successfully made a branch
@@ -89,9 +97,9 @@ class RandomWalk(ABC):
     def _walk(self, all_points):
         # Add all possible movement directions
         movement_direction = []  # list of value movements
-        for x, y, z in itertools.permutations([1, 0, 0], 3):
-            movement_direction.append([x, y, z])
-            movement_direction.append([-x, -y, -z])
+        for perm in itertools.permutations([1, 0, 0], self.dimensions):
+            movement_direction.append(list(perm))
+            movement_direction.append([-x for x in list(perm)])
         movement_direction.sort()
         # Remove duplicates
         movement_direction = list(
@@ -125,6 +133,10 @@ class RandomWalk(ABC):
                     # Remove anything we added because we don't want it anymore
                     for points in all_points:
                         for point in points:
+                            grid_set = self.grid
+                            for i in range(self.dimensions):
+                                grid_set = grid_set[point[i]]
+                            grid_set = False
                             self.grid[point[0]][point[1]][point[2]] = False
                     return False
                 else:
@@ -164,9 +176,17 @@ class RandomWalk(ABC):
             for index, points in enumerate(all_points):
                 for point in points:
                     if (len(all_points) - width) > index:
-                        my_grid[point[0]][point[1]][point[2]] = True
+                        grid_set = self.grid
+                        for i in range(self.dimensions):
+                            grid_set = grid_set[point[i]]
+                        grid_set = True
+                        self.grid[point[0]][point[1]][point[2]] = True
                     else:
-                        my_grid[point[0]][point[1]][point[2]] = False
+                        grid_set = self.grid
+                        for i in range(self.dimensions):
+                            grid_set = grid_set[point[i]]
+                        grid_set = False
+                        self.grid[point[0]][point[1]][point[2]] = False
 
         # ***** Add it to the list and try to add the border *****
         points_to_be_added = [next_point]
@@ -197,11 +217,9 @@ class RandomWalk(ABC):
                 for border in add_border:
                     try:  # skip if this is out of bounds
                         # Point to try to add
-                        test_point = [
-                            recurse_border_point[0] + border[0],
-                            recurse_border_point[1] + border[1],
-                            recurse_border_point[2] + border[2],
-                        ]
+                        test_point = []
+                        for i in range(self.dimensions):
+                            test_point.append(recurse_border_point[i] + border[i])
                         # Don't want to intersect/touch the grid
                         if not self._grid_check(test_point):
                             # Don't add it if it's already there
@@ -287,11 +305,10 @@ class RandomWalk(ABC):
             # to move in, so that the branch moves away from the parent
             start_point = start[0]
             before_point = before[0]
-            direction = [
-                start_point[0] - before_point[0],
-                start_point[1] - before_point[1],
-                start_point[2] - before_point[2],
-            ]
+            direction = []
+            for i in range(self.dimensions):
+                direction.append(start_point[i] - before_point[i])
+
             directions = (
                 [[0, 1, 0], [0, 0, 1], [0, -1, 0], [0, 0, -1]]
                 if direction[0] == 0
@@ -301,7 +318,7 @@ class RandomWalk(ABC):
                     [-1, 0, 0],
                     [0, 0, -1],
                 ]
-                if direction[0] == 0
+                if direction[1] == 0
                 else [
                     [1, 0, 0],
                     [0, 1, 0],
@@ -315,14 +332,16 @@ class RandomWalk(ABC):
             # doesn't stop the walk from moving
             for i in range(index - 2, index + 2):
                 for point in _path[i]:
+                    grid_set = self.grid
+                    for i in range(self.dimensions):
+                        grid_set = grid_set[point[i]]
+                    grid_set = False
                     self.grid[point[0]][point[1]][point[2]] = False
 
             for direction in directions:
-                new_start = [
-                    start_point[0] + direction[0],
-                    start_point[1] + direction[1],
-                    start_point[2] + direction[2],
-                ]
+                new_start = []
+                for i in range(self.dimensions):
+                    new_start.append(start_point[i] + direction[i])
                 # Add in this point with its border, with minimum width
                 new_points = [new_start]
                 if not self._add_point_and_border(
@@ -335,6 +354,10 @@ class RandomWalk(ABC):
             # Add the parent path points back in
             for i in range(index - 2, index + 2):
                 for point in _path[i]:
+                    grid_set = self.grid
+                    for i in range(self.dimensions):
+                        grid_set = grid_set[point[i]]
+                    grid_set = True
                     self.grid[point[0]][point[1]][point[2]] = True
 
         return new_path
