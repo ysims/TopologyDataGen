@@ -50,7 +50,7 @@ class Torus(Shape):
 
     # Make a random torus
     @classmethod
-    def random(cls, grid, shape_config, random_walk_config):
+    def random(cls, grid, shape_config, random_walk_config, dimensions):
         # Read values from config file
         with open(shape_config, "r") as stream:
             data_loaded = yaml.safe_load(stream)

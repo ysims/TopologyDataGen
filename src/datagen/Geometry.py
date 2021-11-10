@@ -2,20 +2,18 @@ import numpy as np
 import itertools
 import scipy.ndimage
 import math
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 
 # Returns a rotated grid of indices
-# TODO: some strange issue somewhere making this have floating voxels sometimes. the rotated grid is very disjoint, not as smooth as I'd expect
 def rotate_grid(size, rotation, center):
     dimensions = len(center)
-    grid = np.indices([size for _ in range(dimensions)])
+    grid = np.indices([size*2 for _ in range(dimensions)])
 
-    # Pad the array so that the desired center is the rotation center
-    padding = [[0, 0]]
-    for i in range(0, dimensions):
-        padN = [grid.shape[i + 1] - center[i], center[i]]
-        padding.append(padN)
-    grid = np.pad(grid, padding)
+    for position in itertools.product(range(size*2), repeat=dimensions):
+        for i in range(dimensions):
+            grid[i][position[0]][position[1]][position[2]] -= size 
+            grid[i][position[0]][position[1]][position[2]] += center[i]
 
     # Scipy uses degrees, so convert rotation from radians to degrees
     degrees_rotation = [x * 180 / math.pi for x in rotation]
@@ -27,16 +25,17 @@ def rotate_grid(size, rotation, center):
         degrees_rotation.pop(0)
         for i in range(0, len(grid)):
             grid[i] = scipy.ndimage.rotate(
-                grid[i], current_rotation, axes=(axis_1, axis_2), reshape=False
+                grid[i], current_rotation, axes=(axis_1, axis_2), reshape=False,
             )
 
     # Reverse the padding
-    reverse_padding_start = [0]
-    reverse_padding_end = [dimensions]
+    start_slice = [0]
+    end_slice = [dimensions]
     for i in range(dimensions):
-        reverse_padding_start.append(padding[i + 1][0])
-        reverse_padding_end.append(-padding[i + 1][1])
-    grid = grid[tuple(map(slice, reverse_padding_start, reverse_padding_end))]
+        start_slice.append(size-center[i])
+        end_slice.append((size*2)-center[i])
+
+    grid = grid[tuple(map(slice, start_slice, end_slice))]
 
     return [grid[0], grid[1], grid[2]]
 
