@@ -8,8 +8,7 @@ import math
 # TODO: some strange issue somewhere making this have floating voxels sometimes. the rotated grid is very disjoint, not as smooth as I'd expect
 def rotate_grid(size, rotation, center):
     dimensions = len(center)
-    shape = [size for _ in range(0, dimensions)]
-    grid = np.indices(shape)
+    grid = np.indices([size for _ in range(dimensions)])
 
     # Pad the array so that the desired center is the rotation center
     padding = [[0, 0]]

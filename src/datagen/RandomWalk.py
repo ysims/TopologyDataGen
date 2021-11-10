@@ -35,7 +35,6 @@ class RandomWalk(ABC):
                 for i in range(self.dimensions):
                     indexing += "[" + str(point[i]) + "]"
                 exec("self.grid" + indexing + " = True")
-                # self.grid[point[0]][point[1]][point[2]] = True
 
         # Nothing seemed to go wrong and we
         # don't want to branch so return true
@@ -213,9 +212,7 @@ class RandomWalk(ABC):
                 for border in add_border:
                     try:  # skip if this is out of bounds
                         # Point to try to add
-                        test_point = []
-                        for i in range(self.dimensions):
-                            test_point.append(recurse_border_point[i] + border[i])
+                        test_point = [recurse_border_point[i] + border[i] for i in range(self.dimensions)]
                         # Don't want to intersect/touch the grid
                         if not self._grid_check(test_point):
                             # Don't add it if it's already there
@@ -301,9 +298,7 @@ class RandomWalk(ABC):
             # to move in, so that the branch moves away from the parent
             start_point = start[0]
             before_point = before[0]
-            direction = []
-            for i in range(self.dimensions):
-                direction.append(start_point[i] - before_point[i])
+            direction = [start_point[i] - before_point[i] for i in range(self.dimensions)]
 
             directions = (
                 [[0, 1, 0], [0, 0, 1], [0, -1, 0], [0, 0, -1]]
@@ -334,9 +329,7 @@ class RandomWalk(ABC):
                     exec("self.grid" + indexing + " = False")
 
             for direction in directions:
-                new_start = []
-                for i in range(self.dimensions):
-                    new_start.append(start_point[i] + direction[i])
+                new_start = [start_point[i] + direction[i] for i in range(self.dimensions)]
                 # Add in this point with its border, with minimum width
                 new_points = [new_start]
                 if not self._add_point_and_border(

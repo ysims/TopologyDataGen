@@ -154,6 +154,11 @@ class Tunnel(RandomWalk):
 
     # Stop if it's on the boundary
     def _stop_walk_condition(self, all_points):
+        # Get grid size
+        grid_size = self.full_grid
+        for _ in range(self.dimensions - 1):
+            grid_size = grid_size[0]
+        grid_size = grid_size.size
         # If it's a branch, it should stop when it's a certain length
         if self.isBranching:
             if len(all_points) >= self.branch_length:
@@ -163,7 +168,7 @@ class Tunnel(RandomWalk):
         last_points = all_points[len(all_points) - 1]
         for last_point in last_points:
             for x in last_point:
-                if x == self.full_grid[0][0].size - 1 or x == 0:
+                if x == grid_size - 1 or x == 0:
                     self._add_last_points(last_point, all_points)
                     return True
         return False
