@@ -9,9 +9,17 @@ def rotate_grid(size, rotation, center):
     grid = np.indices([size * 2 for _ in range(dimensions)])
 
     for position in itertools.product(range(size * 2), repeat=dimensions):
+        # Get the indices
+        indexing = ""
+        for j in range(dimensions):
+            indexing += "[" + str(position[j]) + "]"
+        # Apply for each axis
         for i in range(dimensions):
+            # exec("grid[i]" + indexing + " -= " + str(size))
+            # exec("grid[i]" + indexing + " += " + str(center[i]))
+
             grid[i][position[0]][position[1]][position[2]] -= size 
-            grid[i][position[0]][position[1]][position[2]] += center[i]
+            grid[i][position[0]][position[1]][position[2]] += center[i] 
 
     # Scipy uses degrees, so convert rotation from radians to degrees
     degrees_rotation = [x * 180 / math.pi for x in rotation]
