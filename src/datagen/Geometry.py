@@ -2,15 +2,13 @@ import numpy as np
 import itertools
 import scipy.ndimage
 import math
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 
 # Returns a rotated grid of indices
 def rotate_grid(size, rotation, center):
     dimensions = len(center)
-    grid = np.indices([size*2 for _ in range(dimensions)])
+    grid = np.indices([size * 2 for _ in range(dimensions)])
 
-    for position in itertools.product(range(size*2), repeat=dimensions):
+    for position in itertools.product(range(size * 2), repeat=dimensions):
         for i in range(dimensions):
             grid[i][position[0]][position[1]][position[2]] -= size 
             grid[i][position[0]][position[1]][position[2]] += center[i]
@@ -32,8 +30,8 @@ def rotate_grid(size, rotation, center):
     start_slice = [0]
     end_slice = [dimensions]
     for i in range(dimensions):
-        start_slice.append(size-center[i])
-        end_slice.append((size*2)-center[i])
+        start_slice.append(size - center[i])
+        end_slice.append((size * 2) - center[i])
 
     grid = grid[tuple(map(slice, start_slice, end_slice))]
 
