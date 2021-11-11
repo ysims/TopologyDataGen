@@ -23,7 +23,10 @@ def rotate_grid(size, rotation, center):
         degrees_rotation.pop(0)
         for i in range(0, len(grid)):
             grid[i] = scipy.ndimage.rotate(
-                grid[i], current_rotation, axes=(axis_1, axis_2), reshape=False,
+                grid[i],
+                current_rotation,
+                axes=(axis_1, axis_2),
+                reshape=False,
             )
 
     # Reverse the padding
