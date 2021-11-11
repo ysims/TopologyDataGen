@@ -35,7 +35,7 @@ def rotate_grid(size, rotation, center):
 
     grid = grid[tuple(map(slice, start_slice, end_slice))]
 
-    return [grid[0], grid[1], grid[2]]
+    return grid
 
 
 # Get the distance between these two points
