@@ -73,7 +73,7 @@ class Tunnel(RandomWalk):
         all_points = []
 
         forward_direction = [
-            1 if x is 0 else -1 if x is (self.grid[0][0].size) - 1 else 0
+            1 if x == 0 else -1 if x == (self.grid[0][0].size) - 1 else 0
             for x in self.start
         ]
         first_points = [self.start]
@@ -85,7 +85,7 @@ class Tunnel(RandomWalk):
         all_points.append(first_points)
         # For each thickness in the width,
         # add an extra point straight on from the starting point
-        # to prevent
+        # to prevent dents rather than tunnels
         for _ in range(self.max_width + 1):
             next_point = list(
                 map(add, forward_direction, all_points[len(all_points) - 1][0])

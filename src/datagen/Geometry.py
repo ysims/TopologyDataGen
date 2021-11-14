@@ -152,7 +152,8 @@ def obj_intersect_touch(point, grid, object_min_distance):
                         recurse_point[1] + y,
                         recurse_point[2] + z,
                     ]
-                    new_recurse_points.append(check_point)
+                    if new_recurse_points.count(check_point) == 0:
+                        new_recurse_points.append(check_point)
                     if grid[check_point[0]][check_point[1]][check_point[2]]:
                         if (max(check_point) < grid[0][0].size - 1) and min(
                             check_point

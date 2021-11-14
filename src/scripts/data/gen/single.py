@@ -9,8 +9,10 @@ import yaml
 import sys
 
 sys.path.append("../../../datagen")
+sys.path.append("../augmentation")
 
 from BettiCube import BettiCube
+from make_shell import make_shell
 
 # Create a single cube
 def create_single_data(args):
@@ -93,3 +95,5 @@ def create_single_data(args):
             documents = yaml.dump(voxels.get_data(), file)
 
         print("Saved as", r_num)
+
+    make_shell(voxels.get_full_objects())
