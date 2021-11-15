@@ -93,11 +93,14 @@ class Octopus(RandomWalk):
     def _grid_check(self, point):
         if intersect_or_touch(point, self.full_grid, self.object_min_distance):
             return True
-        return intersect_or_touch(point, self.grid, 1)
+        return intersect_or_touch(point, self.grid, self.object_min_distance)
 
     # Determines a start location for the walk
     # and returns the first point in the walk
     def _get_start(self):
+        # Make it one because close to the body is too close to want any more than 1
+        original_distance_check = self.object_min_distance
+        self.object_min_distance = 1
         # Determine length of the tentacle
         self.tentacle_length = random.randrange(
             self.min_tentacle_length, self.max_tentacle_length, 1
@@ -196,14 +199,19 @@ class Octopus(RandomWalk):
 
                 # Add in enough forward directions for the width.
                 forward_direction = [-x for x in direction]
+                addWorked = True
                 for _ in range(self.min_width):
+                    # If it didn't work, go out of the for loop and try a different direction
                     if not self._try_add(forward_direction, all_points):
-                        continue  # try a different direction
+                        addWorked = False
+                if not addWorked:
+                    continue
                 return all_points
 
         # At this point, either we found a good point off the edge
         # so we're returning that point and will make a tentacle with it
         # or we did not and we're returning an empty list and will try again
+        self.object_min_distance = original_distance_check
         return all_points
 
     def _try_start_edge(self, edge, directions):
