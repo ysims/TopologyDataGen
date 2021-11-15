@@ -13,7 +13,7 @@ class Spheroid(Shape):
     # radius:       radius of the sphere
     def __init__(self, full_grid, center, radius, rotation, object_min_distance):
         # Check we're not starting in an invalid location
-        if intersect_or_touch(center, full_grid, object_min_distance):
+        if intersect_or_touch(center, full_grid, 1):
             self.valid = False
             return
 

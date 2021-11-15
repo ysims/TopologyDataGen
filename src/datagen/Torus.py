@@ -19,7 +19,7 @@ class Torus(Shape):
         object_min_distance,
     ):
         # Check we can even go here in the first place
-        if intersect_or_touch(center, full_grid, object_min_distance):
+        if intersect_or_touch(center, full_grid, 1):
             self.valid = False
             return
 
