@@ -3,8 +3,8 @@ object_min_distance: 4
 
 Spheroid:
   center_placement_border: 5
-  min_radius: 2
-  max_radius: 2
+  min_radius: 5
+  max_radius: 5
 
 Torus:
   center_placement_border: 4
