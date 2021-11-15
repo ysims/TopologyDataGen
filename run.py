@@ -27,12 +27,12 @@ parser_gen.add_argument(
 )
 parser_gen.add_argument(
     "--shape_config",
-    default="./src/datagen/config/Shape.yaml",
+    default="Shape.yaml",
     help="The path to the Shape config to use.",
 )
 parser_gen.add_argument(
     "--random_walk_config",
-    default="./src/datagen/config/RandomWalk.yaml",
+    default="RandomWalk.yaml",
     help="The path to the RandomWalk config to use.",
 )
 parser_gen.add_argument(

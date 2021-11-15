@@ -29,9 +29,10 @@ def create_single_data(args):
     print("Adding: ", dict)
     start_time = time.time()
 
+    config_path = "./src/datagen/config/"
     # Create the cube with the given holes
     voxels = BettiCube(
-        args.cube_size, args.shape_config, args.random_walk_config, args.torus_holes
+        args.cube_size, config_path + args.shape_config, config_path + args.random_walk_config, args.torus_holes
     )
     voxels.add_objects(dict)
 
@@ -95,5 +96,3 @@ def create_single_data(args):
             documents = yaml.dump(voxels.get_data(), file)
 
         print("Saved as", r_num)
-
-    make_shell(voxels.get_full_objects())

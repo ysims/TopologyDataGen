@@ -57,10 +57,11 @@ def generate_dataset(args):
             }
             print("Adding: ", dict)  # print for debugging purposes
 
+            config_path = "./src/datagen/config/"
             voxels = BettiCube(
                 args.cube_size,
-                args.shape_config,
-                args.random_walk_config,
+                config_path + args.shape_config,
+                config_path + args.random_walk_config,
                 args.torus_holes,
             )  # make the cube
             voxels.add_objects(dict)  # add the right number of objects

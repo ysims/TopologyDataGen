@@ -41,8 +41,7 @@ class RandomWalk(ABC):
         self.isBranching = True
         # Loop until there are no more paths to
         # check for branching
-        paths = []
-        paths.append(copy.copy(all_points))
+        paths = [copy.copy(all_points)]
         while paths:
             # Find out how many branches should be made
             num_branch = self._num_branches(paths[0])
