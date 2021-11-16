@@ -156,21 +156,30 @@ class RandomWalk(ABC):
             self.max_width,
         )
 
-        # ***** Sort out the grid *****
+        # Store the original check so each incremental distance can be checked
+        # while ignoring a different amount of previous points
         my_grid = copy.copy(self.grid)
+        original_check = self.object_min_distance
+        points_to_be_added = []
+        for object_distance in range(1, original_check+1):
+            self.object_min_distance = object_distance
+            
+            # ***** Sort out the grid *****
+            if len(all_points) > 2 + width:
+                for index, points in enumerate(all_points):
+                    for point in points:
+                        if (len(all_points) - width + 1 - object_distance) > index:
+                            my_grid[point[0]][point[1]][point[2]] = True
+                        else:
+                            my_grid[point[0]][point[1]][point[2]] = False
 
-        if len(all_points) > 2 + width:
-            for index, points in enumerate(all_points):
-                for point in points:
-                    if (len(all_points) - width) > index:
-                        my_grid[point[0]][point[1]][point[2]] = True
-                    else:
-                        my_grid[point[0]][point[1]][point[2]] = False
+            # ***** Add it to the list and try to add the border *****
+            points_to_be_added = [next_point]
+            if not self._add_point_and_border(points_to_be_added, direction, width):
+                return False
 
-        # ***** Add it to the list and try to add the border *****
-        points_to_be_added = [next_point]
-        if not self._add_point_and_border(points_to_be_added, direction, width):
-            return False
+        # Set the distance back to what it should be
+        self.object_min_distance = original_check
 
         # It worked! Add this next set of points to the path
         all_points.append(points_to_be_added)
@@ -201,14 +210,14 @@ class RandomWalk(ABC):
                             recurse_border_point[1] + border[1],
                             recurse_border_point[2] + border[2],
                         ]
-                        # Don't want to intersect/touch the grid
-                        if not self._grid_check(test_point):
-                            # Don't add it if it's already there
-                            if points_to_be_added.count(test_point) == 0:
+                        # Don't add it if it's already there
+                        if points_to_be_added.count(test_point) == 0:
+                            # Don't want to intersect/touch the grid
+                            if not self._grid_check(test_point):
                                 points_to_be_added.append(test_point)
                                 new_recurse_border.append(test_point)
-                        else:
-                            return False
+                            else:
+                                return False
                     except:
                         pass
         return True
