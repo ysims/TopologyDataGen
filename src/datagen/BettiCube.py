@@ -35,28 +35,38 @@ class BettiCube(object):
     #   key is the name of an object class
     #   value is the number of that object to generate
     def add_objects(self, num_objects):
-        for key in num_objects:
-            for _ in range(num_objects[key]):
-                if key == "TorusN":
-                    while not self.add_object(
-                        eval(
-                            key
-                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, self.torus_holes)"
-                        )
-                    ):
-                        continue
-                else:
-                    while not self.add_object(
-                        eval(
-                            key
-                            + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config)"
-                        )
-                    ):
-                        continue
+        valid = False
+        while not valid:
+            # Clear the objects
+            self.objects = []
+            # We want to completely retry if something goes wrong
+            valid = True
+            for key in num_objects:
+                for _ in range(num_objects[key]):
+                    if key == "TorusN":
+                        while not self.add_object(
+                            eval(
+                                key
+                                + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, self.torus_holes)"
+                            )
+                        ):
+                            continue
+                    else:
+                        while not self.add_object(
+                            eval(
+                                key
+                                + ".random(self.get_objects(draw=False), self.shape_config, self.random_walk_config)"
+                            )
+                        ):
+                            continue
 
-        for object in self.objects:
-            if isinstance(object, Octopus):
-                object.addTentacles(self.get_objects(draw=False))
+            for object in self.objects:
+                if isinstance(object, Octopus):
+                    object.addTentacles(self.get_objects(draw=False))
+                    if not object.valid:
+                        valid = False
+
+
 
     # Adds a random object to the cube
     # from a set of allowed objects
