@@ -162,29 +162,35 @@ class RandomWalk(ABC):
         original_check = self.object_min_distance
         points_to_be_added = []
         for object_distance in range(1, original_check+1):
+            # Make sure to start with the original grid
+            self.grid = copy.copy(my_grid)
             self.object_min_distance = object_distance
             
             # ***** Sort out the grid *****
             if len(all_points) > 2 + width:
                 for index, points in enumerate(all_points):
                     for point in points:
-                        if (len(all_points) - width + 1 - object_distance) > index:
-                            my_grid[point[0]][point[1]][point[2]] = True
+                        if (len(all_points) - width - 1 - object_distance) > index:
+                            self.grid[point[0]][point[1]][point[2]] = True
                         else:
-                            my_grid[point[0]][point[1]][point[2]] = False
+                            self.grid[point[0]][point[1]][point[2]] = False
 
             # ***** Add it to the list and try to add the border *****
             points_to_be_added = [next_point]
             if not self._add_point_and_border(points_to_be_added, direction, width):
                 self.object_min_distance = original_check
+                # Set the grid back
+                self.grid = copy.copy(my_grid)
                 return False
+            
 
         # Set the distance back to what it should be
         self.object_min_distance = original_check
 
         # It worked! Add this next set of points to the path
         all_points.append(points_to_be_added)
-        self.grid = my_grid
+        # Set the grid back
+        self.grid = copy.copy(my_grid)
         return True
 
     def _add_point_and_border(self, points_to_be_added, direction, width):
