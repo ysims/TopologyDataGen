@@ -99,9 +99,7 @@ class Octopus(RandomWalk):
     # or is closer than one voxel to itself.
     # Returns False otherwise
     def _grid_check(self, point):
-        if intersect_or_touch(point, self.full_grid, self.object_min_distance):
-            return True
-        return intersect_or_touch(point, self.grid, self.object_min_distance)
+        return intersect_or_touch(point, (self.full_grid | self.grid), self.object_min_distance)
 
     # Determines a start location for the walk
     # and returns the first point in the walk
