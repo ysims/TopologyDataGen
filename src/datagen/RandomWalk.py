@@ -220,6 +220,7 @@ class RandomWalk(ABC):
                                 return False
                     except:
                         pass
+            recurse_border = new_recurse_border
         return True
 
     # Determines a start location for the walk
