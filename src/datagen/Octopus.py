@@ -127,6 +127,7 @@ class Octopus(RandomWalk):
             if not edges:
                 print("No edges, something is wrong 1")
                 self.valid = False
+                self.object_min_distance = original_distance_check
                 return []
         else:
             # Edges could be any of the 'interior' points
@@ -149,6 +150,7 @@ class Octopus(RandomWalk):
             if not edges:
                 print("No edges, something is wrong 2")
                 self.valid = False
+                self.object_min_distance = original_distance_check
                 return []
             edge = random.choice(edges)
             edges.remove(edge)
@@ -159,6 +161,7 @@ class Octopus(RandomWalk):
 
         # If it didn't work at all, return now before sorting out the extra points
         if not second_points:
+            self.object_min_distance = original_distance_check
             return []
 
         # Need to find which direction has the body of the octopus
@@ -212,6 +215,7 @@ class Octopus(RandomWalk):
                         addWorked = False
                 if not addWorked:
                     continue
+                self.object_min_distance = original_distance_check
                 return all_points
 
         # At this point, either we found a good point off the edge

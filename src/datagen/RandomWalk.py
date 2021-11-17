@@ -176,6 +176,7 @@ class RandomWalk(ABC):
             # ***** Add it to the list and try to add the border *****
             points_to_be_added = [next_point]
             if not self._add_point_and_border(points_to_be_added, direction, width):
+                self.object_min_distance = original_check
                 return False
 
         # Set the distance back to what it should be
