@@ -14,6 +14,7 @@ from run_gudhi import run_gudhi
 from ripser_cpp_convert import ripser_cpp_convert
 from view_grid import view_grid
 from run_ripser import run_ripser
+from make_shell import make_shell
 
 parser = argparse.ArgumentParser(description="Helper script to run other scripts")
 subparsers = parser.add_subparsers(dest="program", help="sub-command help")
@@ -132,7 +133,7 @@ dataset_parser.add_argument(
 parser_augment = subparsers.add_parser("augment", help="Data augmentation")
 parser_augment.add_argument(
     "type",
-    choices=["remove_internal", "subsample", "invert", "ripser_cpp_convert"],
+    choices=["remove_internal", "subsample", "invert", "ripser_cpp_convert", "shell"],
     help="Augmentation program to run.",
 )
 parser_augment.add_argument("input_file", help="Input data file to augment.")
@@ -242,6 +243,8 @@ elif args.program == "augment":
         invert(args.input_file, args.output_file)
     elif args.type == "ripser_cpp_convert":
         ripser_cpp_convert(args.input_file, args.output_file)
+    elif args.type == "shell":
+        make_shell(args.input_file, args.output_file)
     else:
         sys.exit("Not a valid augmentation program.")
 elif args.program == "homology":
