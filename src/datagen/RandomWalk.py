@@ -86,17 +86,20 @@ class RandomWalk(ABC):
         return True
 
     def _walk(self, all_points):
+        forward = [all_points[1][0][i] - all_points[0][0][i] for i in range(3)]
         # Add all possible movement directions
-        movement_direction = []  # list of value movements
+        movement_direction = [forward]  # list of value movements
+        
         for x, y, z in itertools.permutations([1, 0, 0], 3):
-            movement_direction.append([x, y, z])
-            movement_direction.append([-x, -y, -z])
-        movement_direction.sort()
-        # Remove duplicates
-        movement_direction = list(
-            movement_direction
-            for movement_direction, _ in itertools.groupby(movement_direction)
-        )
+            # Don't add if we already have it
+            if movement_direction.count([x, y, z]) > 0 or movement_direction.count([-x, -y, -z]) > 0:
+                continue
+            # Add one or the other, but not both
+            if random.randrange(0,2) == 0:
+                movement_direction.append([x, y, z])
+            else:
+                movement_direction.append([-x, -y, -z])
+        
         # Loop until some given condition is satisfied
         # Shuffle so we don't always go the same way
         # Check if the point works
