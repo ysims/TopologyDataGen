@@ -209,7 +209,7 @@ class Octopus(RandomWalk):
                 # Add in enough forward directions for the width.
                 forward_direction = [-x for x in direction]
                 addWorked = True
-                for _ in range(self.min_width):
+                for _ in range(self.min_width + original_distance_check):
                     # If it didn't work, go out of the for loop and try a different direction
                     if not self._try_add(forward_direction, all_points):
                         addWorked = False
