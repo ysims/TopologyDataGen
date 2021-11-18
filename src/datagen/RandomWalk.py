@@ -173,10 +173,13 @@ class RandomWalk(ABC):
             if len(all_points) > 2 + width:
                 for index, points in enumerate(all_points):
                     for point in points:
-                        if (len(all_points) - width - 1 - object_distance) > index:
-                            self.grid[point[0]][point[1]][point[2]] = True
-                        else:
-                            self.grid[point[0]][point[1]][point[2]] = False
+                        # if object_distance == 1:
+                        #     if (len(all_points) - width - 1) > index:
+                        #         self.grid[point[0]][point[1]][point[2]] = True
+                        #     else:
+                        #         self.grid[point[0]][point[1]][point[2]] = False    
+                        # else:
+                        self.grid[point[0]][point[1]][point[2]] = False
 
             # ***** Add it to the list and try to add the border *****
             points_to_be_added = [next_point]
