@@ -259,6 +259,7 @@ class RandomWalk(ABC):
     # Find a point to branch from on the path
     # and return the beginning of the new path
     def _branch_start(self, _path):
+        success = False
         # This tentacle will be smaller than its parent
         if int(len(_path) / 2) <= int(self.min_branch_length / 2):
             return []
@@ -338,8 +339,22 @@ class RandomWalk(ABC):
                         new_points, direction, self.min_width
                     ):
                         continue
-
                     new_path = [new_points]
+
+                    original_distance_check = self.object_min_distance
+                    self.object_min_distance = 1
+
+                    # Add enough to work
+                    addWorked = True
+                    for _ in range(self.min_width + original_distance_check):
+                        # If it didn't work, go out of the for loop and try a different direction
+                        if not self._try_add(direction, new_path):
+                            addWorked = False
+                    self.object_min_distance = original_distance_check
+
+                    if not addWorked:
+                        continue
+                    success = True
                     break
 
             # Add the parent path points back in
@@ -347,4 +362,6 @@ class RandomWalk(ABC):
                 for point in _path[i]:
                     self.grid[point[0]][point[1]][point[2]] = True
 
+        if not success:
+            return []
         return new_path
