@@ -1,3 +1,4 @@
+import os
 import math
 import subprocess
 
@@ -14,8 +15,13 @@ def run_ripser(args):
     results = args.input_file
 
     if args.run:
+        print("Converting {}.".format(file_name))
         subprocess.call(["python", "run.py", "augment", "ripser_cpp_convert", file_name + ".npy", file_name + ".txt"])
-        subprocess.call(["./ripser/ripser", file_name + ".txt", "--format", "point-cloud", "--threshold", str(args.vr_threshold), "--dim", "2", ">>", file_name + "_results.txt"], shell=True)
+        print("Running Ripser.")
+        open_type = "w" if os.path.isfile((file_name + "_results.txt")) else "x"
+        with open((file_name + "_results.txt"), open_type) as f:
+            subprocess.call(["./ripser/ripser", file_name + ".txt", "--format", "point-cloud", "--threshold", str(args.vr_threshold), "--dim", "2"], stdout=f)
+        print("Ripser complete.")
         results = file_name + "_results.txt"
 
     b0 = []
@@ -25,6 +31,8 @@ def run_ripser(args):
     b0_thresh = args.b0
     b1_thresh = args.b1
     b2_thresh = args.b2
+
+    print("Running filter.")
 
     with open(results, "rb") as f:
         f.readline()  # point cloud with x points in dimension y
