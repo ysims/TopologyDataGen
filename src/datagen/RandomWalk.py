@@ -4,6 +4,7 @@ import itertools
 import math
 from operator import add
 import random
+import utils
 
 
 class RandomWalk(ABC):
