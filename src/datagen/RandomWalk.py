@@ -198,6 +198,8 @@ class RandomWalk(ABC):
     def _add_point_and_border(self, points_to_be_added, direction, width):
         # Points to add a border to, starting with the spine
         recurse_border = [points_to_be_added[0]]
+        if self._grid_check(points_to_be_added[0]):
+            return False
 
         for _ in range(0, width - 1):
             new_recurse_border = []  # the next set of points to add the border to
