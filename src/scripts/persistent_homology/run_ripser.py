@@ -14,9 +14,8 @@ def run_ripser(args):
     results = args.input_file
 
     if args.run:
-        out = open(file_name + "_results.txt", "w")
         subprocess.call(["python", "run.py", "augment", "ripser_cpp_convert", file_name + ".npy", file_name + ".txt"])
-        subprocess.call(["./ripser/ripser", file_name + ".txt", "--format", "point-cloud", "--threshold", str(args.vr_threshold), "--dim", "2"], stdout=out)
+        subprocess.call(["./ripser/ripser", file_name + ".txt", "--format", "point-cloud", "--threshold", str(args.vr_threshold), "--dim", "2", ">>", file_name + "_results.txt"], shell=True)
         results = file_name + "_results.txt"
 
     b0 = []
