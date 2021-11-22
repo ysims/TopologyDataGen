@@ -57,8 +57,7 @@ def intersect_or_touch(point, grid, object_min_distance):
     if grid[point[0]][point[1]][point[2]]:
         return True
 
-    # Check if the point touches anything in the grid,
-    # but ignore if it's on the border
+    # Check if the point touches anything in the grid
     prod = [0]
     for i in range(1, object_min_distance + 1):
         prod.append(i)

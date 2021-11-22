@@ -147,15 +147,10 @@ class RandomWalk(ABC):
                 return False
 
         # ***** Determine width *****
-        if len(all_points[len(all_points) - 1]) > 1:
-            previous_width = int(math.log(len(all_points[len(all_points) - 1]), 2))
-        else:
-            previous_width = 1
-
-        width = min(
-            max(
-                random.randrange(previous_width - 1, previous_width + 2), self.min_width
-            ),
+        previous_width = utils.width(all_points[len(all_points) - 1])
+        width = utils.clamp(
+            random.randrange(previous_width - 1, previous_width + 2),
+            self.min_width,
             self.max_width,
         )
 
@@ -205,24 +200,13 @@ class RandomWalk(ABC):
 
         for _ in range(0, width - 1):
             new_recurse_border = []  # the next set of points to add the border to
-            border = [[0, 1], [1, 0], [1, 1]]
-            add_border = (
-                [[0, b[0], b[1]] for b in border]
-                if direction[0] != 0
-                else [[b[0], 0, b[1]] for b in border]
-                if direction[1] != 0
-                else [[b[0], b[1], 0] for b in border]
-            )
+            border = utils.border(direction)
             # Add the border points to expand the width
             for recurse_border_point in recurse_border:
-                for border in add_border:
+                for border_point in border:
                     try:  # skip if this is out of bounds
                         # Point to try to add
-                        test_point = [
-                            recurse_border_point[0] + border[0],
-                            recurse_border_point[1] + border[1],
-                            recurse_border_point[2] + border[2],
-                        ]
+                        test_point = utils.add_points(recurse_border_point, border_point)
                         # Don't add it if it's already there
                         if points_to_be_added.count(test_point) == 0:
                             # Don't want to intersect/touch the grid
