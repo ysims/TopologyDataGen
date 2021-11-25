@@ -25,7 +25,7 @@ class RandomWalk(ABC):
         self.isBranching = False
         original_grid = copy.copy(self.grid)
         original_occupancy = copy.copy(self.occupancy_grid)
-        original_tentacle_occupancy = copy.copy(self.tentacle_occupany)
+        original_tentacle_occupancy = copy.copy(self.tentacle_occupancy)
         if not self._walk(path):
             self.grid = original_grid
             self.occupancy_grid = original_occupancy
@@ -135,7 +135,8 @@ class RandomWalk(ABC):
         # The next point in the spine of the tunnel
         # Check it doesn't touch the grid and
         # don't repeat a point we've already done
-        next_point = list(map(add, direction, path[len(path) - 1][0]))
+        print(path)
+        next_point = list(map(add, direction, path[len(path) - 1]))
 
         # ***** Determine width *****
         previous_width = utils.width(path[len(path) - 1])
@@ -163,32 +164,25 @@ class RandomWalk(ABC):
 
         return True
 
-    def _add_point_and_border(self, points_to_be_added, direction, width):
-        # Points to add a border to, starting with the spine
-        recurse_border = [points_to_be_added[0]]
-        if self._grid_check(points_to_be_added[0]):
+    # Given a starting point, direction of travel and width,
+    # create a border around the point and check each point 
+    # does not get too close to something else
+    def _add_point_and_border(self, points, direction, width):
+        # Check if the first point works
+        if self._grid_check(points[0]):
             return False
-
-        for _ in range(0, width - 1):
-            new_recurse_border = []  # the next set of points to add the border to
-            border = utils.border(direction)
-            # Add the border points to expand the width
-            for recurse_border_point in recurse_border:
-                for border_point in border:
-                    try:  # skip if this is out of bounds
-                        # Point to try to add
-                        test_point = utils.add_points(recurse_border_point, border_point)
-                        # Don't add it if it's already there
-                        if points_to_be_added.count(test_point) == 0:
-                            # Don't want to intersect/touch the grid
-                            if not self._grid_check(test_point):
-                                points_to_be_added.append(test_point)
-                                new_recurse_border.append(test_point)
-                            else:
-                                return False
-                    except:
-                        pass
-            recurse_border = new_recurse_border
+        # Get the border and check each point
+        borders = utils.border(direction, width)
+        for border in borders:
+            try:  # skip if this is out of bounds
+                test_point = utils.add_points(points[0], border)
+                # Don't want to intersect/touch the grid
+                if not self._grid_check(test_point):
+                    points.append(test_point)
+                else:
+                    return False
+            except:
+                pass
         return True
 
     # Determines a start location for the walk

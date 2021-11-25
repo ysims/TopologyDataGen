@@ -67,15 +67,15 @@ class Octopus(RandomWalk):
             self.occupancy_grid = scipy.ndimage.binary_dilation(
                 self.grid,
                 scipy.ndimage.generate_binary_structure(3, 3),
-                iterations=(self.object_min_distance + 1),
+                iterations=(self.object_min_distance),
             )
             self.external_occupancy_grid = scipy.ndimage.binary_dilation(
                 self.full_grid,
                 scipy.ndimage.generate_binary_structure(3, 3),
-                iterations=(self.object_min_distance + 1),
+                iterations=(self.object_min_distance),
             )
             self.occupancy_grid = self.occupancy_grid | self.external_occupancy_grid
-            self.tentacle_occupany = self.occupancy_grid != self.occupancy_grid
+            self.tentacle_occupancy = self.occupancy_grid != self.occupancy_grid
 
     # Make a random tunnel
     @classmethod
@@ -126,7 +126,7 @@ class Octopus(RandomWalk):
         )
 
         # Get the shell of the body and add the points to the list of edges
-        shape_shell = utils.shell(self.shape.grid)
+        shape_shell = utils.shell(self.shape.grid).numpy()
         edges = []
         for X, Y, Z in itertools.product(range(0, shape_shell[0][0].size), repeat=3):
             if shape_shell[X][Y][Z]:
@@ -147,19 +147,19 @@ class Octopus(RandomWalk):
             # Take a random edge and check if any tentacles are too close
             edge = random.choice(edges)
             edges.remove(edge)
-            if utils.exists_grid(self.tentacle_occupany, edges):
+            if utils.exists_grid(self.tentacle_occupancy, edge):
                 continue  # loop back around and try a different edge
 
             # Create the path list with enough points to escape the occupancy grid from the body
             path = [edge]
             # Find the right direction to go in
             for direction in directions:
-                if utils.exists(self.shape.grid, utils.add_points(edge, direction)):
+                if utils.exists_grid(self.shape.grid, utils.add_points(edge, direction)):
                     continue  # this is the body direction, try again
                 failed = False
                 for _ in range(self.object_min_distance):
-                    if utils.exists(
-                        (self.tentacle_occupany | self.external_occupancy_grid),
+                    if utils.exists_grid(
+                        (self.tentacle_occupancy | self.external_occupancy_grid),
                         utils.add_points(path[len(path) - 1], direction),
                     ):
                         # Didn't work, collided with another object or tentacle

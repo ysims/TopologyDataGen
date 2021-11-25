@@ -14,8 +14,13 @@ def width(previous_points):
 
 
 # Get the border based on direction
-def border(direction):
-    border = [[0, 1], [1, 0], [1, 1]]
+def border(direction, width):
+    border = []
+    prod = []
+    for i in range(width):
+        prod.append(i)
+    for x, y in itertools.product(prod, repeat=2):
+        border.append([x,y])
     return (
         [[0, b[0], b[1]] for b in border]
         if direction[0] != 0
