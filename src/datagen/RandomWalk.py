@@ -87,20 +87,22 @@ class RandomWalk(ABC):
         return True
 
     def _walk(self, all_points):
-        forward = [all_points[1][0][i] - all_points[0][0][i] for i in range(3)]
+        # forward = [all_points[1][0][i] - all_points[0][0][i] for i in range(3)]
         # Add all possible movement directions
-        movement_direction = [forward]  # list of value movements
-        
+        # movement_direction = [forward]  # list of value movements
+        movement_direction = []
+
         for x, y, z in itertools.permutations([1, 0, 0], 3):
             # Don't add if we already have it
-            if movement_direction.count([x, y, z]) > 0 or movement_direction.count([-x, -y, -z]) > 0:
-                continue
+            # if movement_direction.count([x, y, z]) > 0 or movement_direction.count([-x, -y, -z]) > 0:
+            #     continue
             # Add one or the other, but not both
-            if random.randrange(0,2) == 0:
+            # if random.randrange(0,2) == 0:
+            if movement_direction.count([x,y,z]) == 0:
                 movement_direction.append([x, y, z])
-            else:
+            if movement_direction.count([-x,-y,-z]) == 0:
                 movement_direction.append([-x, -y, -z])
-        
+
         # Loop until some given condition is satisfied
         # Shuffle so we don't always go the same way
         # Check if the point works
@@ -111,15 +113,33 @@ class RandomWalk(ABC):
         # If it didn't work then return false
         # The walk list contains the last two points but the grid does not,
         # Otherwise they would be flagged as intersections
+        current_direction = []
+        shuffle_counter = 0
         while not self._stop_walk_condition(all_points):
             point_added = False
-            random.shuffle(movement_direction)
+            # Keep going in the same direction for object_min_distance voxels so it can move more
+            # Only shuffle when we've done this direction enough
+            shuffle_counter %= self.object_min_distance
+            if shuffle_counter == 0:
+                # Shuffle and put the old direction at the end
+                random.shuffle(movement_direction)
+                if current_direction:
+                    movement_direction.remove(current_direction)
+                    movement_direction.append(current_direction)
+            else:
+                # Ensure the current direction is at the front of the list
+                # If it doesn't work, it'll chose a new direction
+                movement_direction.remove(current_direction)
+                movement_direction.insert(0, current_direction)
             for direction in movement_direction:
                 # Add the direction and the last point
                 if self._try_add(direction, all_points):
                     point_added = True
+                    if current_direction != direction:
+                        shuffle_counter = 0
+                        current_direction = direction
+                    shuffle_counter += 1
                     break  # Don't keep going with the for loop
-
             # If a point wasn't added
             # see if this was a decent enough try
             # otherwise just return false
@@ -160,21 +180,18 @@ class RandomWalk(ABC):
         my_grid = copy.copy(self.grid)
         original_check = self.object_min_distance
         points_to_be_added = []
-        for object_distance in range(1, original_check+1):
+        for object_distance in range(1, original_check + 1):
             # Make sure to start with the original grid
             self.grid = copy.copy(my_grid)
             self.object_min_distance = object_distance
-            
+
             # ***** Sort out the grid *****
-            if len(all_points) > 2 + width:
-                for index, points in enumerate(all_points):
+            for index, points in enumerate(all_points):
+                if index < (len(all_points) -1 - width - self.object_min_distance):
                     for point in points:
-                        # if object_distance == 1:
-                        #     if (len(all_points) - width - 1) > index:
-                        #         self.grid[point[0]][point[1]][point[2]] = True
-                        #     else:
-                        #         self.grid[point[0]][point[1]][point[2]] = False    
-                        # else:
+                        self.grid[point[0]][point[1]][point[2]] = True
+                else:
+                    for point in points:
                         self.grid[point[0]][point[1]][point[2]] = False
 
             # ***** Add it to the list and try to add the border *****
@@ -184,7 +201,6 @@ class RandomWalk(ABC):
                 # Set the grid back
                 self.grid = copy.copy(my_grid)
                 return False
-            
 
         # Set the distance back to what it should be
         self.object_min_distance = original_check
@@ -261,9 +277,12 @@ class RandomWalk(ABC):
     # Find a point to branch from on the path
     # and return the beginning of the new path
     def _branch_start(self, _path):
+        original_distance_check = self.object_min_distance
+        self.object_min_distance = 1
         success = False
         # This tentacle will be smaller than its parent
         if int(len(_path) / 2) <= int(self.min_branch_length / 2):
+            self.object_min_distance = original_distance_check
             return []
         self.branch_length = random.randrange(
             int(self.min_branch_length / 2), int(len(_path) / 2)
@@ -290,7 +309,9 @@ class RandomWalk(ABC):
             # Remove this point and adjacent points so we can
             # do intersect or touch properly
             index = path.index(start)
-            before = path.pop(index - 1)
+            before = path[index - 1]
+            # path.pop(index)
+            # path.pop(index+1)
 
             # Get the direction that the parent branch is moving in
             # and chose a random direction that is not the direction of the parent
@@ -325,26 +346,21 @@ class RandomWalk(ABC):
 
                 # Remove these points from the grid so that intersection/touch checking
                 # doesn't stop the walk from moving
-                for i in range(index - 2, index + 2):
+                min_range = index - self.min_width - 2 if index - self.min_width - 2 > 0 else 0
+                max_range = index + self.min_width + 3 if len(_path) > index + self.min_width + 3 else len(_path)
+                for i in range(min_range, max_range):
                     for point in _path[i]:
                         self.grid[point[0]][point[1]][point[2]] = False
 
                 for direction in directions:
-                    new_start = [
-                        start_point_point[0] + direction[0],
-                        start_point_point[1] + direction[1],
-                        start_point_point[2] + direction[2],
-                    ]
                     # Add in this point with its border, with minimum width
-                    new_points = [new_start]
+                    new_points = [utils.add_points(start_point_point, direction)]
                     if not self._add_point_and_border(
                         new_points, direction, self.min_width
                     ):
                         continue
                     new_path = [new_points]
 
-                    original_distance_check = self.object_min_distance
-                    self.object_min_distance = 1
 
                     # Add enough to work
                     addWorked = True
@@ -360,10 +376,12 @@ class RandomWalk(ABC):
                     break
 
             # Add the parent path points back in
-            for i in range(index - 2, index + 2):
-                for point in _path[i]:
+            for points in _path:
+                for point in points:
                     self.grid[point[0]][point[1]][point[2]] = True
-
+        
+        self.object_min_distance = original_distance_check
+        
         if not success:
             return []
         return new_path
