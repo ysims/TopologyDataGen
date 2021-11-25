@@ -10,8 +10,8 @@ import sys
 import bpy  # import blender python
 import bmesh  # import blender mesh
 
-folder_path = "C:/Users/c3256711/Documents/Uni/Honours Project/TopologyCollection/DatasetCreation/Blender/"
-data_path = "../Voxels/all_data/single/30-cubed/octopus/torus/5/1_inverted_cube.npy"
+folder_path = "/home/ysi/code/TopologyDataGen/"
+data_path = "./data/dataset/octopus/spheroid/3/4_inverted_cube.npy"
 
 # Give it a path so we can open the numpy voxel grid file
 dir = os.path.dirname(folder_path)
