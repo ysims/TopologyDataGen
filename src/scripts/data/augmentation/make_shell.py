@@ -42,12 +42,12 @@ def make_shell(input_file, output_file):
     convolved = torch.clamp(convolved, min=0, max=1) 
     
     # Need to collapse the additional dimensions from the 3D convolution (batch and channel dimensions)
-    convolved = convolved.detach().squeeze().squeeze()
+    convolved_clone = convolved.detach().squeeze().squeeze()
 
     # Create the numpy array for the shell
     numpy_point_cloud = None
     for X, Y, Z in itertools.product(range(0, grid_size), repeat=3):
-        if grid[X][Y][Z]:
+        if convolved_clone[X][Y][Z]:
             if type(numpy_point_cloud) is np.ndarray:
                 numpy_point_cloud = np.concatenate(
                     (numpy_point_cloud, [[X, Y, Z]]), axis=0
