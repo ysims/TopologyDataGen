@@ -151,24 +151,28 @@ class Octopus(RandomWalk):
                 continue  # loop back around and try a different edge
 
             # Create the path list with enough points to escape the occupancy grid from the body
-            path = [edge]
+            path = [[edge]]
             # Find the right direction to go in
             for direction in directions:
+                borders = utils.border(direction, self.min_width)
                 if utils.exists_grid(self.shape.grid, utils.add_points(edge, direction)):
                     continue  # this is the body direction, try again
                 failed = False
                 for _ in range(self.object_min_distance):
                     if utils.exists_grid(
                         (self.tentacle_occupancy | self.external_occupancy_grid),
-                        utils.add_points(path[len(path) - 1], direction),
+                        utils.add_points(path[len(path) - 1][0], direction),
                     ):
                         # Didn't work, collided with another object or tentacle
                         # Break the for and try another direction
                         failed = True
                         break
                     # Add the point to the path
-                    path.append(utils.add_points(path[len(path) - 1], direction))
+                    path.append([utils.add_points(path[len(path) - 1][0], direction)])
                 if not failed:
+                    for points in path:
+                        for border in borders:
+                            points.append(utils.add_points(points[0], border))
                     break
             if not failed:
                 return path

@@ -1,5 +1,6 @@
 import itertools
 import math
+from operator import add
 import torch
 
 
@@ -17,7 +18,7 @@ def width(previous_points):
 def border(direction, width):
     border = []
     prod = []
-    for i in range(width):
+    for i in range(1, width):
         prod.append(i)
     for x, y in itertools.product(prod, repeat=2):
         border.append([x,y])
@@ -75,3 +76,32 @@ def add_occupancy(grid, point, distance):
             grid[point[0] + x][point[1] + y][point[2] + z] = True
         except:
             continue
+
+def add_occupancy_forward(grid, point, distance, forward):
+    prod = [0]
+    border = []
+    for i in range(1, distance + 1):
+        prod.append(i)
+        prod.append(-i)
+    for x, y in itertools.product(prod, repeat=2):
+        border.append([x,y])
+    borders = (
+        [[0, b[0], b[1]] for b in border]
+        if forward[0] != 0
+        else [[b[0], 0, b[1]] for b in border]
+        if forward[1] != 0
+        else [[b[0], b[1], 0] for b in border]
+    )
+    for border_ in borders:
+        try:  # skip if this is out of bounds
+            grid_set(grid, add_points(point, border_), True)
+        except:
+            continue
+
+
+def grid_set(grid, point, bool):
+    grid[point[0]][point[1]][point[2]] = bool
+
+
+def forward(p1, p2):
+    return [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]
