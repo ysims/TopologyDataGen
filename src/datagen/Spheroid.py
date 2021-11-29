@@ -25,7 +25,8 @@ class Spheroid(Shape):
         self.valid = True
 
         size = full_grid[0][0].size
-        self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
+        # self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
+        self.x, self.y, self.z = np.indices([size for _ in range(3)])
 
         self._place(object_min_distance)
 
