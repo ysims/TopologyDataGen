@@ -2,6 +2,7 @@ import os
 import math
 import subprocess
 
+
 def is_number(s):
     try:
         float(s)
@@ -11,16 +12,37 @@ def is_number(s):
 
 
 def run_ripser(args):
-    file_name = (args.input_file).rsplit(".",1)[0]
+    file_name = (args.input_file).rsplit(".", 1)[0]
     results = args.input_file
 
     if args.run:
         print("Converting {}.".format(file_name))
-        subprocess.call(["python", "run.py", "augment", "ripser_cpp_convert", file_name + ".npy", file_name + ".txt"])
+        subprocess.call(
+            [
+                "python",
+                "run.py",
+                "augment",
+                "ripser_cpp_convert",
+                file_name + ".npy",
+                file_name + ".txt",
+            ]
+        )
         print("Running Ripser.")
         open_type = "w" if os.path.isfile((file_name + "_results.txt")) else "x"
         with open((file_name + "_results.txt"), open_type) as f:
-            subprocess.call(["./ripser/ripser", file_name + ".txt", "--format", "point-cloud", "--threshold", str(args.vr_threshold), "--dim", "2"], stdout=f)
+            subprocess.call(
+                [
+                    "./ripser/ripser",
+                    file_name + ".txt",
+                    "--format",
+                    "point-cloud",
+                    "--threshold",
+                    str(args.vr_threshold),
+                    "--dim",
+                    "2",
+                ],
+                stdout=f,
+            )
         print("Ripser complete.")
         results = file_name + "_results.txt"
 
@@ -39,8 +61,8 @@ def run_ripser(args):
         f.readline()  # persistence intervals in dim 0:
 
         # Process all from h1 to h3
-        for i in range(0,3):
-            thresh = b0_thresh if i == 0 else b1_thresh if i==1 else b2_thresh
+        for i in range(0, 3):
+            thresh = b0_thresh if i == 0 else b1_thresh if i == 1 else b2_thresh
 
             # Get the first lifetime
             lifetime = str(f.readline())

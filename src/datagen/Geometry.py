@@ -8,9 +8,9 @@ def rotate_grid(size, rotation, center):
     dimensions = len(center)
     grid = np.indices([size * 2 for _ in range(dimensions)])
 
-    grid[0,0:size*2, 0:size*2, 0:size*2] += center[0] - size
-    grid[1,0:size*2, 0:size*2, 0:size*2] += center[1] - size
-    grid[2,0:size*2, 0:size*2, 0:size*2] += center[2] - size
+    grid[0, 0 : size * 2, 0 : size * 2, 0 : size * 2] += center[0] - size
+    grid[1, 0 : size * 2, 0 : size * 2, 0 : size * 2] += center[1] - size
+    grid[2, 0 : size * 2, 0 : size * 2, 0 : size * 2] += center[2] - size
 
     # Scipy uses degrees, so convert rotation from radians to degrees
     degrees_rotation = [x * 180 / math.pi for x in rotation]
@@ -36,6 +36,7 @@ def rotate_grid(size, rotation, center):
     grid = grid[tuple(map(slice, start_slice, end_slice))]
 
     return grid
+
 
 # Get the distance in 3d between these two points
 def distance3d(point1, point2):
@@ -64,9 +65,7 @@ def intersect_or_touch(point, grid, object_min_distance):
         prod.append(-i)
     for x, y, z in itertools.product(prod, repeat=3):
         try:  # skip if this is out of bounds
-            if grid[point[0] + x][point[1] + y][
-                point[2] + z
-            ]:
+            if grid[point[0] + x][point[1] + y][point[2] + z]:
                 return True
         except:
             continue
@@ -101,9 +100,7 @@ def obj_intersect_touch(point, grid, object_min_distance):
                 point[2] + z,
             ]
             if grid[check_point[0]][check_point[1]][check_point[2]]:
-                if (max(check_point) < grid[0][0].size - 1) and min(
-                    check_point
-                ) > 0:
+                if (max(check_point) < grid[0][0].size - 1) and min(check_point) > 0:
                     return True
         except:
             continue

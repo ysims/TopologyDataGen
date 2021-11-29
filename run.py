@@ -184,7 +184,8 @@ ripser_parser.add_argument(
 )
 ripser_parser.add_argument(
     "--run",
-    action="store_true", default=False,
+    action="store_true",
+    default=False,
     help="Whether or not to run Ripser. If not set, the input file will be treater as Ripser output.",
 )
 

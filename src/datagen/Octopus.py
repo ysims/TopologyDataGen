@@ -155,7 +155,9 @@ class Octopus(RandomWalk):
             # Find the right direction to go in
             for direction in directions:
                 borders = utils.border(direction, self.min_width)
-                if utils.exists_grid(self.shape.grid, utils.add_points(edge, direction)):
+                if utils.exists_grid(
+                    self.shape.grid, utils.add_points(edge, direction)
+                ):
                     continue  # this is the body direction, try again
                 failed = False
                 for _ in range(self.object_min_distance):

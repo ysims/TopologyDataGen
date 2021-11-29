@@ -22,7 +22,7 @@ class RandomWalk(ABC):
         original_grid = copy.copy(self.grid)
         original_occupancy = copy.copy(self.occupancy_grid)
         original_tentacle_occupancy = copy.copy(self.tentacle_occupancy)
-        
+
         # Keep track of all the points in the tunnel
         path = self._get_start()
         if not path:

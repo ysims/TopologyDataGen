@@ -79,6 +79,7 @@ def add_occupancy(grid, point, distance):
         except:
             continue
 
+
 def add_occupancy_forward(grid, point, distance, forward):
     prod = [0]
     border = []

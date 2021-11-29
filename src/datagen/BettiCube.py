@@ -66,8 +66,6 @@ class BettiCube(object):
                     if not object.valid:
                         valid = False
 
-
-
     # Adds a random object to the cube
     # from a set of allowed objects
     def add_random(self):

@@ -43,18 +43,20 @@ with open(file_name + ".csv", "w", newline="") as csvfile:
         ]
     )
 
-for complexity in range(1, num_complexities+1):
-    for num_objects in range(min_objects, max_objects+1):
+for complexity in range(1, num_complexities + 1):
+    for num_objects in range(min_objects, max_objects + 1):
         vr_betti = []
         alpha_betti = []
 
         for j in range(0, repeat):
             print("Progress:", complexity, "/", num_objects, "/", j)
-            
+
             # Gudhi Alpha complex
             gudhi_alpha_args = {
                 "type": "run",
-                "input_file": "{}/{}/{}_cube.npy".format(path, complexity, str(num_objects * repeat + j)),
+                "input_file": "{}/{}/{}_cube.npy".format(
+                    path, complexity, str(num_objects * repeat + j)
+                ),
                 "filtration_type": "alpha",
                 "filtering": True,
                 "save": False,
@@ -68,7 +70,9 @@ for complexity in range(1, num_complexities+1):
             # Ripser VR complex
             ripser_args = {
                 "type": "run",
-                "input_file": "{}/{}/{}_cube.npy".format(path, complexity, str(num_objects * repeat + j)),
+                "input_file": "{}/{}/{}_cube.npy".format(
+                    path, complexity, str(num_objects * repeat + j)
+                ),
                 "b0": 1.5,
                 "b1": 0.8,
                 "b2": 1.5,
@@ -80,7 +84,7 @@ for complexity in range(1, num_complexities+1):
         vr_betti_av = [0, 0, 0]
         alpha_betti_av = [0, 0, 0]
         for k in range(0, repeat):
-            for index in range(0,3):
+            for index in range(0, 3):
                 vr_betti_av[index] += vr_betti[k][index]
                 alpha_betti_av[index] += alpha_betti[k][index]
         vr_betti_av = [b / repeat for b in vr_betti_av]
@@ -89,7 +93,7 @@ for complexity in range(1, num_complexities+1):
         # Find the error
         vr_betti_error = [0, 0, 0]
         alpha_betti_error = [0, 0, 0]
-        true = [1, 0, 1*num_objects]
+        true = [1, 0, 1 * num_objects]
         for k in range(0, 3):
             if true[k] != 0:
                 vr_betti_error[k] = (vr_betti_av[k] - true[k]) / true[k]
@@ -102,7 +106,7 @@ for complexity in range(1, num_complexities+1):
         vr_std = [0, 0, 0]
         alpha_std = [0, 0, 0]
         for k in range(0, repeat):
-            for index in range(0,3):
+            for index in range(0, 3):
                 vr_std[index] += (vr_betti[k][index] - vr_betti_av[index]) ** 2
                 alpha_std[index] += (alpha_betti[k][index] - alpha_betti_av[index]) ** 2
         vr_std = [b / repeat for b in vr_std]
