@@ -23,10 +23,6 @@ class RandomWalk(ABC):
         original_occupancy = copy.copy(self.occupancy_grid)
         original_tentacle_occupancy = copy.copy(self.tentacle_occupancy)
         
-        ax = plt.figure().add_subplot(projection="3d")
-        ax.voxels(self.grid, edgecolor="k")
-        plt.show()
-
         # Keep track of all the points in the tunnel
         path = self._get_start()
         if not path:
@@ -34,9 +30,6 @@ class RandomWalk(ABC):
             self.occupancy_grid = original_occupancy
             self.tentacle_occupancy = original_tentacle_occupancy
             return False
-        # for points in path:
-        #     for point in points:
-        #         utils.grid_set(self.grid, point, True)
 
         self.isBranching = False
         if not self._walk(path):
@@ -44,10 +37,6 @@ class RandomWalk(ABC):
             self.occupancy_grid = original_occupancy
             self.tentacle_occupancy = original_tentacle_occupancy
             return False
-
-        # ax = plt.figure().add_subplot(projection="3d")
-        # ax.voxels(self.grid, edgecolor="k")
-        # plt.show()
 
         # The last points won't be there,
         # add everything in the walk to the grid
@@ -135,6 +124,7 @@ class RandomWalk(ABC):
         # Otherwise they would be flagged as intersections
         while not self._stop_walk_condition(path):
             point_added = False
+            random.shuffle(movement_direction)
             for direction in movement_direction:
                 if self._try_add(direction, path):
                     point_added = True
@@ -152,7 +142,6 @@ class RandomWalk(ABC):
 
     # Try to add a point to the tunnel
     def _try_add(self, direction, path):
-
         # ***** Get the next point in the spine and check it *****
         # The next point in the spine of the tunnel
         # Check it doesn't touch the grid and
