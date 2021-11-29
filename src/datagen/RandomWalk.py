@@ -168,18 +168,18 @@ class RandomWalk(ABC):
         # The closer the point is to this point,
         # the less occupancy can be added otherwise the walk can't progress
         for i in range(1, self.object_min_distance + 1):
-            for point in path[len(path) - 1 - width - i]:
+            for point in path[len(path) - width - i]:
                 # Find which direction this part of the path is travelling, from the previous point
                 # If there is no previous point, use the next point for the direction
                 forward = (
                     utils.forward(
-                        path[len(path) - 2 - width - i][0],
-                        path[len(path) - 1 - width - i][0],
-                    )
-                    if (len(path) - 1 - width - i) != 0
-                    else utils.forward(
                         path[len(path) - 1 - width - i][0],
                         path[len(path) - width - i][0],
+                    )
+                    if (len(path) - width - i) != 0
+                    else utils.forward(
+                        path[len(path) - width - i][0],
+                        path[len(path) + 1 - width - i][0],
                     )
                 )
                 utils.add_occupancy_forward(self.occupancy_grid, point, i, forward)

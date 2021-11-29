@@ -17,11 +17,13 @@ def width(previous_points):
 # Get the border based on direction
 def border(direction, width):
     border = []
-    prod = []
+    prod = [0]
     for i in range(1, width):
         prod.append(i)
     for x, y in itertools.product(prod, repeat=2):
-        border.append([x,y])
+        if x == 0 and y == 0:
+            continue
+        border.append([x, y])
     return (
         [[0, b[0], b[1]] for b in border]
         if direction[0] != 0
@@ -84,7 +86,7 @@ def add_occupancy_forward(grid, point, distance, forward):
         prod.append(i)
         prod.append(-i)
     for x, y in itertools.product(prod, repeat=2):
-        border.append([x,y])
+        border.append([x, y])
     borders = (
         [[0, b[0], b[1]] for b in border]
         if forward[0] != 0
