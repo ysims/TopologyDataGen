@@ -7,6 +7,8 @@ import yaml
 import numpy as np
 import scipy.ndimage
 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
@@ -74,6 +76,7 @@ class Octopus(RandomWalk):
                 scipy.ndimage.generate_binary_structure(3, 3),
                 iterations=(self.object_min_distance),
             )
+
             self.occupancy_grid = self.occupancy_grid | self.external_occupancy_grid
             self.tentacle_occupancy = self.occupancy_grid != self.occupancy_grid
 
@@ -94,6 +97,15 @@ class Octopus(RandomWalk):
     # Since they're easier to add than big objects
     def addTentacles(self, full_grid):
         self.full_grid = full_grid & (~self.grid)
+
+        self.external_occupancy_grid = scipy.ndimage.binary_dilation(
+            self.full_grid,
+            scipy.ndimage.generate_binary_structure(3, 3),
+            iterations=(self.object_min_distance),
+        )
+
+        self.occupancy_grid = self.occupancy_grid | self.external_occupancy_grid
+
 
         # Add the number of tentacles that we want
         # Retry if it fails

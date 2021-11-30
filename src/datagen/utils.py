@@ -80,6 +80,18 @@ def add_occupancy(grid, point, distance):
             continue
 
 
+def remove_occupancy(grid, point, distance):
+    # Remove the points
+    prod = [0]
+    for i in range(1, distance + 1):
+        prod.append(i)
+        prod.append(-i)
+    for x, y, z in itertools.product(prod, repeat=3):
+        try:  # skip if this is out of bounds
+            grid[point[0] + x][point[1] + y][point[2] + z] = False
+        except:
+            continue
+
 def add_occupancy_forward(grid, point, distance, forward):
     prod = [0]
     border = []
@@ -108,3 +120,25 @@ def grid_set(grid, point, bool):
 
 def forward(p1, p2):
     return [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]
+
+
+# Given the forward direction of the parent, determine
+# what are valid directions for the branch to move initially
+def branch_directions(parent_forward):
+    return (
+        [[0, 1, 0], [0, 0, 1], [0, -1, 0], [0, 0, -1]]
+        if parent_forward[0] == 0
+        else [
+            [1, 0, 0],
+            [0, 0, 1],
+            [-1, 0, 0],
+            [0, 0, -1],
+        ]
+        if parent_forward[0] == 0
+        else [
+            [1, 0, 0],
+            [0, 1, 0],
+            [-1, 0, 0],
+            [0, -1, 0],
+        ]
+    )

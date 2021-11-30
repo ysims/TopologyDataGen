@@ -30,7 +30,6 @@ class RandomWalk(ABC):
             self.occupancy_grid = original_occupancy
             self.tentacle_occupancy = original_tentacle_occupancy
             return False
-
         self.isBranching = False
         if not self._walk(path):
             self.grid = original_grid
@@ -71,6 +70,9 @@ class RandomWalk(ABC):
             amount_tried = 0
             while num_branch > 0 and amount_tried < max_tries:
                 amount_tried += 1
+                original_grid = copy.copy(self.grid)
+                original_occupancy = copy.copy(self.occupancy_grid)
+                original_tentacle_occupancy = copy.copy(self.tentacle_occupancy)
                 # Get the start of our branch
                 # If we can't make any branch on this
                 # path, stop trying with this path
@@ -78,20 +80,30 @@ class RandomWalk(ABC):
                 # No need to remove the path because
                 # we do it after breaking
                 if not path:
+                    self.grid = original_grid
+                    self.occupancy_grid = original_occupancy
+                    self.tentacle_occupancy = original_tentacle_occupancy
                     break
 
                 # Do as before and create the path
                 # If it doesn't work, try again
-                original_grid = copy.copy(self.grid)
                 if not self._walk(path):
                     self.grid = original_grid
+                    self.occupancy_grid = original_occupancy
+                    self.tentacle_occupancy = original_tentacle_occupancy
                     continue
 
                 # The last two points won't be there,
                 # add everything in the walk to the grid
                 for points in path:
                     for point in points:
-                        self.grid[point[0]][point[1]][point[2]] = True
+                        utils.add_occupancy(
+                            self.occupancy_grid, point, self.object_min_distance
+                        )
+                        utils.add_occupancy(
+                            self.tentacle_occupancy, point, self.object_min_distance
+                        )
+                        utils.grid_set(self.grid, point, True)
 
                 # Successfully made a branch
                 num_branch -= 1
@@ -112,6 +124,8 @@ class RandomWalk(ABC):
             if movement_direction.count([-x, -y, -z]) == 0:
                 movement_direction.append([-x, -y, -z])
 
+        depth_directions = []
+
         # Loop until some given condition is satisfied
         # Shuffle so we don't always go the same way
         # Check if the point works
@@ -122,11 +136,26 @@ class RandomWalk(ABC):
         # If it didn't work then return false
         # The walk list contains the last two points but the grid does not,
         # Otherwise they would be flagged as intersections
+        start_num = len(path)
+
         while not self._stop_walk_condition(path):
+            # Check if we've gone back up one and need to chose a different point here
+            # Ignore the first few because they're starting points
+            if len(depth_directions) - 1 == len(path) - start_num:
+                # Use the old list for this point in the path
+                movement_direction = copy.copy(depth_directions[len(depth_directions) - 1])
+            else:
+                random.shuffle(movement_direction)
+                depth_directions.append(copy.copy(movement_direction))
+
             point_added = False
-            random.shuffle(movement_direction)
             for direction in movement_direction:
                 if self._try_add(direction, path):
+                    # Remove everything that we've already tried
+                    while depth_directions[len(depth_directions) - 1][0] != direction:
+                        depth_directions[len(depth_directions) - 1].pop(0)
+                    depth_directions[len(depth_directions) - 1].pop(0)
+
                     point_added = True
                     break  # Don't keep going with the for loop
             # If a point wasn't added
@@ -134,10 +163,24 @@ class RandomWalk(ABC):
             # otherwise just return false
             if not point_added:
                 if not self._acceptable_walk(path):
-                    # Don't need to remove the points because the
-                    # original grid will be put back in upon returning
-                    return False
-                return True  # is an acceptable walk
+                    # Remove the last movement directions on the depth list
+                    # since this path didn't work
+                    # Go back up, remove the last point since it won't result in any
+                    # valid moves on the next point
+                    # and leave its movement directions in since we want to try whatever hasn't been tried yet
+                    if len(path) > start_num:
+                        depth_directions.pop(len(depth_directions)-1)
+                        path.pop(len(path)-1)
+                    else:
+                        # Path is too small, so do not backtrack
+                        return False
+                    # Do another iteration of the while loop
+
+                #     # Don't need to remove the points because the
+                #     # original grid will be put back in upon returning
+                #     return False
+                else:
+                    return True  # is an acceptable walk
         return True
 
     # Try to add a point to the tunnel
@@ -168,22 +211,23 @@ class RandomWalk(ABC):
         # The closer the point is to this point,
         # the less occupancy can be added otherwise the walk can't progress
         for i in range(1, self.object_min_distance + 1):
-            for point in path[len(path) - width - i]:
-                # Find which direction this part of the path is travelling, from the previous point
-                # If there is no previous point, use the next point for the direction
-                forward = (
-                    utils.forward(
-                        path[len(path) - 1 - width - i][0],
-                        path[len(path) - width - i][0],
+            if len(path) >= width + i:
+                for point in path[len(path) - width - i]:
+                    # Find which direction this part of the path is travelling, from the previous point
+                    # If there is no previous point, use the next point for the direction
+                    forward = (
+                        utils.forward(
+                            path[len(path) - 1 - width - i][0],
+                            path[len(path) - width - i][0],
+                        )
+                        if (len(path) - width - i) != 0
+                        else utils.forward(
+                            path[len(path) - width - i][0],
+                            path[len(path) + 1 - width - i][0],
+                        )
                     )
-                    if (len(path) - width - i) != 0
-                    else utils.forward(
-                        path[len(path) - width - i][0],
-                        path[len(path) + 1 - width - i][0],
-                    )
-                )
-                utils.add_occupancy_forward(self.occupancy_grid, point, i, forward)
-                utils.add_occupancy_forward(self.tentacle_occupancy, point, i, forward)
+                    utils.add_occupancy_forward(self.occupancy_grid, point, i, forward)
+                    utils.add_occupancy_forward(self.tentacle_occupancy, point, i, forward)
 
         return True
 
@@ -246,12 +290,9 @@ class RandomWalk(ABC):
     # Find a point to branch from on the path
     # and return the beginning of the new path
     def _branch_start(self, _path):
-        original_distance_check = self.object_min_distance
-        self.object_min_distance = 1
         success = False
         # This tentacle will be smaller than its parent
         if int(len(_path) / 2) <= int(self.min_branch_length / 2):
-            self.object_min_distance = original_distance_check
             return []
         self.branch_length = random.randrange(
             int(self.min_branch_length / 2), int(len(_path) / 2)
@@ -266,70 +307,40 @@ class RandomWalk(ABC):
         choice_path.pop(len(choice_path) - 1)
 
         new_path = []
-        max_tries = 1000
-        amount_tried = 0
         while (not new_path) and (choice_path):
-            amount_tried += 1
-
             path = copy.copy(_path)
             start = random.choice(choice_path)
             choice_path.remove(start)
 
-            # Remove this point and adjacent points so we can
-            # do intersect or touch properly
-            index = path.index(start)
-            before = path[index - 1]
-            # path.pop(index)
-            # path.pop(index+1)
-
             # Get the direction that the parent branch is moving in
             # and chose a random direction that is not the direction of the parent
             # to move in, so that the branch moves away from the parent
-            start_point = start[0]
-            before_point = before[0]
-            direction = [
-                start_point[0] - before_point[0],
-                start_point[1] - before_point[1],
-                start_point[2] - before_point[2],
-            ]
+            index = path.index(start)
+            before = path[index - 1]
+            direction = utils.forward(before[0], start[0])
+            directions = utils.branch_directions(direction)
+            
+            # Remove the points from the occupancy grid so that they
+            # don't stop the walk from moving
+            min_range = (
+                index - self.min_width - 2 if index - self.min_width - 2 > 0 else 0
+            )
+            max_range = (
+                index + self.min_width + 3
+                if len(_path) > index + self.min_width + 3
+                else len(_path)
+            )
+            for i in range(min_range, max_range):
+                for point in _path[i]:
+                    utils.remove_occupancy(self.occupancy_grid, point, self.object_min_distance)
 
-            for start_point_point in start:
-                directions = (
-                    [[0, 1, 0], [0, 0, 1], [0, -1, 0], [0, 0, -1]]
-                    if direction[0] == 0
-                    else [
-                        [1, 0, 0],
-                        [0, 0, 1],
-                        [-1, 0, 0],
-                        [0, 0, -1],
-                    ]
-                    if direction[0] == 0
-                    else [
-                        [1, 0, 0],
-                        [0, 1, 0],
-                        [-1, 0, 0],
-                        [0, -1, 0],
-                    ]
-                )
+            # Try for each of the points in this set
+            for start_point in start:
+                # Try all possible directions
                 random.shuffle(directions)
-
-                # Remove these points from the grid so that intersection/touch checking
-                # doesn't stop the walk from moving
-                min_range = (
-                    index - self.min_width - 2 if index - self.min_width - 2 > 0 else 0
-                )
-                max_range = (
-                    index + self.min_width + 3
-                    if len(_path) > index + self.min_width + 3
-                    else len(_path)
-                )
-                for i in range(min_range, max_range):
-                    for point in _path[i]:
-                        self.grid[point[0]][point[1]][point[2]] = False
-
                 for direction in directions:
                     # Add in this point with its border, with minimum width
-                    new_points = [utils.add_points(start_point_point, direction)]
+                    new_points = [utils.add_points(start_point, direction)]
                     if not self._add_point_and_border(
                         new_points, direction, self.min_width
                     ):
@@ -338,11 +349,10 @@ class RandomWalk(ABC):
 
                     # Add enough to work
                     addWorked = True
-                    for _ in range(self.min_width + original_distance_check):
+                    for _ in range(self.object_min_distance):
                         # If it didn't work, go out of the for loop and try a different direction
                         if not self._try_add(direction, new_path):
                             addWorked = False
-                    self.object_min_distance = original_distance_check
 
                     if not addWorked:
                         continue
@@ -352,9 +362,7 @@ class RandomWalk(ABC):
             # Add the parent path points back in
             for points in _path:
                 for point in points:
-                    self.grid[point[0]][point[1]][point[2]] = True
-
-        self.object_min_distance = original_distance_check
+                    utils.add_occupancy(self.occupancy_grid, point, self.object_min_distance)
 
         if not success:
             return []
