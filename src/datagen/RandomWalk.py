@@ -5,8 +5,6 @@ import math
 from operator import add
 import random
 import utils
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
 
 
 class RandomWalk(ABC):
@@ -292,10 +290,10 @@ class RandomWalk(ABC):
     def _branch_start(self, _path):
         success = False
         # This tentacle will be smaller than its parent
-        if int(len(_path) / 2) <= int(self.min_branch_length / 2):
+        if len(_path) <= self.min_branch_length:
             return []
         self.branch_length = random.randrange(
-            int(self.min_branch_length / 2), int(len(_path) / 2)
+            int(self.min_branch_length / 2), len(_path)
         )
 
         path = copy.copy(_path)

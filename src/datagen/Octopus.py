@@ -7,9 +7,6 @@ import yaml
 import numpy as np
 import scipy.ndimage
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # <--- This is important for 3d plotting
-from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
 from Torus import Torus, TorusN
@@ -34,7 +31,7 @@ class Octopus(RandomWalk):
         self.min_width = data_loaded["Octopus"]["min_width"]
         self.max_width = data_loaded["Octopus"]["max_width"]
         self.object_min_distance = data_loaded["object_min_distance"]
-        self.min_branch_length = self.min_tentacle_length / 2
+        self.min_branch_length = int(self.min_tentacle_length / 2)
 
         if self.shape_name == "Spheroid":
             self.shape = Spheroid.random(full_grid, shape_config, random_walk_config)
@@ -165,6 +162,7 @@ class Octopus(RandomWalk):
             # Create the path list with enough points to escape the occupancy grid from the body
             path = [[edge]]
             # Find the right direction to go in
+            random.shuffle(directions)
             for direction in directions:
                 borders = utils.border(direction, self.min_width)
                 if utils.exists_grid(
@@ -184,6 +182,8 @@ class Octopus(RandomWalk):
                     # Add the point to the path
                     path.append([utils.add_points(path[len(path) - 1][0], direction)])
                 if not failed:
+                    # Add a point right at the beginning of the path going backwards, for a clean seam
+                    path.insert(0, [utils.add_points(path[0][0], [-x for x in direction])])
                     for points in path:
                         for border in borders:
                             points.append(utils.add_points(points[0], border))

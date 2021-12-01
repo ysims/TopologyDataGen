@@ -156,19 +156,19 @@ parser_homology.add_argument(
 parser_homology.add_argument(
     "--b0",
     type=float,
-    default=1.0,
+    default=5.0,
     help="The minimum lifetime to use when filtering Betti zero.",
 )
 parser_homology.add_argument(
     "--b1",
     type=float,
-    default=1.0,
+    default=2.5,
     help="The minimum lifetime to use when filtering Betti one.",
 )
 parser_homology.add_argument(
     "--b2",
     type=float,
-    default=1.0,
+    default=1.5,
     help="The minimum lifetime to use when filtering Betti two.",
 )
 

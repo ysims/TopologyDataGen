@@ -18,5 +18,6 @@ def view_grid(input_file):
 
     # Plot the voxel grid with matplotlib
     ax = plt.figure().add_subplot(projection="3d")
-    ax.voxels(grid, edgecolor="k")
+    ax.set_box_aspect(grid.shape)
+    ax.voxels(grid)
     plt.show()

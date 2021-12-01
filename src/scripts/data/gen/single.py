@@ -43,8 +43,10 @@ def create_single_data(args):
 
     # Draw the grid with matplotlib
     if args.draw:
+        voxel_grid = voxels.get_objects(draw=True)
         ax = plt.figure().add_subplot(projection="3d")
-        ax.voxels(voxels.get_objects(draw=True), edgecolor="k")
+        ax.set_box_aspect(voxel_grid.shape)
+        ax.voxels(voxel_grid)
         plt.show()
 
     # Save the cube with numpy
