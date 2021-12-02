@@ -20,7 +20,7 @@ def make_shell(input_file, output_file):
     box_t = torch.from_numpy(grid).float().unsqueeze(0).unsqueeze(0)
 
     # Create the 3D kernel
-    conv = torch.nn.Conv3d(1, 1, 3, stride=1, bias=False, padding=1)
+    conv = torch.nn.Conv3d(1, 1, 3, stride=1, bias=False, padding=2)
 
     # c is a + shaped kernel
     c = [
