@@ -2,12 +2,15 @@ import os
 import yaml
 import itertools
 import numpy as np
+import random
 
 from BettiCube import BettiCube
 
 
 def generate_dataset(args):
-    path = os.path.join(os.getcwd(), "all_data/dataset")
+    path = os.path.join(os.getcwd(), args.save_path)
+
+    octopus_shapes = ["Spheroid", "Torus", "Torus2", "Torus3"]
 
     # Create the directory to store the data
     try:
@@ -20,69 +23,70 @@ def generate_dataset(args):
     # Loop over all configurations of # of object
     # from min to max for all objects
     for i in range(args.min_objects - 1, args.max_objects):
-        for _ in range(args.repeat):
-            # Set all values to 0, the one we will
-            # generate will be changed after
-            spheroid_num = 0
-            torus_num = 0
-            torusN_num = 0
-            island_num = 0
-            tunnel_num = 0
-            octopus_num = 0
+        # Want to have args.repeat number of samples for each # objects, but
+        # want to have all permutations of shapes for that # objects
+        repeat = int(args.repeat / len(list(itertools.combinations_with_replacement(octopus_shapes, i+1))))
+        skip = 0
+        if repeat == 0:
+            skip = int(len(list(itertools.combinations_with_replacement(octopus_shapes, i+1)))/ args.repeat)
 
-            if args.object == "spheroid":
-                spheroid_num = i + 1
-            elif args.object == "torus":
-                torus_num = i + 1
-            elif args.object == "torusN":
-                torusN_num = i + 1
-            elif args.object == "island":
-                island_num = i + 1
-            elif args.object == "tunnel":
-                tunnel_num = i + 1
-            elif args.object == "octopus":
-                octopus_num = i + 1
+        for combination in itertools.combinations_with_replacement(octopus_shapes, i+1):
+            repeat_ = repeat
+            if repeat == 0:
+                if skip == 0:
+                    repeat_ = 1
+                if random.randrange(0, skip) == 0:
+                    repeat_ = 1
 
-            # Create the dictionary to print and use when making objects
-            dict = {
-                "Spheroid": spheroid_num,
-                "Torus": torus_num,
-                "TorusN": torusN_num,
-                "Island": island_num,
-                "Tunnel": tunnel_num,
-                "Octopus": octopus_num,
-            }
-            print("Adding: ", dict)  # print for debugging purposes
+            for _ in range(repeat_):
 
-            voxels = BettiCube(
-                args.cube_size,
-                args.shape_config,
-                args.random_walk_config,
-                args.torus_holes,
-            )  # make the cube
-            voxels.add_objects(dict)  # add the right number of objects
-            grid = voxels.get_objects(draw=True)  # get the objects
+                oct_spheroid = combination.count("Spheroid")
+                oct_torus = combination.count("Torus")
+                oct_torus2 = combination.count("Torus2")
+                oct_torus3 = combination.count("Torus3")
 
-            # Create a numpy array from the voxel grid
-            numpy_point_cloud = None
-            for X, Y, Z in itertools.product(range(0, args.cube_size), repeat=3):
-                if grid[X][Y][Z]:
-                    if type(numpy_point_cloud) is np.ndarray:
-                        numpy_point_cloud = np.concatenate(
-                            (numpy_point_cloud, [[X, Y, Z]]), axis=0
-                        )
-                    else:
-                        numpy_point_cloud = np.array([[X, Y, Z]])
+                # Create the dictionary to print and use when making objects
+                dict = {
+                    "Octopus Spheroid": oct_spheroid,
+                    "Octopus Torus": oct_torus,
+                    "Octopus Torus2": oct_torus2,
+                    "Octopus Torus3": oct_torus3,
+                }
+                print("Adding: ", dict)  # print for debugging purposes
 
-            # Write our data
-            with open(
-                os.path.join(path, "{count}_betti.yaml".format(count=count)), "w"
-            ) as file:
-                documents = yaml.dump(voxels.get_data(), file)
-            np.save(
-                os.path.join(path, "{count}_grid.ply".format(count=count)),
-                numpy_point_cloud,
-            )
+                voxels = BettiCube(
+                    args.cube_size,
+                    args.shape_config,
+                    args.random_walk_config,
+                    args.torus_holes,
+                )  # make the cube
+                voxels.add_objects(dict)  # add the right number of objects
+                grid = voxels.get_objects(draw=True)  # get the objects
 
-            print("Created data:", count)
-            count += 1  # increment our naming counter
+                # Create a numpy array from the voxel grid
+                numpy_point_cloud = None
+                for X, Y, Z in itertools.product(range(0, args.cube_size), repeat=3):
+                    if grid[X][Y][Z]:
+                        if type(numpy_point_cloud) is np.ndarray:
+                            numpy_point_cloud = np.concatenate(
+                                (numpy_point_cloud, [[X, Y, Z]]), axis=0
+                            )
+                        else:
+                            numpy_point_cloud = np.array([[X, Y, Z]])
+
+                # Write our data
+                with open(
+                    os.path.join(path, "{count}_betti.yaml".format(count=count)), "w"
+                ) as file:
+                    yaml.dump(voxels.get_octopus_data(), file)
+                np.save(
+                    os.path.join(path, "{count}_points.npy".format(count=count)),
+                    numpy_point_cloud,
+                )
+                np.save(
+                    os.path.join(path, "{count}_grid.npy".format(count=count)),
+                    grid,
+                )
+
+                print("Created data:", count)
+                count += 1  # increment our naming counter

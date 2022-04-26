@@ -42,7 +42,20 @@ class BettiCube(object):
     def add_objects(self, num_objects):
         for key in num_objects:
             for _ in range(num_objects[key]):
-                if key == "TorusN":
+                if key == "Octopus Spheroid":
+                    while not self.add_object(Octopus.random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, "Spheroid")):
+                        continue
+                elif key == "Octopus Torus":
+                    while not self.add_object(Octopus.random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, "Torus")):
+                        continue
+                elif key == "Octopus Torus2":
+                    while not self.add_object(Octopus.random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, "Torus2")):
+                        continue
+                elif key == "Octopus Torus3":
+                    while not self.add_object(Octopus.random(self.get_objects(draw=False), self.shape_config, self.random_walk_config, "Torus3")):
+                        continue
+
+                elif key == "TorusN":
                     while not self.add_object(
                         eval(
                             key
@@ -138,3 +151,20 @@ class BettiCube(object):
             "Tunnel": tunnel_count,
             "Octopus": octopus_count,
         }
+
+    def get_octopus_data(self):
+        obj = {"spheroid": 0, "torus": 0, "torus2": 0, "torus3": 0}
+
+        # Loop over all objects and add their betti numbers
+        for object in self.objects:
+            if object.shape_name == "Spheroid":
+                obj["spheroid"] += 1
+            elif object.shape_name == "Torus":
+                obj["torus"] += 1
+            elif object.shape_name == "Torus2":
+                obj["torus2"] += 1
+            elif object.shape_name == "Torus3":
+                obj["torus3"] += 1
+
+        # Return a dictionary of the numbers to go into a yaml file
+        return obj

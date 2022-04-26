@@ -18,7 +18,7 @@ def create_single_data(args):
         "TorusN": args.torusN_num,
         "Island": args.island_num,
         "Tunnel": args.tunnel_num,
-        "Octopus": args.octopus_num,
+        "Octopus Spheroid": args.octopus_num,
     }
 
     print("Adding: ", dict)
@@ -65,24 +65,15 @@ def create_single_data(args):
         else:
             r_num = args.save_num
         np.save(
-            os.path.join(path, "{r_num}_inverted_cube".format(r_num=r_num)),
+            os.path.join(path, "{r_num}_points".format(r_num=r_num)),
             numpy_point_cloud,
         )
 
-        # Make the normal cube
-        numpy_point_cloud = None
-        for X, Y, Z in itertools.product(range(0, args.cube_size), repeat=3):
-            if not grid[X][Y][Z]:
-                if type(numpy_point_cloud) is np.ndarray:
-                    numpy_point_cloud = np.concatenate(
-                        (numpy_point_cloud, [[X, Y, Z]]), axis=0
-                    )
-                else:
-                    numpy_point_cloud = np.array([[X, Y, Z]])
-        # Save the normal cube
         np.save(
-            os.path.join(path, "{r_num}_cube".format(r_num=r_num)), numpy_point_cloud
+            os.path.join(path, "{r_num}_grid.npy".format(r_num=r_num)),
+            grid,
         )
+
         # Save the metadata
         with open(
             os.path.join(path, "{r_num}_betti.yaml".format(r_num=r_num)), "w"

@@ -18,16 +18,16 @@ parser.add_argument(
     help="Type of generation - a single cube or a whole dataset.",
 )
 parser.add_argument(
-    "--cube_size", type=int, default=50, help="Size of the cavity-filled cube, cubed."
+    "--cube_size", type=int, default=64, help="Size of the cavity-filled cube, cubed."
 )
 parser.add_argument(
     "--shape_config",
-    default="./Objects/config/Shape.yaml",
+    default="./Objects/config/config/Shape9.yaml",
     help="The path to the Shape config to use.",
 )
 parser.add_argument(
     "--random_walk_config",
-    default="./Objects/config/RandomWalk.yaml",
+    default="./Objects/config/config/RandomWalk9.yaml",
     help="The path to the RandomWalk config to use.",
 )
 
@@ -103,15 +103,21 @@ parser.add_argument(
 parser.add_argument(
     "--max_objects",
     type=int,
-    default=5,
+    default=4,
     help="The highest number of objects in any one data point in the dataset",
 )
 parser.add_argument(
     "--repeat",
     type=int,
-    default=1000,
+    default=30,
     help="Number of times to repeat on one set of parameters.",
 )
+parser.add_argument(
+    "--save_path",
+    default="./all_data/dataset",
+    help="The path to the RandomWalk config to use.",
+)
+
 
 args = parser.parse_args()
 

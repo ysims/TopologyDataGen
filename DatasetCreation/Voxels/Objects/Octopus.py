@@ -8,11 +8,11 @@ import yaml
 from Geometry import intersect_or_touch, hard_surrounded
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
-from Torus import Torus
+from Torus import Torus, TorusN
 
 
 class Octopus(RandomWalk):
-    def __init__(self, full_grid, num_tentacles, random_walk_config, shape_config):
+    def __init__(self, full_grid, num_tentacles, random_walk_config, shape_config, shape):
         self.full_grid = full_grid
         self.num_tentacles = num_tentacles
         self.valid = True
@@ -24,7 +24,10 @@ class Octopus(RandomWalk):
         self.max_tentacle_length = data_loaded["Octopus"]["max_tentacle_length"]
         self.branching = data_loaded["Octopus"]["branching"]
         self.length_between_branches = data_loaded["Octopus"]["length_between_branches"]
-        self.shape_name = data_loaded["Octopus"]["shape"]
+        if shape == "":
+            self.shape_name = data_loaded["Octopus"]["shape"]
+        else:
+            self.shape_name = shape
 
         if self.shape_name == "Spheroid":
             self.shape = Spheroid.random(full_grid, shape_config, random_walk_config)
@@ -32,10 +35,26 @@ class Octopus(RandomWalk):
                 self.shape = Spheroid.random(
                     full_grid, shape_config, random_walk_config
                 )
-        else:
+        elif self.shape_name == "Torus2":
+            self.shape = TorusN.random(full_grid, shape_config, random_walk_config, 2)
+            while not self.shape.valid:
+                self.shape = TorusN.random(
+                    full_grid, shape_config, random_walk_config, 2
+                )
+        elif self.shape_name == "Torus3":
+            self.shape = TorusN.random(full_grid, shape_config, random_walk_config, 3)
+            while not self.shape.valid:
+                self.shape = TorusN.random(
+                    full_grid, shape_config, random_walk_config, 3
+                )
+        elif self.shape_name == "Torus":
             self.shape = Torus.random(full_grid, shape_config, random_walk_config)
             while not self.shape.valid:
                 self.shape = Torus.random(full_grid, shape_config, random_walk_config)
+        else:
+            print("Error: Not a valid shape for the octopus.")
+            return
+
 
         self.grid = copy.copy(self.shape.draw_grid)
 
@@ -49,7 +68,19 @@ class Octopus(RandomWalk):
         max_num_tentacles = data_loaded["Octopus"]["max_num_tentacles"]
 
         num_tentacles = random.randrange(min_num_tentacles, max_num_tentacles, 1)
-        return cls(full_grid, num_tentacles, random_walk_config, shape_config)
+        return cls(full_grid, num_tentacles, random_walk_config, shape_config, "")
+
+    @classmethod
+    def random(cls, full_grid, shape_config, random_walk_config, shape):
+        # Read values from config file
+        with open(random_walk_config, "r") as stream:
+            data_loaded = yaml.safe_load(stream)
+        min_num_tentacles = data_loaded["Octopus"]["min_num_tentacles"]
+        max_num_tentacles = data_loaded["Octopus"]["max_num_tentacles"]
+
+        num_tentacles = random.randrange(min_num_tentacles, max_num_tentacles, 1)
+        return cls(full_grid, num_tentacles, random_walk_config, shape_config, shape)
+
 
     def _allowed_point(self, new_point, all_points):
         # Don't repeat ourselves
