@@ -5,7 +5,7 @@ from operator import add
 import random
 import yaml
 
-from Geometry import intersect_or_touch, hard_surrounded
+from Geometry import intersect_or_touch, hard_surrounded, forward
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
 from Torus import Torus, TorusN
@@ -231,9 +231,16 @@ class Octopus(RandomWalk):
             # The index has changed because we just popped
             # Go back one for all
             after = path.pop(index)
+
+            # direction1 = forward(before, start)
+            # direction2 = forward(start, after)
+            # if direction1 != direction2:
+            #     continue
+            
             self.grid[start[0]][start[1]][start[2]] = False
             self.grid[before[0]][before[1]][before[2]] = False
             self.grid[after[0]][after[1]][after[2]] = False
+
 
             directions = [
                 [1, 0, 0],

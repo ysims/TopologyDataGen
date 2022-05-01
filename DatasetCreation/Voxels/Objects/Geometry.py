@@ -106,6 +106,8 @@ def intersect_or_touch(point, grid):
     # Nothing is wrong, so return false
     return False
 
+def forward(p1, p2):
+    return [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]
 
 def obj_intersect_touch(point, grid):
     # Check if this point intersects,
@@ -120,7 +122,7 @@ def obj_intersect_touch(point, grid):
         try:  # skip if this is out of bounds
             touch_point = [point[0] + x, point[1] + y, point[2] + z]
             if grid[touch_point[0]][touch_point[1]][touch_point[2]]:
-                if (max(touch_point) >= grid[0][0].size - 1) and min(touch_point) <= 0:
+                if (max(touch_point) < grid[0][0].size - 1) and min(touch_point) > 0:
                     return True
         except:
             continue

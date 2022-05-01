@@ -1,10 +1,12 @@
 import argparse
 import sys
-
+import random
 sys.path.append("scripts")
 
 from dataset import generate_dataset
 from single import create_single_data
+
+# random.seed(9)
 
 # ***** OPTIONS *****
 # Generic
