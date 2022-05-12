@@ -54,9 +54,9 @@ class Torus(Shape):
 
         # Make random torus
         rotation = [
-            random.uniform(0, 2 * math.pi),
-            random.uniform(0, 2 * math.pi),
-            random.uniform(0, 2 * math.pi),
+            random.choice([0, math.pi]),
+            random.choice([0, math.pi]),
+            random.choice([0, math.pi]),
         ]
         center = [
             random.randrange(center_place, size - center_place, 1),
@@ -166,9 +166,9 @@ class TorusN(Shape):
 
         # Make random torus
         rotation = [
-            random.uniform(0, 2 * math.pi),
-            random.uniform(0, 2 * math.pi),
-            random.uniform(0, 2 * math.pi),
+            random.choice([0, math.pi]),
+            random.choice([0, math.pi]),
+            random.choice([0, math.pi]),
         ]
         center = [
             random.randrange(center_place, size - center_place, 1),
