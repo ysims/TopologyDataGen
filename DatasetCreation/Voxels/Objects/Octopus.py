@@ -4,6 +4,7 @@ import math
 from operator import add
 import random
 import yaml
+import numpy as np
 
 from Geometry import intersect_or_touch, hard_surrounded, forward
 from RandomWalk import RandomWalk
@@ -24,6 +25,7 @@ class Octopus(RandomWalk):
         self.max_tentacle_length = data_loaded["Octopus"]["max_tentacle_length"]
         self.branching = data_loaded["Octopus"]["branching"]
         self.length_between_branches = data_loaded["Octopus"]["length_between_branches"]
+        
         if shape == "":
             self.shape_name = data_loaded["Octopus"]["shape"]
         else:
@@ -117,6 +119,12 @@ class Octopus(RandomWalk):
 
         self.draw_grid = self.grid
 
+    # Returns True if the point touches any existing objects
+    # in the grid, or itself, or the border
+    # Returns False otherwise
+    def _grid_check(self, point, grid):
+        return intersect_or_touch(point, grid)
+
     # Determines a start location for the walk
     # and returns the first point in the walk
     def _get_start(self):
@@ -126,23 +134,38 @@ class Octopus(RandomWalk):
         )
         all_points = []
 
-        # We will make a 'tentacle' going off from one of the edges
-        edges = []
-        for X, Y, Z in itertools.product(range(0, self.full_grid[0][0].size), repeat=3):
-            if self.shape.draw_grid[X][Y][Z] and not hard_surrounded(
-                [X, Y, Z], self.grid
+        if self.shape_name != "None":
+            # We will make a 'tentacle' going off from one of the edges
+            edges = []
+            for X, Y, Z in itertools.product(
+                range(0, self.full_grid[0][0].size), repeat=3
             ):
-                edges.append([X, Y, Z])
+                if self.shape.draw_grid[X][Y][Z] and not hard_surrounded(
+                    [X, Y, Z], self.grid
+                ):
+                    edges.append([X, Y, Z])
 
-        if not edges:
-            print("No edges, something is wrong")
-            self.valid = False
-            return []
+            if not edges:
+                print("No edges, something is wrong")
+                self.valid = False
+                return []
+        else:
+            # Edges could be any of the 'interior' points
+            edges = []
+            edges.append([15, 15, 15])
 
         # Grab a random edge to use
         # Don't add it to the path because it's already on the circle
         # Find one open spot to add to the path
         found_point = False
+        directions = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [-1, 0, 0],
+            [0, -1, 0],
+            [0, 0, -1],
+        ]
         while not found_point:
             if not edges:
                 print("No edges, something is wrong")
@@ -150,14 +173,7 @@ class Octopus(RandomWalk):
                 return []
             edge = random.choice(edges)
             edges.remove(edge)
-            directions = [
-                [1, 0, 0],
-                [0, 1, 0],
-                [0, 0, 1],
-                [-1, 0, 0],
-                [0, -1, 0],
-                [0, 0, -1],
-            ]
+
             for direction in directions:
                 try:  # skip if this is out of bounds
                     test_point = [
