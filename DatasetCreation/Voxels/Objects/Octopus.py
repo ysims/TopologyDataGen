@@ -91,12 +91,12 @@ class Octopus(RandomWalk):
 
         # If we're still close to the body,
         # don't worry about touching the body
-        if len(all_points) < 2:
-            if intersect_or_touch(new_point, self.full_grid):
-                return False
-        else:
-            if intersect_or_touch(new_point, (self.grid | self.full_grid)):
-                return False
+        # if len(all_points) < 2:
+        #     if intersect_or_touch(new_point, self.full_grid):
+        #         return False
+        # else:
+        if intersect_or_touch(new_point, (self.grid | self.full_grid)):
+            return False
         return True
 
     # Separate function for adding the tentacles
@@ -247,11 +247,6 @@ class Octopus(RandomWalk):
             # The index has changed because we just popped
             # Go back one for all
             after = path.pop(index)
-
-            # direction1 = forward(before, start)
-            # direction2 = forward(start, after)
-            # if direction1 != direction2:
-            #     continue
             
             self.grid[start[0]][start[1]][start[2]] = False
             self.grid[before[0]][before[1]][before[2]] = False
