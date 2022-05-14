@@ -4,7 +4,6 @@ import itertools
 from operator import add
 import random
 
-
 class RandomWalk(ABC):
 
     # Creates a random walk and adds it to the grid
@@ -108,6 +107,8 @@ class RandomWalk(ABC):
             for movement_direction, _ in itertools.groupby(movement_direction)
         )
         
+        original_grid = copy.copy(self.grid)
+
         while not self._stop_walk_condition(all_points):
             point_added = False
             random.shuffle(movement_direction)
@@ -128,8 +129,7 @@ class RandomWalk(ABC):
             if not point_added:
                 if not self._acceptable_walk(all_points):
                     # Remove anything we added because we don't want it anymore
-                    for point in all_points:
-                        self.grid[point[0], point[1], point[2]] = False
+                    self.grid = original_grid
                     return False
                 else:
                     break
