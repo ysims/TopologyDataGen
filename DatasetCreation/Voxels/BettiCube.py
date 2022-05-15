@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import scipy.ndimage
-
+import itertools
 import sys
 
 sys.path.append("Objects")
@@ -117,6 +117,21 @@ class BettiCube(object):
     # Get the full cube with holes
     def get_full_objects(self):
         return ~self.get_objects(draw=True)
+
+    # Returns a point cloud with 4d vectors, the 4th dimension corresponds to the object it represents
+    def get_separate_objects(self):
+        numpy_point_cloud = None
+        for index, object in enumerate(self.objects):
+            for X, Y, Z in itertools.product(range(0, self.size), repeat=3):
+                if object.grid[X][Y][Z]:
+                    if type(numpy_point_cloud) is np.ndarray:
+                        numpy_point_cloud = np.concatenate(
+                            (numpy_point_cloud, [[X, Y, Z, index]]), axis=0
+                        )
+                    else:
+                        numpy_point_cloud = np.array([[X, Y, Z, index]])
+        return numpy_point_cloud
+
 
     # Return count of all objects
     def get_data(self):

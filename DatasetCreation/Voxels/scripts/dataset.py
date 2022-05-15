@@ -74,6 +74,8 @@ def generate_dataset(args):
                         else:
                             numpy_point_cloud = np.array([[X, Y, Z]])
 
+                four_point_cloud = voxels.get_separate_objects()
+
                 # Write our data
                 with open(
                     os.path.join(path, "{count}_betti.yaml".format(count=count)), "w"
@@ -82,6 +84,10 @@ def generate_dataset(args):
                 np.save(
                     os.path.join(path, "{count}_points.npy".format(count=count)),
                     numpy_point_cloud,
+                )
+                np.save(
+                    os.path.join(path, "{count}_4d_points.npy".format(count=count)),
+                    four_point_cloud,
                 )
                 np.save(
                     os.path.join(path, "{count}_grid.npy".format(count=count)),
