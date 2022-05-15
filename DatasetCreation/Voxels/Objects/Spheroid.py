@@ -18,7 +18,7 @@ class Spheroid(Shape):
             return
 
         # Set sphere information
-        self.center = [32,32,32]
+        self.center = center
         self.radius = radius
         self.full_grid = full_grid
         self.rotation = rotation
