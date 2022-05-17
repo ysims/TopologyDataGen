@@ -39,6 +39,7 @@ def generate_dataset(args):
                     repeat_ = 1
 
             for _ in range(repeat_):
+                # random.seed(count)
 
                 oct_spheroid = combination.count("Spheroid")
                 oct_torus = combination.count("Torus")
@@ -93,6 +94,8 @@ def generate_dataset(args):
                     os.path.join(path, "{count}_grid.npy".format(count=count)),
                     grid,
                 )
+
+
 
                 print("Created data:", count)
                 count += 1  # increment our naming counter
