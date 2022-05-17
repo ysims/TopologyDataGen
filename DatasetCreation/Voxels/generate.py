@@ -105,13 +105,13 @@ parser.add_argument(
 parser.add_argument(
     "--max_objects",
     type=int,
-    default=4,
+    default=5,
     help="The highest number of objects in any one data point in the dataset",
 )
 parser.add_argument(
     "--repeat",
     type=int,
-    default=30,
+    default=10,
     help="Number of times to repeat on one set of parameters.",
 )
 parser.add_argument(

@@ -24,10 +24,16 @@ class Spheroid(Shape):
         self.rotation = rotation
         self.valid = True
 
-        size = full_grid[0][0].size
-        self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
+        if not intersect_or_touch(self.center, full_grid):
+            self.grid = (~full_grid) & full_grid
+            self.grid[center[0]][center[1]][center[2]] = True
+        else:
+            self.valid = False
+            return
 
-        self._place()
+        # self.x, self.y, self.z = rotate_grid(size, self.rotation, self.center)
+
+        # self._place()
 
         self.draw_grid = self.grid
 

@@ -60,6 +60,8 @@ class Octopus(RandomWalk):
 
         self.grid = copy.copy(self.shape.draw_grid)
 
+        self.addTentacles(full_grid)
+
     # Make a random tunnel
     @classmethod
     def random(cls, full_grid, shape_config, random_walk_config):
@@ -114,7 +116,8 @@ class Octopus(RandomWalk):
             while not self._random_walk():
                 count += 1
                 if count == max_tries:
-                    break
+                    self.valid = False
+                    return
                 continue
 
         self.draw_grid = self.grid
