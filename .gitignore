@@ -6,4 +6,5 @@ all_data
 *.yaml
 *.pickle
 
-!DataCreation/Voxels/Objects/config/*
+!DatasetCreation/Voxels/Objects/config/*
+!DatasetCreation/Voxels/Objects/config/config/*
