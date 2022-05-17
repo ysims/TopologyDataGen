@@ -18,19 +18,30 @@ def generate_dataset(args):
     except:
         pass
 
-    count = 0  # for file naming
+    count_ = args.count + args.repeat
+    count = args.count  # for file naming
 
     # Loop over all configurations of # of object
     # from min to max for all objects
     for i in range(args.min_objects - 1, args.max_objects):
         # Want to have args.repeat number of samples for each # objects, but
         # want to have all permutations of shapes for that # objects
-        repeat = int(args.repeat / len(list(itertools.combinations_with_replacement(octopus_shapes, i+1))))
+        repeat = int(
+            args.repeat
+            / len(list(itertools.combinations_with_replacement(octopus_shapes, i + 1)))
+        )
         skip = 0
         if repeat == 0:
-            skip = int(len(list(itertools.combinations_with_replacement(octopus_shapes, i+1)))/ args.repeat)
+            skip = int(
+                len(
+                    list(itertools.combinations_with_replacement(octopus_shapes, i + 1))
+                )
+                / args.repeat
+            )
 
-        for combination in itertools.combinations_with_replacement(octopus_shapes, i+1):
+        for combination in itertools.combinations_with_replacement(
+            octopus_shapes, i + 1
+        ):
             repeat_ = repeat
             if repeat == 0:
                 if skip == 0:
@@ -95,7 +106,7 @@ def generate_dataset(args):
                     grid,
                 )
 
-
-
                 print("Created data:", count)
                 count += 1  # increment our naming counter
+                if count == count_:
+                    return
