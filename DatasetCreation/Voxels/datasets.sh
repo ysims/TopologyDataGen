@@ -14,4 +14,4 @@ cd $PBS_O_WORKDIR
 
 echo "Running dataset"
 
-python generate.py --random_walk_config $VAR1 --shape_config $VAR2 dataset --min_objects $VAR3 --max_objects $VAR3 --repeat 1000 --save_path ./data/grid/$VAR4 --count $VAR5 --object octopus
+python generate.py dataset --random_walk_config $VAR1 --shape_config $VAR2 --min_objects $VAR3 --max_objects $VAR3 --repeat 1000 --save_path $VAR4 --count $VAR5 --object octopus

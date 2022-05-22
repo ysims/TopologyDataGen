@@ -1,6 +1,7 @@
 import argparse
 import sys
 import random
+
 sys.path.append("scripts")
 
 from dataset import generate_dataset
@@ -118,6 +119,13 @@ parser.add_argument(
     "--save_path",
     default="./all_data/dataset",
     help="The path to the RandomWalk config to use.",
+)
+
+parser.add_argument(
+    "--count",
+    type=int,
+    default=0,
+    help="Where dataset counting file naming will begin from.",
 )
 
 
