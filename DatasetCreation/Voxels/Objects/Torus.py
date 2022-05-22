@@ -2,10 +2,11 @@ import math
 import numpy as np
 import random
 import yaml
+import itertools
+from operator import add
 
-from Geometry import intersect_or_touch, rotate_grid, distance3d
+from Geometry import intersect_or_touch, rotate_grid, distance3d, forward
 from Shape import Shape
-
 
 class Torus(Shape):
     # Make a specific torus
@@ -244,3 +245,218 @@ class TorusN(Shape):
         if distance3d(point, second_center) <= self.major_radius:
             return False
         return True
+
+
+# A torus with any number of holes. Rather than using shape equations, it forms itself by using random walks
+class TorusFree(object):
+    # Make a specific torus
+    def __init__(
+        self, full_grid, center, n_holes, donut_length
+    ):
+        # Set torus information
+        self.full_grid = full_grid
+        self.center = center
+        self.n_holes = n_holes
+        self.valid = False
+        self.grid = full_grid & ~full_grid  # initialise to empty
+        self.length = donut_length
+
+        while intersect_or_touch(self.center, full_grid):
+            self.center = [
+                random.randrange(0, full_grid[0][0].size - 1, 1),
+                random.randrange(0, full_grid[0][0].size - 1, 1),
+                random.randrange(0, full_grid[0][0].size - 1, 1),
+            ]
+
+        # Keep trying to make the donut until it's made
+        while not self.valid:
+            self.grid = full_grid & ~full_grid  # initialise to empty
+            self.valid = self._create_grid()
+
+
+        
+        # do draw grid stuff
+        self.draw_grid = self.grid
+
+    # Make a random torus
+    @classmethod
+    def random(cls, grid, shape_config, random_walk_config, torus_holes=0):
+        # Read values from config file
+        with open(shape_config, "r") as stream:
+            data_loaded = yaml.safe_load(stream)
+        center_place = data_loaded["Torus"]["center_placement_border"]
+        max_holes = data_loaded["Torus"]["max_holes"]
+        min_holes = data_loaded["Torus"]["min_holes"]
+        donut_length = data_loaded["Torus"]["length"]
+        size = grid[0][0].size
+
+        # Make random torus
+        center = [
+            random.randrange(center_place, size - center_place, 1),
+            random.randrange(center_place, size - center_place, 1),
+            random.randrange(center_place, size - center_place, 1),
+        ]
+        
+        # If they're the same, just use that number
+        # otherwise do it randomly
+        if torus_holes != 0:
+            n_holes = torus_holes
+        else:
+            if max_holes == min_holes:
+                n_holes = min_holes
+            else:
+                n_holes = random.randrange(min_holes, max_holes + 1, 1)
+
+        return cls(grid, center, n_holes, donut_length)
+
+    # When creating the grid, plug up the torus so place and move
+    # can detect if there's anything going through the torus
+    def _create_grid(self):
+
+        all_points = self._walk(self.center)
+        print("a", all_points)
+        if not all_points:
+            return False
+        for point in all_points:
+            self.grid[point[0]][point[1]][point[2]] = True
+
+        for _ in range(0, self.n_holes-1):
+            points = self._walk(random.choose(all_points))
+            if not points:
+                return False
+            for point in points:
+                all_points.append(point)
+                self.grid[point[0]][point[1]][point[2]] = True
+        return True
+
+
+    def _walk(self, center):
+        # Add all possible movement directions
+        movement_direction = []  # list of value movements
+        for x, y, z in itertools.permutations([1, 0, 0], 3):
+            movement_direction.append([x, y, z])
+            movement_direction.append([-x, -y, -z])
+        movement_direction.sort()
+        # Remove duplicates
+        movement_direction = list(
+            movement_direction
+            for movement_direction, _ in itertools.groupby(movement_direction)
+        )
+
+        all_points = [center]
+        print("walking", all_points)
+        while not self._stop_walk_condition(all_points):
+            point_added = False
+            random.shuffle(movement_direction)
+            
+            if len(all_points) > self.length / 2:
+                movement_direction = self.directions(all_points[0], all_points[-1])
+                print(movement_direction)
+            
+            for direction in movement_direction:
+                # Add the direction and the last point
+                new_point = list(map(add, direction, all_points[-1]))
+                if self._allowed_point(new_point, all_points):
+                    all_points.append(new_point)
+                    # Add onto the grid the point from two runs ago
+                    if len(all_points) > 2:
+                        to_add = all_points[len(all_points) - 3]
+                        self.grid[to_add[0], to_add[1], to_add[2]] = True
+                    point_added = True
+                    break  # Don't keep going with the for loop
+                else:
+                    print("failed")
+                    print(all_points)
+                    print(new_point)
+            # If a point wasn't added
+            # see if this was a decent enough try
+            # otherwise just return false
+            if not point_added:
+                print(all_points)
+                return []
+        return all_points
+
+    def directions(self, center, end):
+        directions = []
+        if center[0] != end[0]:
+            if center[0] < end[0]:
+                directions.append([-1,0,0])
+            else:
+                directions.append([1,0,0])
+        
+        if center[1] != end[1]:
+            if center[1] < end[1]:
+                directions.append([0,-1,0])
+            else:
+                directions.append([0,1,0])
+        
+        if center[2] != end[2]:
+            if center[2] < end[2]:
+                directions.append([0,0,-1])
+            else:
+                directions.append([0,0,1])
+        
+        return directions
+        
+
+    def _allowed_point(self, new_point, all_points):
+        # Don't repeat ourselves
+        if all_points.count(new_point) > 0:
+            if new_point == all_points[0]:
+                if len(all_points) < self.length / 2:
+                    print("Tried revisiting before length big")
+                    return False
+                return True
+            print("tried revisiting and it's not the first point")
+            return False
+
+        if intersect_or_touch(new_point, self.full_grid):
+            print("touched the full grid")
+            return False
+
+        # this is the yikes one where it could graze past 
+        # and we need to make it go there, not just touch and go away
+        if intersect_or_touch(new_point, self.grid):
+            # if the length is too short, don't let it go here
+            if len(all_points) < self.length / 2:
+                print("touched the torus but it's too early")
+                return False
+            # otherwise check it is actually going toward the start
+            difference = forward(new_point, all_points[0])
+            print(difference)
+            for i in difference:
+                if i > 1 or i < -1:
+                    print("touched something but it's too far away to be the first point")
+                    return False
+
+        return True
+
+    def _stop_walk_condition(self, all_points):
+        if len(all_points) < self.length / 2:
+            return False
+        if all_points[-1] == all_points[0]:
+            return True
+        return False
+
+    # This will get the circle that 'plugs' up the torus,
+    # to prevent tunnels going through
+    def get_disc(self):
+        combined_disc = (self.x == 0) & (self.x == 1)
+        for i in range(self.n_holes):
+            disc = (
+                (self.z > self.center[2] - 1)
+                & (self.z < self.center[2] + 1)
+                & (
+                    (self.x - self.center[0] + i * self.major_radius * 2) ** 2
+                    + (self.y - self.center[1]) ** 2
+                    <= self.major_radius ** 2
+                )
+            )
+            combined_disc = combined_disc | disc
+        return combined_disc
+
+    # Torus is only one voxel thick, any point is valid 
+    def _valid_edge(self, point):
+        return True
+
+    

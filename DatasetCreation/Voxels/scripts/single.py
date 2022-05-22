@@ -18,7 +18,7 @@ def create_single_data(args):
         "TorusN": args.torusN_num,
         "Island": args.island_num,
         "Tunnel": args.tunnel_num,
-        "Octopus Spheroid": args.octopus_num,
+        "Octopus Torus": args.octopus_num,
     }
 
     print("Adding: ", dict)

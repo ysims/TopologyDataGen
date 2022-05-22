@@ -10,6 +10,7 @@ Torus:
   min_minor_radius: 1
   min_holes: 5
   max_holes: 5
+  length: 60
 
 Island:
   center_placement_border: 5

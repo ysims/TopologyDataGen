@@ -7,7 +7,7 @@ sys.path.append("scripts")
 from dataset import generate_dataset
 from single import create_single_data
 
-# random.seed(9)
+random.seed(10)
 
 # ***** OPTIONS *****
 # Generic
@@ -25,12 +25,12 @@ parser.add_argument(
 )
 parser.add_argument(
     "--shape_config",
-    default="./Objects/config/config/Shape9.yaml",
+    default="./Objects/config/Shape.yaml",
     help="The path to the Shape config to use.",
 )
 parser.add_argument(
     "--random_walk_config",
-    default="./Objects/config/config/RandomWalk9.yaml",
+    default="./Objects/config/RandomWalk.yaml",
     help="The path to the RandomWalk config to use.",
 )
 

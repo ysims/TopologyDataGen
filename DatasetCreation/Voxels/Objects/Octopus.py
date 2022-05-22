@@ -9,7 +9,7 @@ import numpy as np
 from Geometry import intersect_or_touch, hard_surrounded, forward
 from RandomWalk import RandomWalk
 from Spheroid import Spheroid
-from Torus import Torus, TorusN
+from Torus import Torus, TorusFree
 
 
 class Octopus(RandomWalk):
@@ -38,21 +38,21 @@ class Octopus(RandomWalk):
                     full_grid, shape_config, random_walk_config
                 )
         elif self.shape_name == "Torus2":
-            self.shape = TorusN.random(full_grid, shape_config, random_walk_config, 2)
+            self.shape = TorusFree.random(full_grid, shape_config, random_walk_config, 2)
             while not self.shape.valid:
-                self.shape = TorusN.random(
+                self.shape = TorusFree.random(
                     full_grid, shape_config, random_walk_config, 2
                 )
         elif self.shape_name == "Torus3":
-            self.shape = TorusN.random(full_grid, shape_config, random_walk_config, 3)
+            self.shape = TorusFree.random(full_grid, shape_config, random_walk_config, 3)
             while not self.shape.valid:
-                self.shape = TorusN.random(
+                self.shape = TorusFree.random(
                     full_grid, shape_config, random_walk_config, 3
                 )
         elif self.shape_name == "Torus":
-            self.shape = Torus.random(full_grid, shape_config, random_walk_config)
+            self.shape = TorusFree.random(full_grid, shape_config, random_walk_config, 1)
             while not self.shape.valid:
-                self.shape = Torus.random(full_grid, shape_config, random_walk_config)
+                self.shape = TorusFree.random(full_grid, shape_config, random_walk_config, 1)
         else:
             print("Error: Not a valid shape for the octopus.")
             return
